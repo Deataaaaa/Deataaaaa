@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="/engine/fonts/fonts.css">
+<style>
+  :root { --accent: #ffb547; --ink: #f6f2ea; --dim: rgba(246,242,234,.72); }
+  html, body { margin: 0; width: 1080px; height: 1920px; background: #000; overflow: hidden; }
+  #stage, #ov { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+  #stage canvas { display: block; }
+  #ov { pointer-events: none; color: var(--ink); font-family: 'Instrument Serif', serif; }
+  .k { color: var(--accent); }
+  #tag { position: absolute; left: 86px; top: 176px; font: 500 21px 'JetBrains Mono', monospace; letter-spacing: .3em; color: var(--dim);
+         text-shadow: 0 1px 10px rgba(0,0,0,.6); }
+  #title { position: absolute; left: 0; right: 0; top: 330px; margin: 0 auto; width: 860px; text-align: center; font-size: 92px; line-height: 1.02;
+           text-shadow: 0 2px 30px rgba(0,0,0,.55), 0 0 2px rgba(0,0,0,.4); letter-spacing: -.005em; }
+  #hud { position: absolute; left: 86px; top: 720px; text-shadow: 0 1px 14px rgba(0,0,0,.65); }
+  #hud .lab { font: 500 20px 'JetBrains Mono', monospace; letter-spacing: .24em; color: var(--dim); text-transform: uppercase; }
+  #hud .val { font: 500 74px 'JetBrains Mono', monospace; letter-spacing: -.02em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  #hud .sub, #hud .sub2 { font: 400 18px 'JetBrains Mono', monospace; letter-spacing: .2em; color: var(--dim); text-transform: uppercase; margin-top: 8px; }
+  #hud .sub2 { color: var(--accent); }
+  #cap { position: absolute; left: 0; right: 0; top: 63%; margin: 0 auto; width: 800px; text-align: center; font-style: italic; font-size: 60px; line-height: 1.1;
+         text-shadow: 0 2px 22px rgba(0,0,0,.7), 0 0 3px rgba(0,0,0,.5); }
+  #labels { position: absolute; inset: 0; }
+  .lbl { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font: 500 22px 'JetBrains Mono', monospace; letter-spacing: .16em;
+         text-shadow: 0 1px 10px rgba(0,0,0,.85); }
+  .lbl b { color: var(--accent); font-weight: 500; }
+  .lbl-r { position: absolute; transform: translate(0, -50%); white-space: nowrap; font: 500 22px 'JetBrains Mono', monospace; letter-spacing: .16em;
+           text-shadow: 0 1px 10px rgba(0,0,0,.85); }
+  .lbl-r b { color: var(--accent); font-weight: 500; }
+  .dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); transform: translate(-50%,-50%);
+         box-shadow: 0 0 18px 4px rgba(255,181,71,.7); }
+  #end { position: absolute; inset: 0; background: #0d0e11; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; }
+  #end .t { width: 860px; text-align: center; font-size: 92px; line-height: 1.02; }
+  #end .n { margin-top: 46px; width: 760px; text-align: center; font: 400 19px 'JetBrains Mono', monospace; letter-spacing: .2em; color: rgba(246,242,234,.55); line-height: 1.7; text-transform: uppercase; }
+</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="stage"></div>
+<div id="ov">
+  <div id="tag"></div>
+  <div id="labels"></div>
+  <div id="title"></div>
+  <div id="hud"><div class="lab"></div><div class="val"></div><div class="sub"></div><div class="sub2"></div></div>
+  <div id="cap"></div>
+  <div id="end"><div class="t"></div><div class="n"></div></div>
+</div>
+<script type="module">
+  const ep = new URLSearchParams(location.search).get('ep') || 'ep01';
+  const mod = await import(`/episodes/${ep}.js`);
+  await document.fonts.load('60px "Instrument Serif"');
+  await document.fonts.load('italic 60px "Instrument Serif"');
+  await document.fonts.load('500 20px "JetBrains Mono"');
+  await document.fonts.load('400 20px "JetBrains Mono"');
+  const app = await mod.create();
+  window.META = { duration: app.duration, fps: app.fps || 30, cues: app.cues || [] };
+  window.renderFrame = (t, opts) => { app.frame(t, opts || {}); return true; };
+  window.ready = true;
+</script>
+</body>
+</html>

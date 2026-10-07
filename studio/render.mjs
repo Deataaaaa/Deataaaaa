@@ -24,14 +24,25 @@ const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--ena
 const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
 page.on('console', (m) => { const t = m.text(); if (!/GPU stall|GroupMarkerNotSet|Automatic fallback/.test(t)) console.log('[page]', t); });
 page.on('pageerror', (e) => console.log('[pageerror]', e.message));
-await page.goto(`http://localhost:${port}/engine/player.html?ep=${ep}${args.q ? '&' + args.q : ''}`);
-await page.waitForFunction(() => window.ready === true, null, { timeout: 180000 });
+await page.goto(`http://localhost:${port}/engine/player.html?ep=${ep}${args.q ? '&' + args.q : ''}`, { timeout: 120000 });
+console.log('page loaded');
+await page.waitForFunction(() => window.ready === true, null, { timeout: 300000 });
+console.log('scene ready');
 const meta = await page.evaluate(() => window.META);
 const fps = Number(args.fps || meta.fps || 30);
 
 async function shot(t, file, opts) {
-  await page.evaluate(([tt, o]) => window.renderFrame(tt, o), [t, opts || {}]);
-  await page.screenshot({ path: file, type: 'jpeg', quality: 93 });
+  // generous timeout + retries: under heavy CPU load a motion-blurred frame can take a while to composite
+  for (let attempt = 1; ; attempt++) {
+    try {
+      await page.evaluate(([tt, o]) => window.renderFrame(tt, o), [t, opts || {}]);
+      await page.screenshot({ path: file, type: 'jpeg', quality: 93, timeout: 180000 });
+      return;
+    } catch (e) {
+      if (attempt >= 3) throw e;
+      console.log(`retry ${attempt} at t=${t}: ${e.message.split('\n')[0]}`);
+    }
+  }
 }
 
 if (args.cover) {

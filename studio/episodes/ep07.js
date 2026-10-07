@@ -434,5 +434,5 @@ export async function create() {
     ov.apply(st);
   }
   await Promise.all(TEX_PENDING);   // no frame before every texture is in memory (else it samples black)
-  return { duration: DUR, fps: 30, frame, cues: { snap: T_SNAP, freeze: T_FREEZE } };
+  return { duration: DUR, fps: 30, frame, captions: CAPTIONS, cues: { snap: T_SNAP, freeze: T_FREEZE } };
 }

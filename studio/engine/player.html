@@ -54,7 +54,7 @@
   await document.fonts.load('500 20px "JetBrains Mono"');
   await document.fonts.load('400 20px "JetBrains Mono"');
   const app = await mod.create();
-  window.META = { duration: app.duration, fps: app.fps || 30, cues: app.cues || [] };
+  window.META = { duration: app.duration, fps: app.fps || 30, cues: app.cues || [], captions: app.captions || null };
   window.renderFrame = (t, opts) => { app.frame(t, opts || {}); return true; };
   window.ready = true;
 </script>

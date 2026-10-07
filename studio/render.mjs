@@ -31,6 +31,29 @@ console.log('scene ready');
 const meta = await page.evaluate(() => window.META);
 const fps = Number(args.fps || meta.fps || 30);
 
+// house rules (see CLAUDE.md): videos longer than 60 s, and every caption on screen long enough to read
+function ruleProblems(m) {
+  const out = [];
+  if (!(m.duration > 60)) out.push(`duration ${m.duration} s: must be longer than 60 s`);
+  if (!m.captions) { out.push('episode does not export its captions: return { captions: CAPTIONS } from create()'); return out; }
+  m.captions.forEach(([t0, t1, html], i) => {
+    const text = String(html).replace(/<[^>]*>/g, '').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+    const need = Math.max(2.2, text.length / 12), have = t1 - t0 - 0.5;   // fade in 0.28 s + fade out 0.22 s
+    if (have + 1e-6 < need) out.push(`caption ${i + 1} at ${t0}s "${text}": fully visible ${have.toFixed(2)} s, needs ${need.toFixed(2)} s`);
+    if (i > 0 && t0 < m.captions[i - 1][1]) out.push(`caption ${i + 1} at ${t0}s overlaps the previous one`);
+  });
+  return out;
+}
+const problems = ruleProblems(meta);
+if (args.check || problems.length) {
+  console.log(problems.length ? `RULES: ${problems.length} problem(s)\n  - ` + problems.join('\n  - ') : 'RULES: ok');
+  if (args.check) { await browser.close(); srv.close(); process.exit(problems.length ? 1 : 0); }
+  if (problems.length && !args.stills && !args.cover && !args.force) {
+    console.log('refusing to render a full video that breaks the rules (use --force only to re-render an old episode)');
+    await browser.close(); srv.close(); process.exit(1);
+  }
+}
+
 async function shot(t, file, opts) {
   // generous timeout + retries: under heavy CPU load a motion-blurred frame can take a while to composite
   for (let attempt = 1; ; attempt++) {

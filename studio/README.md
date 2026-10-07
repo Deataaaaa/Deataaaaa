@@ -8,11 +8,10 @@ captions and HUD in HTML, a synthesized soundtrack, and ffmpeg for the final MP4
 | Day | File | Topic |
 |---|---|---|
 | 1 | `episodes/ep01.js` | Earth stops spinning for 1 second (Paris) |
-| 2 | `episodes/ep02.js` | Falling into a black hole (Sagittarius A*) |
-| 3 | `episodes/ep03.js` | The atmosphere disappears for 5 seconds (beach) |
-| 4 | `episodes/ep04.js` | A hole through the Earth (PREM density table in `ep04_fall.json`) |
-| 5 | `episodes/ep05.js` | The Moon stops moving |
-| 6 | `episodes/ep06.js` | The Sun disappears |
+| 2 | `episodes/ep07.js` | Your elevator's cable snaps (16th floor, real-time plunge, Otis 1854) |
+
+Built but not published (the brief moved to original, relatable scenarios): `ep02.js` black hole, `ep03.js`
+atmosphere vanishes, `ep04.js` hole through the Earth, `ep05.js` Moon stops, `ep06.js` Sun disappears.
 
 Every number shown on screen is listed with its source or calculation in `notes/facts.md`.
 
@@ -22,13 +21,21 @@ Every number shown on screen is listed with its source or calculation in `notes/
 - `engine/core.js`: renderer, post-processing (bloom, grade, grain, vignette), captions, HUD, helpers.
 - `engine/assets.js`: shared low-poly assets (sky, people, trees, Eiffel Tower, buildings, airliner, globe…).
 - `engine/beach.js`, `engine/blackhole.js`: the beach set and the black-hole ray tracer.
+- `engine/elevator.js`: elevator car (PBR steel, real mirror, LED ceiling, floor display), shaft (T-rails, landings,
+  safety gear), Mixamo characters, two-bone IK, and world-space retargeting (the Xbot rig drives a human model).
+- `engine/otis.js`: the 1854 Crystal Palace demonstration (timber tower, ratchet teeth, wagon spring, crowd).
 - `render.mjs`: serves the folder, drives headless Chromium (software WebGL) and writes JPEG frames.
 - `audio/synth.py` + `audio/epXX.py`: offline synth that builds each soundtrack on the episode's cue times.
+  Mastering is phone-first: low end turned into audible harmonics, presence lifted, look-ahead limiter,
+  static gain to about -10.5 LUFS (no dynamic loudnorm, which would ride the gain over time).
 
 ## Render an episode
 
 ```bash
 npm install                                   # three.js (playwright is preinstalled globally here)
+# characters are not committed (Mixamo licence): fetch them from the three.js examples
+curl -o engine/models/Xbot.glb     https://cdn.jsdelivr.net/gh/mrdoob/three.js@r170/examples/models/gltf/Xbot.glb
+curl -o engine/models/Michelle.glb https://cdn.jsdelivr.net/gh/mrdoob/three.js@r170/examples/models/gltf/Michelle.glb
 node render.mjs --ep ep03 --stills 1.5,12,30 --out /tmp/prev   # a few preview frames
 node render.mjs --ep ep03 --out /tmp/frames --from 0 --to 774  # frames (split ranges across workers)
 python3 audio/ep03.py out/ep03.wav                              # soundtrack (numpy + scipy)

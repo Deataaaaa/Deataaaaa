@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <link rel="stylesheet" href="/engine/fonts/fonts.css">
 <style>
-  :root { --accent: #ffb547; --ink: #f6f2ea; --dim: rgba(246,242,234,.72); }
+  :root { --accent: #ff2e2e; --ink: #f6f2ea; --dim: rgba(246,242,234,.72); }
   html, body { margin: 0; width: 1080px; height: 1920px; background: #000; overflow: hidden; }
   #stage, #ov { position: absolute; inset: 0; width: 1080px; height: 1920px; }
   #stage canvas { display: block; }
   #ov { pointer-events: none; color: var(--ink); font-family: 'Instrument Serif', serif; }
-  .k { color: var(--accent); }
+  .k { color: var(--accent); text-shadow: 0 0 26px rgba(255,40,40,.42), 0 2px 30px rgba(0,0,0,.55); }
   #tag { position: absolute; left: 86px; top: 176px; font: 500 21px 'JetBrains Mono', monospace; letter-spacing: .3em; color: var(--dim);
          text-shadow: 0 1px 10px rgba(0,0,0,.6); }
   #title { position: absolute; left: 0; right: 0; top: 330px; margin: 0 auto; width: 860px; text-align: center; font-size: 92px; line-height: 1.02;
@@ -29,7 +29,7 @@
            text-shadow: 0 1px 10px rgba(0,0,0,.85); }
   .lbl-r b { color: var(--accent); font-weight: 500; }
   .dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); transform: translate(-50%,-50%);
-         box-shadow: 0 0 18px 4px rgba(255,181,71,.7); }
+         box-shadow: 0 0 18px 4px rgba(255,46,46,.7); }
   #end { position: absolute; inset: 0; background: #0d0e11; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; }
   #end .t { width: 860px; text-align: center; font-size: 92px; line-height: 1.02; }
   #end .n { margin-top: 46px; width: 760px; text-align: center; font: 400 19px 'JetBrains Mono', monospace; letter-spacing: .2em; color: rgba(246,242,234,.55); line-height: 1.7; text-transform: uppercase; }

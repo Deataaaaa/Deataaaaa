@@ -105,6 +105,55 @@ m.add(54.75, bell(1760, rng, 3.0), gain=0.12, rev=0.9)
 p4 = pad(chordA, 4.4, rng, cutoff=1500, attack=1.2, release=0.4)
 m.add(55.6, p4, gain=0.2, rev=0.5)
 
+
+# ---------------- phone-first layers: mid-range music that small speakers can play ----------------
+BPM = 104; beat = 60 / BPM
+arpA = [440.0, 554.4, 659.3, 880.0, 659.3, 554.4, 493.9, 554.4]
+# intro arpeggio, gets denser into the stop
+t0 = 0.4; i = 0
+while t0 < STOP - 0.15:
+    f = arpA[i % len(arpA)] * (0.5 if i % 16 >= 8 else 1)
+    m.add(t0, synth_pluck(f, 0.4, 3600, 7.0), gain=0.16 + 0.10 * (t0 / STOP), pan=0.35 * np.sin(i * 1.3), rev=0.35)
+    t0 += beat / 2 if t0 < 9.0 else beat / 4; i += 1
+# groove builds from 6.9 s: claps on 2 and 4, hats on 8ths
+tb = 6.9; k = 0
+while tb < STOP - 0.1:
+    if k % 4 in (1, 3): m.add(tb, clap(rng), gain=0.22, rev=0.25)
+    m.add(tb, hat(rng), gain=0.10, pan=0.3)
+    m.add(tb + beat / 2, hat(rng), gain=0.07, pan=-0.3)
+    if k % 2 == 0: m.add(tb, kick(rng), gain=0.45)
+    tb += beat; k += 1
+# impacts: add audible mid layers
+for T in (STOP, RESTART):
+    m.add(T, crunch(rng, 1.4), gain=0.55, rev=0.4)
+    m.add(T, metal_hit(rng, 310, 2.2), gain=0.35, rev=0.6)
+    m.add(T + 0.02, snare(rng, 160), gain=0.5, rev=0.5)
+# slow-motion section: heavy slowed pulse + bright string pad
+string_pad = pad([220.0, 261.6, 329.6, 440.0, 523.3], RESTART - STOP, rng, cutoff=3200, attack=2.5, release=0.6, voices=3, harmonics=16)
+m.add(STOP + 0.4, (fade(string_pad[0], 1.5, 0.4), fade(string_pad[1], 1.5, 0.4)), gain=0.16, rev=0.6)
+tp = STOP + 1.6
+while tp < RESTART - 0.6:
+    m.add(tp, kick(rng, 0.6), gain=0.35, rev=0.3)
+    m.add(tp, crunch(rng, 0.8), gain=0.16, rev=0.5)
+    tp += 2.4
+# bright wind/debris layer during the Paris shots
+dbr = bp(noise(16.5, rng, 'pink'), 900, 4000)
+m.add(STOP + 0.2, fade(dbr / np.abs(dbr).max(), 1.0, 1.5) * np.interp(np.arange(len(dbr)) / SR, [0, 3, 14, 16.5], [0.2, 1, 1, 0.3]), gain=0.12, pan=0.2, rev=0.2)
+# tower: metallic strain you can hear on a phone
+m.add(20.75, metal_hit(rng, 190, 2.5), gain=0.35, rev=0.6)
+m.add(21.9, metal_hit(rng, 240, 2.0), gain=0.28, rev=0.6)
+# globe hit, kid/plane wonder: plucks
+m.add(32.65, crunch(rng, 1.0), gain=0.3, rev=0.5)
+for j, f in enumerate([880.0, 1108.7, 1318.5, 1760.0, 1318.5, 1108.7, 1479.98, 1760.0]):
+    m.add(35.2 + j * 0.55, synth_pluck(f, 0.5, 4200, 5.0), gain=0.12, pan=0.4 * np.sin(j), rev=0.6)
+# aftermath + ending plucks (loops into the intro)
+for j in range(14):
+    f = arpA[j % len(arpA)]
+    m.add(48.7 + j * beat / 2, synth_pluck(f, 0.4, 3000, 7.0), gain=0.10, pan=0.3 * np.sin(j), rev=0.5)
+for j in range(14):
+    f = arpA[j % len(arpA)]
+    m.add(56.1 + j * beat / 2, synth_pluck(f, 0.4, 3400, 7.0), gain=0.13, pan=0.3 * np.sin(j), rev=0.4)
+
 out = sys.argv[1] if len(sys.argv) > 1 else 'ep01.wav'
-m.render(out, rev_time=2.6, target_rms_db=-17.0)
+render_phone(m, out, rev_time=2.6, target=-10.5)
 print('wrote', out)

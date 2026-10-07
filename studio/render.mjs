@@ -24,7 +24,7 @@ const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--ena
 const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
 page.on('console', (m) => { const t = m.text(); if (!/GPU stall|GroupMarkerNotSet|Automatic fallback/.test(t)) console.log('[page]', t); });
 page.on('pageerror', (e) => console.log('[pageerror]', e.message));
-await page.goto(`http://localhost:${port}/engine/player.html?ep=${ep}`);
+await page.goto(`http://localhost:${port}/engine/player.html?ep=${ep}${args.q ? '&' + args.q : ''}`);
 await page.waitForFunction(() => window.ready === true, null, { timeout: 180000 });
 const meta = await page.evaluate(() => window.META);
 const fps = Number(args.fps || meta.fps || 30);

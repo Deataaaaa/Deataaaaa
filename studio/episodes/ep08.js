@@ -296,7 +296,7 @@ export async function create() {
   function frame(t, opts = {}) {
     const shot = shotAt(t);
     const k = clamp((t - shot.t0) / (shot.t1 - shot.t0)), dk = easeInOut(k);
-    const st = { tag: 'WHAT IF &nbsp;·&nbsp; 03', tagA: 1, labels: [] };
+    const st = { tag: 'WHAT IF &nbsp;·&nbsp; 02', tagA: 1, labels: [] };
     let sat = 1.0, tint = [1.0, 1.0, 1.0], vignette = 0.45, aberr = 0.0015, fadeW = 0, fadeB = 0, shake = 0, tunnel = 0, scan = 0, exposure = 0.9;
     let renderScene = scene, useOut = false;
 

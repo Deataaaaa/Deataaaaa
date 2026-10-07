@@ -27,31 +27,40 @@ often while at work, so every deliverable has to be ready to post straight from 
    check every frame exists and decodes, and compare frames across worker boundaries.
 8. **Facts checked.** Every number on screen goes in `studio/notes/facts.md` with its source or calculation.
 9. **One video at a time.** Finish, deliver, then start the next one.
+10. **The owner approves every idea first.** Before building anything for a new video, pitch it (title, hook,
+    the 3–4 big moments) and wait for an explicit OK. Never start a scene, script or render on an unapproved idea.
+11. **Number by posting order.** The on-screen tag `WHAT IF · NN` and every "Part N" follow the owner's posts:
+    #1 = elevator (ep07, already posted; its tag says 02, made before this rule), #2 = plane window (ep08, tag 02),
+    #3 = next approved idea (tag 03), and so on. The Earth video (ep01) is not part of the posted series.
+    Only tease the next topic in a caption once it is approved ("Part 3 tomorrow 👀" otherwise).
 
 ## Delivery checklist
-- `studio/encode.sh <frames> <wav> videos/dayN_<slug>`: HQ + `_phone.mp4` (< 30 MB, the chat's send limit).
-- Cover image with the title (pick a frame where the title doesn't cover a face), `videos/dayN_cover.jpg`.
-- Send the phone MP4 + cover in the chat, with a caption ready to paste (hook, question, "Part N+1 tomorrow:
-  …", 5 hashtags) and a comment to pin.
+- `studio/encode.sh <frames> <wav> videos/postN_<slug>`: HQ + `_phone.mp4` (< 30 MB, the chat's send limit).
+  (`day1_*` files = the Earth video, outside the series.)
+- Cover image with the title (pick a frame where the title doesn't cover a face), `videos/postN_cover.jpg`.
+- Send the phone MP4 + cover in the chat, with a caption ready to paste (hook, question, "Part N+1 tomorrow
+  👀" naming the topic only if already approved, 5 hashtags) and a comment to pin.
 - Update the posting-plan artifact (https://claude.ai/artifact/X86z6ej3oYC7859hXUjTeo).
 - Commit and push to branch `claude/whatif-reels` (no pull request unless asked).
 
 ## Episodes
-| Day | File | Topic | Status |
+| Post | File | Topic | Status |
 |---|---|---|---|
-| 1 | `studio/episodes/ep01.js` | Earth stops spinning for 1 s (Paris) | delivered (60 s) |
-| 2 | `studio/episodes/ep07.js` | Elevator cable snaps (16th floor) | delivered (53.8 s, made before rules 1–2) |
-| 3 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | rendering (83.4 s, rules 1–2 enforced) |
+| – | `studio/episodes/ep01.js` | Earth stops spinning for 1 s (Paris) | made, not part of the posted series |
+| 1 | `studio/episodes/ep07.js` | Elevator cable snaps (16th floor) | posted (53.8 s, made before rules 1–2) |
+| 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | rendering (83.4 s, rules 1–2 enforced, tag 02) |
 Ideas lined up: lightning strikes you; 50 km/h crash without a seatbelt; falling through ice (1-10-1 rule);
 lightning hits your plane. Old built-but-unpublished episodes: `ep02`–`ep06` (topics too common).
 
 ## Technical lessons (pitfalls already hit)
-- This cloud box has no GPU: SwiftShader renders ~3–15 s/frame, so a full video takes 1–2 h on 3–4 workers.
+- This cloud box has no GPU: SwiftShader renders ~10–25 s/frame per worker with 3 workers on 4 cores, so an
+  80 s video takes 3–4 h. Shots differ a lot in cost: when a worker finishes early, kill the slowest one and
+  relaunch its missing frames split across two workers (`--resume` skips frames that exist).
   Rendering on the owner's PC (Claude Desktop or `claude remote-control`) would be ~10× faster.
 - Wait for every texture before the first frame (`TEX_PENDING` in `engine/elevator.js`), or the first
   frame of each worker samples black textures.
 - Never `pkill -f`/`pgrep -f` with a pattern that also appears in your own shell command (it kills or
-  matches itself). Wait on PIDs, or watch the frame count instead.
+  matches itself). Wait on PIDs (`kill -0 PID`), or watch the frame count instead.
 - After a container restart, check render workers are really progressing (one hung silently at 0% CPU).
 - Mixamo rigs differ in bone axes: drive the human (`Michelle.glb`) through `makeRetarget` from the Xbot
   driver rig; tuned pose offsets live on the driver. Models are not committed (licence): README has the URLs.

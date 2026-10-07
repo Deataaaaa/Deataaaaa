@@ -41,7 +41,7 @@ often while at work, so every deliverable has to be ready to post straight from 
 |---|---|---|---|
 | 1 | `studio/episodes/ep01.js` | Earth stops spinning for 1 s (Paris) | delivered (60 s) |
 | 2 | `studio/episodes/ep07.js` | Elevator cable snaps (16th floor) | delivered (53.8 s, made before rules 1–2) |
-| 3 | next | Plane window breaks at 11,000 m | in production |
+| 3 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | rendering (83.4 s, rules 1–2 enforced) |
 Ideas lined up: lightning strikes you; 50 km/h crash without a seatbelt; falling through ice (1-10-1 rule);
 lightning hits your plane. Old built-but-unpublished episodes: `ep02`–`ep06` (topics too common).
 

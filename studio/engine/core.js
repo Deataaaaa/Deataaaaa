@@ -32,10 +32,11 @@ const GradeShader = {
     tDiffuse: { value: null }, uTime: { value: 0 }, uVignette: { value: 0.55 }, uGrain: { value: 0.035 },
     uFade: { value: 0 }, uFadeWhite: { value: 0 }, uSat: { value: 1.0 }, uContrast: { value: 1.04 },
     uAberr: { value: 0.006 }, uTint: { value: new THREE.Vector3(1, 1, 1) }, uShake: { value: new THREE.Vector2(0, 0) },
+    uTunnel: { value: 0 }, uScan: { value: 0 },
   },
   vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
   fragmentShader: `
-    uniform sampler2D tDiffuse; uniform float uTime,uVignette,uGrain,uFade,uFadeWhite,uSat,uContrast,uAberr;
+    uniform sampler2D tDiffuse; uniform float uTime,uVignette,uGrain,uFade,uFadeWhite,uSat,uContrast,uAberr,uTunnel,uScan;
     uniform vec3 uTint; uniform vec2 uShake; varying vec2 vUv;
     float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
     void main(){
@@ -45,6 +46,18 @@ const GradeShader = {
       col.r = texture2D(tDiffuse, uv + c*ab).r;
       col.g = texture2D(tDiffuse, uv).g;
       col.b = texture2D(tDiffuse, uv - c*ab).b;
+      if (uTunnel > 0.001) {   // hypoxia: soft smear towards the edges, then tunnel vision
+        float r = length(c*vec2(1.0,0.62)); vec2 o = c * uTunnel * 0.035 * smoothstep(0.1, 0.6, r);
+        col = (col + texture2D(tDiffuse, uv + o).rgb + texture2D(tDiffuse, uv - o).rgb + texture2D(tDiffuse, uv + o.yx).rgb) / 4.0;
+        col *= mix(1.0, smoothstep(0.7 - 0.42 * uTunnel, 0.12, r), clamp(uTunnel * 1.15, 0.0, 1.0));
+      }
+      if (uScan > 0.001) {     // VHS: scanlines, tracking wobble, chroma bleed
+        float line = 0.5 + 0.5 * sin(uv.y * 1920.0 * 1.5708);
+        col *= 1.0 - uScan * 0.16 * line;
+        float band = step(0.985, fract(uv.y * 3.0 + uTime * 0.37));
+        col += uScan * band * 0.06;
+        col.r = mix(col.r, texture2D(tDiffuse, uv + vec2(0.0035 * uScan, 0.0)).r, 0.5 * uScan);
+      }
       float l = dot(col, vec3(0.2126,0.7152,0.0722));
       col = mix(vec3(l), col, uSat);
       col = (col-0.5)*uContrast+0.5;

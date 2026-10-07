@@ -51,3 +51,23 @@ Simplifications stated plainly: Sgr A* is treated as non-spinning; the accretion
 
 Simplifications stated plainly: the time-slowed sections run 8× slower than reality (the HUD says so); the
 real-time plunge is the "no brakes" hypothetical; the 1854 tower is a reconstruction from period engravings.
+
+## EP08 (posted as Day 3) — What if your plane's window broke at 11,000 m?
+
+| Claim on screen | Number used | How it was checked |
+|---|---|---|
+| Cruising at 11,000 m, 880 km/h | FL360, Mach ~0.8 | typical narrow-body cruise (A320/737) |
+| Outside −56 °C, air 22% of sea level | −56.5 °C, 22.7 kPa | International Standard Atmosphere at 11 km |
+| ≈ 500 kg on your window | Δp ≈ 0.52 bar × ~0.09 m² ≈ 4.7 kN | cabin kept at ~2,400 m (75 kPa) vs 22.7 kPa outside; window ~25 × 36 cm |
+| The cabin fills with fog in a split second | adiabatic cooling | rapid decompression makes the cabin air expand and cool below its dew point |
+| The masks drop | above ~4,300 m cabin altitude | masks deploy automatically before the cabin passes 14,000–15,000 ft |
+| 15 to 30 s before you stop thinking clearly | TUC at FL350–400 | FAA: 30–60 s at 35,000 ft, 15–20 s at 40,000 ft; rapid decompression can halve it |
+| Put your own mask on first | — | standard safety briefing, because of the time above |
+| Each mask: about 12 minutes of oxygen | chemical generators, 12–15 min | enough to cover the emergency descent |
+| Windows have three layers; the middle one holds if the outer breaks | outer + middle (fail-safe) + inner scratch pane | the middle pane is designed to take the full pressure load |
+| The tiny hole keeps the middle layer as a spare | breather (bleed) hole | equalises pressure so the outer pane carries the load in normal flight; also stops fogging |
+| Pilots dive to air you can breathe, ~4 minutes | to ~3,000 m (10,000 ft) | emergency descent procedure |
+| 1990: a pilot sucked halfway out of his window; held for 20 minutes; survived | British Airways 5390, 10 June 1990, ~5,300 m | cockpit windscreen fitted with wrong bolts; captain Tim Lancaster survived |
+
+Simplifications stated plainly: the break is shown 6× slowed then 2×; the dive is shown sped up ("shown fast");
+the 1990 scene is a reconstruction (no livery); the sequence after the break is compressed for time.

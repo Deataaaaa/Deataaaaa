@@ -33,6 +33,14 @@ often while at work, so every deliverable has to be ready to post straight from 
     #1 = elevator (ep07, already posted; its tag says 02, made before this rule), #2 = plane window (ep08, tag 02),
     #3 = next approved idea (tag 03), and so on. The Earth video (ep01) is not part of the posted series.
     Only tease the next topic in a caption once it is approved ("Part 3 tomorrow 👀" otherwise).
+12. **Worst case, shock first.** Show the worst-case scenario all the way through and make people gasp 😳.
+    Never pivot to "but this almost never happens / here's why you're safe" (the owner finds it boring).
+    Prove it with real cases ("this happened in 2018…"), keep it factual and non-graphic (no gore), end on a
+    punchy line that invites comments (e.g. "Still want the window seat?").
+13. **Zero clipping.** Nothing may pass through a body or an object: props held or worn (masks and their
+    tubes, phones, belts, hair, hands on armrests) must be routed around the body (curved tubes with a control
+    point in front of the face, masks dangling in front of faces, hands placed clear of belts). Check every
+    close-up at full resolution for intersections before rendering, at several times across each shot.
 
 ## Delivery checklist
 - `studio/encode.sh <frames> <wav> videos/postN_<slug>`: HQ + `_phone.mp4` (< 30 MB, the chat's send limit).

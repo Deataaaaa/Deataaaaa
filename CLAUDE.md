@@ -48,9 +48,10 @@ often while at work, so every deliverable has to be ready to post straight from 
 |---|---|---|---|
 | – | `studio/episodes/ep01.js` | Earth stops spinning for 1 s (Paris) | made, not part of the posted series |
 | 1 | `studio/episodes/ep07.js` | Elevator cable snaps (16th floor) | posted (53.8 s, made before rules 1–2) |
-| 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | rendering (83.4 s, rules 1–2 enforced, tag 02) |
-Ideas lined up: lightning strikes you; 50 km/h crash without a seatbelt; falling through ice (1-10-1 rule);
-lightning hits your plane. Old built-but-unpublished episodes: `ep02`–`ep06` (topics too common).
+| 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | delivered (83.4 s, rules 1–2 enforced, tag 02) |
+| 3 | – | waiting for the owner's pick: car into a lake / lightning strikes you / falling through ice | pitched |
+Other ideas: 50 km/h crash without a seatbelt; lightning hits your plane; stuck upside down on a roller coaster;
+phone battery catching fire in your pocket. Old built-but-unpublished episodes: `ep02`–`ep06` (topics too common).
 
 ## Technical lessons (pitfalls already hit)
 - This cloud box has no GPU: SwiftShader renders ~10–25 s/frame per worker with 3 workers on 4 cores, so an

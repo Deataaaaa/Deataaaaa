@@ -610,8 +610,10 @@ export class FishSchool {
     let shown = 0;
     for (let i = 0; i < this.n; i++) {
       const f = this.f[i];
-      const p0 = posFn(i, f, t), p1 = posFn(i, f, t + 0.04);
+      const p0 = posFn(i, f, t);
       if (!p0 || f.e > visible) { m.makeScale(0, 0, 0); this.mesh.setMatrixAt(i, m); continue; }
+      let p1 = posFn(i, f, t + 0.04);
+      if (!p1) { const pb = posFn(i, f, t - 0.04); p1 = pb ? p0.clone().multiplyScalar(2).sub(pb) : p0.clone().add(new THREE.Vector3(0, 0, 0.01)); }   // leaving the school's time window
       if (keepAway) {   // personal space around the camera / hands: fish swerve, never pass through
         for (const [c, rr] of keepAway) {
           const d = p0.distanceTo(c); const R = rr || keepR;

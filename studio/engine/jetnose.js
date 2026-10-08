@@ -44,8 +44,12 @@ export function noseFrame(th, s) {
 // θ on the left (sign -1) or right (+1) side for a given height y at station s
 function thetaAt(y, s, side) { const [yc, a] = section(s); return side * Math.acos(Math.max(-1, Math.min(1, (y - yc) / a))); }
 
-// texture space: u around (θ from -π to π), v along s, with more texels on the nose than on the cabin
-const vOf = (s) => (s < 6 ? 0.72 * s / 6 : 0.72 + 0.28 * (s - 6) / (LEN - 6));
+// texture space: u around (θ from -π to π), v along s. The nose model spends its texels on the cockpit, the
+// side model (2018) on the cabin windows; each builder sets VMAP before painting and meshing.
+const VMAP_NOSE = (s) => (s < 6 ? 0.72 * s / 6 : 0.72 + 0.28 * (s - 6) / (LEN - 6));
+const VMAP_SIDE = (s) => (s < 6 ? 0.22 * s / 6 : s < 12.5 ? 0.22 + 0.64 * (s - 6) / 6.5 : 0.86 + 0.14 * (s - 12.5) / (LEN - 12.5));
+let VMAP = VMAP_NOSE;
+const vOf = (s) => VMAP(s);
 const TW = 4096, TH = 4096;
 const tx = (th, w = TW) => ((th + Math.PI) / (2 * Math.PI)) * w;
 const ty = (s, h = TH) => (1 - vOf(s)) * h;
@@ -73,7 +77,7 @@ const mirror = (pts) => pts.map(([th, s]) => [-th, s]);
 function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return [c, c.getContext('2d')]; }
 function pathTS(g, pts, w, h) { g.beginPath(); pts.forEach(([th, s], i) => (i ? g.lineTo(tx(th, w), ty(s, h)) : g.moveTo(tx(th, w), ty(s, h)))); g.closePath(); }
 
-function paintSkin() {
+function paintSkin({ cockpitCut = true, broken = null } = {}) {
   const [cc, g] = canvas(TW, TH);
   const [rc, gr] = canvas(2048, 2048);   // roughness (green channel)
   const [bc, gb] = canvas(2048, 2048);   // bump (panel lines, rivets)
@@ -152,7 +156,26 @@ function paintSkin() {
     }
   });
   // the missing pane: cut out of the skin (the frame stays)
-  pathTS(ga, paneOutline(PANES[0], 0.02), 1024, 1024); ga.fillStyle = '#000000'; ga.fill();
+  if (cockpitCut) { pathTS(ga, paneOutline(PANES[0], 0.02), 1024, 1024); ga.fillStyle = '#000000'; ga.fill(); }
+  // a passenger window blown out by engine debris: scuffs and dents where the fragment hit, a ragged black hole
+  if (broken !== null) {
+    let seed = 41; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const thc = thetaAt(0.2, 8, -1), dth = 0.17 / FUS_R, sc = broken;
+    for (let k = 0; k < 26; k++) {          // short scratches around the hole
+      const a = r() * Math.PI * 2, d = 0.18 + r() * 0.16, th = thc + Math.cos(a) * d / FUS_R, s0 = sc + Math.sin(a) * d, len = 0.02 + r() * 0.06;
+      g.strokeStyle = `rgba(${55 + r() * 30},${57 + r() * 30},${62 + r() * 30},${0.18 + r() * 0.25})`; g.lineWidth = 1.5 + r() * 2.5;
+      g.beginPath(); g.moveTo(tx(th), ty(s0)); g.lineTo(tx(th + (r() - 0.5) * 0.03), ty(s0 + len)); g.stroke();
+    }
+    const dent = g.createRadialGradient(tx(thc + 0.08), ty(sc + 0.25), 4, tx(thc + 0.08), ty(sc + 0.25), 170);
+    dent.addColorStop(0, 'rgba(60,62,66,0.45)'); dent.addColorStop(1, 'rgba(60,62,66,0)'); g.fillStyle = dent; g.fillRect(tx(thc + 0.08) - 180, ty(sc + 0.25) - 180, 360, 360);
+    const hole = []; for (let i = 0; i < 30; i++) { const a = (i / 30) * Math.PI * 2, k = 1.08 + (r() - 0.4) * 0.3; hole.push([thc + Math.cos(a) * dth * 0.86 * k, sc + Math.sin(a) * 0.13 * k]); }
+    pathTS(g, hole, TW, TH); g.fillStyle = '#030406'; g.fill();
+    pathTS(gr, hole, 2048, 2048); gr.fillStyle = 'rgb(0,240,0)'; gr.fill();
+    for (let k = 0; k < 9; k++) {   // shards of the outer pane still stuck in the frame
+      const a = r() * Math.PI * 2, th = thc + Math.cos(a) * dth * 0.9, s0 = sc + Math.sin(a) * 0.135;
+      g.fillStyle = `rgba(190,205,215,${0.5 + r() * 0.4})`; g.beginPath(); g.moveTo(tx(th), ty(s0)); g.lineTo(tx(th - Math.cos(a) * 0.03 + (r() - 0.5) * 0.02), ty(s0 - Math.sin(a) * 0.05)); g.lineTo(tx(th + (r() - 0.5) * 0.03), ty(s0 + (r() - 0.5) * 0.04)); g.closePath(); g.fill();
+    }
+  }
   const mk = (c, srgb) => { const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; t.wrapS = THREE.RepeatWrapping; return t; };
   return { map: mk(cc, true), rough: mk(rc), bump: mk(bc), alpha: mk(ac) };
 }
@@ -190,6 +213,7 @@ function skyEnvironment(renderer) {
 }
 
 export function makeJetNose(renderer) {
+  VMAP = VMAP_NOSE;
   const group = new THREE.Group();
   const tex = paintSkin();
   const paint = new THREE.MeshPhysicalMaterial({ map: tex.map, roughnessMap: tex.rough, roughness: 1, bumpMap: tex.bump, bumpScale: 1.2, alphaMap: tex.alpha, alphaTest: 0.5,
@@ -286,4 +310,67 @@ export function makeCrewHands() {
     g.add(a); arms.push(a);
   }
   return { group: g, arms };
+}
+
+// ---------------- 2018 reconstruction (Southwest 1380): fuselage side, left wing, the failed engine ----------------
+// lofted swept wing toward -x (root at the lower fuselage side), NACA-style section with a little camber
+function wingGeometry({ span = 12.2, rootX = -1.35, rootY = -0.95, rootZ = 4.8, rootC = 4.0, tipC = 1.3, sweep = 0.47, dihedral = 0.105, tRoot = 0.13, tTip = 0.11, nS = 10, nC = 26 } = {}) {
+  const sec = [];
+  for (let i = 0; i <= nC; i++) { const x = 0.5 - 0.5 * Math.cos((i / nC) * Math.PI); sec.push(x); }
+  const yt = (x, t) => 5 * t * (0.2969 * Math.sqrt(x) - 0.126 * x - 0.3516 * x * x + 0.2843 * x ** 3 - 0.1036 * x ** 4);
+  const yc = (x) => 0.025 * 4 * x * (1 - x);
+  const ring = []; for (let i = nC; i >= 0; i--) ring.push([sec[i], 1]); for (let i = 1; i <= nC; i++) ring.push([sec[i], -1]);   // TE→LE on top, LE→TE below
+  const pos = [], idx = [], R = ring.length;
+  for (let k = 0; k <= nS; k++) {
+    const f = k / nS, X = rootX - span * f, Y = rootY + span * f * dihedral, Zle = rootZ + span * f * sweep, c = rootC + (tipC - rootC) * f, t = tRoot + (tTip - tRoot) * f;
+    for (const [x, sd] of ring) pos.push(X, Y + c * (yc(x) + sd * yt(x, t)), Zle + c * x);
+  }
+  for (let k = 0; k < nS; k++) for (let i = 0; i < R - 1; i++) { const a = k * R + i, b = a + R; idx.push(a, a + 1, b, b, a + 1, b + 1); }
+  const tip = nS * R; for (let i = 1; i < R - 2; i++) idx.push(tip, tip + i + 1, tip + i);   // close the tip
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+  return geo;
+}
+
+// a high-bypass engine on its pylon; the inlet cowl is torn away and one fan blade is missing
+function makeEngine(paintM) {
+  const g = new THREE.Group();
+  let seed = 23; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const prof = [[0.9, 0.55], [0.97, 0.8], [0.98, 1.2], [0.94, 2.1], [0.82, 2.65], [0.68, 3.0]].map(([rr, h]) => new THREE.Vector2(rr, h));
+  const cowlGeo = new THREE.LatheGeometry(prof, 48);
+  { const p = cowlGeo.attributes.position, np = prof.length;   // ragged front edge where the cowl broke off
+    for (let i = 0; i <= 48; i++) { const j = i * np; p.setY(j, p.getY(j) + (r() < 0.7 ? 0.05 + r() * 0.3 : 0)); }
+    p.needsUpdate = true; cowlGeo.computeVertexNormals(); }
+  cowlGeo.rotateX(Math.PI / 2);
+  const cowl = new THREE.Mesh(cowlGeo, paintM.clone()); cowl.material.side = THREE.DoubleSide; g.add(cowl);
+  const caseM = new THREE.MeshStandardMaterial({ color: '#8d9298', metalness: 0.8, roughness: 0.35, side: THREE.DoubleSide });
+  const fanCase = new THREE.Mesh(new THREE.CylinderGeometry(0.84, 0.84, 0.75, 48, 1, true), caseM); fanCase.rotation.x = Math.PI / 2; fanCase.position.z = 0.42; g.add(fanCase);
+  const dark = new THREE.MeshStandardMaterial({ color: '#16181b', roughness: 0.6 });
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(0.82, 40), dark); disc.position.z = 0.62; disc.rotation.y = Math.PI; g.add(disc);
+  const bladeM = new THREE.MeshStandardMaterial({ color: '#5b6066', metalness: 0.85, roughness: 0.3 });
+  for (let k = 0; k < 24; k++) {
+    if (k === 7) continue;                                   // the blade that failed
+    const b = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.62, 0.02), bladeM); const a = (k / 24) * Math.PI * 2;
+    b.position.set(Math.cos(a) * 0.48, Math.sin(a) * 0.48, 0.55); b.rotation.set(0, 0.45, a - Math.PI / 2); g.add(b);
+  }
+  const spinner = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.45, 24), new THREE.MeshStandardMaterial({ color: '#c9cdd2', metalness: 0.5, roughness: 0.3 })); spinner.rotation.x = -Math.PI / 2; spinner.position.z = 0.32; g.add(spinner);
+  const plug = new THREE.Mesh(new THREE.ConeGeometry(0.42, 0.85, 32), new THREE.MeshStandardMaterial({ color: '#3a3d42', metalness: 0.6, roughness: 0.45 })); plug.rotation.x = Math.PI / 2; plug.position.z = 3.35; g.add(plug);
+  const pylon = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.6, 2.6), paintM); pylon.position.set(0, 1.05, 2.0); g.add(pylon);
+  g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  return g;
+}
+
+export function makeJetSide(renderer, { brokenS = 7.88 } = {}) {
+  VMAP = VMAP_SIDE;
+  const group = new THREE.Group();
+  const tex = paintSkin({ cockpitCut: false, broken: brokenS });
+  const paint = new THREE.MeshPhysicalMaterial({ map: tex.map, roughnessMap: tex.rough, roughness: 1, bumpMap: tex.bump, bumpScale: 1.2, metalness: 0.05, clearcoat: 0.35, clearcoatRoughness: 0.28, envMapIntensity: 0.9 });
+  group.add(new THREE.Mesh(skinGeometry(), paint));
+  const wingM = new THREE.MeshPhysicalMaterial({ color: '#d9dde1', roughness: 0.4, metalness: 0.15, clearcoat: 0.2, envMapIntensity: 0.8, side: THREE.DoubleSide });
+  const wing = new THREE.Mesh(wingGeometry(), wingM); group.add(wing);
+  const engine = makeEngine(new THREE.MeshPhysicalMaterial({ color: '#e1e4e8', roughness: 0.38, metalness: 0.1, clearcoat: 0.3, envMapIntensity: 0.9 }));
+  engine.position.set(-4.6, -1.62, 3.3); group.add(engine);
+  const env = skyEnvironment(renderer);
+  VMAP = VMAP_NOSE;
+  const thc = thetaAt(0.2, 8, -1);
+  return { group, env, hole: noseFrame(thc, brokenS), fan: new THREE.Vector3(-4.6, -1.62, 3.3 + 0.6) };
 }

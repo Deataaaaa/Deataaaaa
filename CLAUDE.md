@@ -62,8 +62,8 @@ often while at work, so every deliverable has to be ready to post straight from 
 |---|---|---|---|
 | – | `studio/episodes/ep01.js` | Earth stops spinning for 1 s (Paris) | made, not part of the posted series |
 | 1 | `studio/episodes/ep07.js` | Elevator cable snaps (16th floor) | posted (53.8 s). 12 h: 1.2K views, skip 66%, avg watch 18 s, likes 5.6%, shares 1.8%, 0 comments |
-| 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | delivered (83.4 s, rules 1–2 enforced, tag 02) |
-| 3 | – | waiting for the owner's pick: car into a lake / lightning strikes you / falling through ice | pitched |
+| 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | delivered v2 (77.2 s, worst case, hook on frame 1, tag 02; v1 83.4 s replaced after clipping feedback) |
+| 3 | – | waiting for the owner's pick: car into a lake / lightning strikes you / falling through ice / swallowed by a whale | pitched (worst-case versions) |
 Other ideas: 50 km/h crash without a seatbelt; lightning hits your plane; stuck upside down on a roller coaster;
 phone battery catching fire in your pocket. Old built-but-unpublished episodes: `ep02`–`ep06` (topics too common).
 

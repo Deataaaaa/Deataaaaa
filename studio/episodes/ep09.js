@@ -17,9 +17,9 @@ const CAPTIONS = [
   [20.92, 25.6, 'Behind you: a 30-tonne humpback, mouth wide open.'],
   [25.72, 30.0, 'Its mouth is open so wide, it can’t see you.'],
   [30.12, 34.3, 'In one gulp: 20 tonnes of water… and you.'],
-  [34.42, 38.9, 'Everything goes black. You’re inside its mouth.'],
-  [39.02, 44.3, 'It squeezes the water out. With you still inside.'],
-  [44.42, 47.2, 'It’s moving. Up… or down?'],
+  [34.42, 38.9, 'Everything goes black. You’re inside its mouth.', { shade: 1 }],
+  [39.02, 44.3, 'It squeezes the water out. With you still inside.', { shade: 1 }],
+  [44.42, 47.2, 'It’s moving. Up… or down?', { shade: 1 }],
   [47.32, 51.3, 'Then it surfaces… and spits you out.'],
   [51.42, 56.6, 'This isn’t fiction. In 2021, it happened off Cape Cod.', { shade: 1 }],
   [56.72, 62.4, 'A lobster diver spent 30 to 40 seconds in a humpback’s mouth.', { shade: 1 }],
@@ -95,7 +95,7 @@ export async function create() {
   sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03; sun.shadow.intensity = 0.55;
   scene.add(sun, sun.target);
   const hemi = new THREE.HemisphereLight('#a3d9cf', '#26302a', 0.85); scene.add(hemi);
-  const torchL = new THREE.SpotLight('#fff1d8', 0, 14, 0.36, 0.55, 1.8); scene.add(torchL, torchL.target);
+  const torchL = new THREE.SpotLight('#fff1d8', 0, 14, 0.5, 0.95, 2.0); scene.add(torchL, torchL.target);
   const shafts = new Shafts(72); scene.add(shafts.mesh);
   const snow = new Snow(2000); scene.add(snow.mesh);
   const bubbles = new Bubbles(320); scene.add(bubbles.mesh);
@@ -175,14 +175,14 @@ export async function create() {
   // POV hands (camera space): a gentle sculling motion; per shot offsets
   const hands = (t, kind) => {
     const s1 = Math.sin(t * 1.3), s2 = Math.sin(t * 1.1 + 1);
-    const calmL = { p: V(-0.13 + 0.008 * s1, -0.155 + 0.01 * s2, -0.45), f: V(-0.25, 0.15, -1).normalize(), n: V(0.5, -0.85, 0).normalize() };
-    const calmR = { p: V(0.14 - 0.008 * s2, -0.16 + 0.01 * s1, -0.46), f: V(0.25, 0.15, -1).normalize(), n: V(-0.5, -0.85, 0).normalize() };
+    const calmL = { p: V(-0.125 + 0.008 * s1, -0.165 + 0.01 * s2, -0.45), f: V(0.0, 0.08, -1).normalize(), n: V(0.85, -0.5, 0).normalize() };
+    const calmR = { p: V(0.13 - 0.008 * s2, -0.17 + 0.01 * s1, -0.46), f: V(0.0, 0.08, -1).normalize(), n: V(-0.85, -0.5, 0).normalize() };
     if (kind === 'calm') return { L: calmL, R: calmR };
     if (kind === 'reach') return {   // left hand reaching for the lobster's crevice
       L: { p: V(-0.06 + 0.005 * s1, -0.2, -0.56), f: V(0.0, -0.25, -1).normalize(), n: V(0.35, -0.94, 0).normalize() }, R: calmR };
     if (kind === 'fear') return {    // hands up between you and the whale, palms out, fingers spread
-      L: { p: V(-0.165 + 0.01 * s1, -0.135 + 0.01 * s2, -0.47), f: V(-0.12, 0.85, -0.5).normalize(), n: V(0.15, 0.3, -1).normalize() },
-      R: { p: V(0.175 - 0.01 * s2, -0.145 + 0.01 * s1, -0.48), f: V(0.12, 0.85, -0.5).normalize(), n: V(-0.15, 0.3, -1).normalize() } };
+      L: { p: V(-0.14 + 0.008 * s1, -0.15 + 0.008 * s2, -0.46), f: V(-0.05, 0.3, -1).normalize(), n: V(0.75, -0.45, -0.45).normalize() },
+      R: { p: V(0.145 - 0.008 * s2, -0.155 + 0.008 * s1, -0.47), f: V(0.05, 0.3, -1).normalize(), n: V(-0.75, -0.45, -0.45).normalize() } };
     if (kind === 'flail') return {
       L: { p: V(-0.17 + 0.04 * Math.sin(t * 7), -0.1 + 0.04 * Math.sin(t * 5.3), -0.4), f: V(-0.3, 0.6 + 0.2 * Math.sin(t * 6), -0.7).normalize(), n: V(0.3, 0.2, -1).normalize() },
       R: { p: V(0.18 + 0.04 * Math.sin(t * 6.1 + 2), -0.11 + 0.04 * Math.sin(t * 4.7), -0.4), f: V(0.3, 0.6 + 0.2 * Math.sin(t * 5.2), -0.7).normalize(), n: V(-0.3, 0.2, -1).normalize() } };
@@ -319,7 +319,7 @@ export async function create() {
       for (const m of [whale.mats.matRoof, whale.mats.matBaleen, whale.mats.matFringe]) m.userData.wAmb.value = 0.06;
       whale.mats.matPouch.userData.wInner.value = 0.04;
       sun.intensity = 0; hemi.intensity = 0.25;
-      torchOn = t > T.F + 0.62; povKind = 'torch';
+      torchOn = t > T.F + 0.62; povKind = 'torch'; exposure = 0.85;
       fish.mesh.visible = false; lobster.visible = false;
     } else if (shot.kind === 'surface') {
       // at the surface: the jaws part, light pours in, it shakes its head... you are thrown out, then you are in the
@@ -360,7 +360,7 @@ export async function create() {
       fish.mesh.visible = false; lobster.visible = id === 'I1';
       if (id === 'I1') {
         // the diver over the rocks, the whale charging out of the green; cut before the jaws reach him
-        const tsr = lerp(27.2, TS_E - 0.32, k); const wr = whalePose(tsr); setWhale(wr);
+        const tsr = lerp(28.3, TS_E - 0.32, k); const wr = whalePose(tsr); setWhale(wr);
         const dp = D0.clone().add(V(0, 0.02 * Math.sin(t * 1.4), 0));
         const fw = diver.third(dp, V(0, 0.85, 0.52).normalize(), t, { belly: V(0, -0.5, 0.85).normalize(), kick: 0.5 });
         const hl = dp.clone().addScaledVector(fw.up, 0.45).addScaledVector(fw.fwd, 0.38).addScaledVector(fw.lat, 0.2);
@@ -368,7 +368,7 @@ export async function create() {
         diver.third(dp, V(0, 0.85, 0.52).normalize(), t, { belly: V(0, -0.5, 0.85).normalize(), kick: 0.5, handL: hl, handR: hr });
         const mw = toWorld(V(0, -0.4, Zu(0.1))); const lean = mw.clone().sub(dp); const dl = lean.length();
         const mid = dp.clone().addScaledVector(lean.normalize(), Math.min(0.9, dl * 0.3));
-        look(dp.clone().add(V(lerp(6.8, 6.2, dk), lerp(0.7, 0.5, dk), lerp(2.2, 3.0, dk))), mid, 52);
+        look(dp.clone().add(V(lerp(1.9, 1.6, dk), lerp(0.85, 0.75, dk), lerp(-4.9, -4.4, dk))), dp.clone().add(V(-0.2, 0.15, 3.0)), 54);   // behind him, the mouth coming at us both
         st.labels.push({ x: W * 0.5, y: H * 0.115, a: 1, html: 'RECONSTRUCTION &nbsp;·&nbsp; 11 JUNE 2021' });
       } else if (id === 'I2') {
         // from below: the whale rising to the surface, mouth shut, throat swollen
@@ -440,13 +440,13 @@ export async function create() {
           }
         }
       } else hd = hands(t, povKind);
-      const curl = povKind === 'fear' ? 0.18 : povKind === 'flail' ? 0.22 : povKind === 'torch' ? 0.45 : 0.3, spread = povKind === 'fear' ? 0.55 : povKind === 'flail' ? 0.6 : 0.45;
+      const curl = povKind === 'fear' ? 0.3 : povKind === 'flail' ? 0.22 : povKind === 'torch' ? 0.45 : 0.35, spread = povKind === 'fear' ? 0.35 : povKind === 'flail' ? 0.6 : 0.3;
       diver.pov(cam, { L: hd.L, R: hd.R, torchOn, curlL: curl, curlR: povKind === 'torch' ? 0.75 : curl, spread });
       const depth = -cam.position.y;
       diver.drawScreen(Math.max(0, depth), 23 + Math.floor(ts / 60), id === 'G2');
       if (torchOn) {
         const lens = diver.torchLens(), dir = V(0, 0, 1).applyQuaternion(diver.torch.getWorldQuaternion(new THREE.Quaternion())).normalize();
-        torchL.intensity = 4.5; torchL.position.copy(lens); torchL.target.position.copy(lens.clone().addScaledVector(dir, 2)); torchL.target.updateMatrixWorld();
+        torchL.intensity = id === 'G' ? lerp(2.6, 1.1, smooth(T.G, T.G + 3.5, t)) : id === 'G2' ? 2.2 : id === 'H' ? 2.0 : 3.2; torchL.position.copy(lens); torchL.target.position.copy(lens.clone().addScaledVector(dir, 2)); torchL.target.updateMatrixWorld();
         beamMat.uniforms.uK.value = 0.008; beam.position.copy(lens.clone().addScaledVector(dir, 2.25)); beam.quaternion.setFromUnitVectors(V(0, -1, 0), dir);
       }
     } else diver.me.root.visible = shot.kind === 'recon' ? diver.me.root.visible : false;

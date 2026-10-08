@@ -47,6 +47,12 @@ often while at work, so every deliverable has to be ready to post straight from 
     (Instagram ranks skip rate first for reach), while those who stayed watched to the end.
 15. **Ask for comments.** End on a direct question in the video itself (e.g. "Still want the window seat?") and
     pin a comment that asks a simple either/or question. The elevator post got 0 comments.
+16. **A new main character every video.** "You" must look different in each video (face, skin tone, hair,
+    build, outfit). Keep the cast log below up to date and never reuse a look.
+17. **Cinematic, like the reference.** The owner's benchmark is a viral "What if electrons disappeared for
+    x seconds?" reel (10M views on TikTok; theirs reach ~1,500). File: Drive › Reel ref › "Famous reel.mp4"
+    (the Drive connector only downloads files under 10 MB: ask the owner to set "Anyone with the link" or
+    upload a smaller copy). Match its camera work, lighting, pacing and sound; animations must be flawless.
 
 ## Delivery checklist
 - `studio/encode.sh <frames> <wav> videos/postN_<slug>`: HQ + `_phone.mp4` (< 30 MB, the chat's send limit).
@@ -65,6 +71,8 @@ often while at work, so every deliverable has to be ready to post straight from 
 | 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | delivered v2 (77.2 s, worst case, hook on frame 1, tag 02; v1 83.4 s replaced after clipping feedback) |
 | 3 | `studio/episodes/ep09.js` | A humpback engulfs you (POV, Cape Cod, real cases 2021 and 2025) | delivered (75.2 s, POV, tag 03; render 3 lanes ≈ 2 h 50) |
 | 4 | – | waiting for the owner's pick: car into a lake / lightning strikes you / falling through ice | pitched (worst-case versions) |
+Cast log (rule 16): post 1 elevator = Michelle (dark skin, curly black hair, red headphones); post 2 plane =
+Michelle (same); post 3 whale = POV diver, black wetsuit and gloves (body never seen). Next video: a new person.
 Other ideas: 50 km/h crash without a seatbelt; lightning hits your plane; stuck upside down on a roller coaster;
 phone battery catching fire in your pocket. Old built-but-unpublished episodes: `ep02`–`ep06` (topics too common).
 

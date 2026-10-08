@@ -52,7 +52,7 @@ Simplifications stated plainly: Sgr A* is treated as non-spinning; the accretion
 Simplifications stated plainly: the time-slowed sections run 8× slower than reality (the HUD says so); the
 real-time plunge is the "no brakes" hypothetical; the 1854 tower is a reconstruction from period engravings.
 
-## EP08 (posted as Day 3) — What if your plane's window broke at 11,000 m?
+## EP08 (post 2) — What if your plane's window broke at 11,000 m?
 
 | Claim on screen | Number used | How it was checked |
 |---|---|---|
@@ -68,6 +68,7 @@ real-time plunge is the "no brakes" hypothetical; the 1854 tower is a reconstruc
 | The tiny hole keeps the middle layer as a spare | breather (bleed) hole | equalises pressure so the outer pane carries the load in normal flight; also stops fogging |
 | Pilots dive to air you can breathe, ~4 minutes | to ~3,000 m (10,000 ft) | emergency descent procedure |
 | 1990: a pilot sucked halfway out of his window; held for 20 minutes; survived | British Airways 5390, 10 June 1990, ~5,300 m | cockpit windscreen fitted with wrong bolts; captain Tim Lancaster survived |
+| Pinned comment: back flying less than 5 months later | frostbite, broken arm, wrist and thumb | accounts of the AAIB report (e.g. migflug.com, Wikipedia); first officer Alastair Atchison landed at Southampton |
 
 Simplifications stated plainly: the break is shown 6× slowed then 2×; the dive is shown sped up ("shown fast");
-the 1990 scene is a reconstruction (no livery); the sequence after the break is compressed for time.
+the 1990 scene is a reconstruction (generic livery, mannequin-style figures); the sequence after the break is compressed for time.

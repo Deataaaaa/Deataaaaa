@@ -79,3 +79,28 @@ real-time plunge is the "no brakes" hypothetical; the 1854 tower is a reconstruc
 
 Simplifications stated plainly: the break is shown 6× slowed then 2×; the countdown and the dive are shown sped up ("shown fast");
 the 1990 scene is a reconstruction (generic livery, mannequin-style figures); the sequence after the break is compressed for time.
+
+## EP09 (post 3) — What if a whale swallowed you? (point of view)
+
+| Claim on screen | Number used | How it was checked |
+|---|---|---|
+| Diving off Cape Cod, 14 meters down | ~45 ft ≈ 14 m | Michael Packard's own account of his dive depth off Provincetown (WBZ-TV, AP); other accounts say ~30 ft, so "you" are placed at his figure |
+| Catching lobsters | commercial lobster diving | Packard is a commercial lobster diver (AP, NPR, Provincetown Independent) |
+| Thousands of tiny fish | sand lance (Ammodytes) | the Center for Coastal Studies suggested the whale was feeding on sand lance; sand lance and striped bass were around Packard on his descent |
+| A 30-tonne humpback | adults 25–40 t, 12–16 m | NOAA Fisheries (up to ~60 ft / 40 tons), NPS (males ~46 ft / 25 tons, females ~49 ft / 35 tons); HUD "14 m long" |
+| Charging at 11 km/h | ≈ 3 m/s lunge | tag studies: humpbacks reach ~3 m/s at the start of a lunge (Simon, Johnson & Madsen 2012, J. Exp. Biol.) |
+| Its mouth is open so wide, it can't see you | forward view blocked when the mouth is open | Jooke Robbins (Center for Coastal Studies): with its mouth open a lunging whale can't see what is in front of it; she called Packard's case "a mistake and an accident" |
+| In one gulp: 20 tonnes of water | engulfed water up to ~70% of body mass | tag-based studies of humpback lunges; 0.7 × 30 t ≈ 21 t ≈ 20,000 litres; HUD "70% of its weight" |
+| Everything goes black, you're inside its mouth | engulfed, mouth closed | Packard: "it was completely black", he could feel the whale squeezing with its mouth muscles |
+| It squeezes the water out | ventral pouch contracts, water forced out through the baleen | how rorquals filter-feed after every lunge |
+| Up or down? | it rose to the surface | Packard: the whale rose to the surface and shook its head; his crewmate Josiah Mayo saw it come up |
+| Timer 0:00 → 0:38, "shown 3× fast" | 30–40 s inside | Packard's own estimate (Facebook post, AP, NPR) |
+| Then it surfaces… and spits you out | thrown out, landed in the water | Packard's account; Mayo pulled him into the boat |
+| 2021, off Cape Cod; 30 to 40 seconds in a humpback's mouth | 11 June 2021, off Herring Cove, Provincetown | AP / NPR / Boston Globe / Smithsonian coverage |
+| He survived (bruised, dislocated knee, no broken bones) | soft-tissue damage, no broken bones | NBC News, AP; early "broken leg" reports were corrected |
+| And went back to diving | back to lobster diving | NYT (he planned to return once healed); Cape Cod Times feature about three years later |
+| 2025, a whale engulfed a kayaker in Chile, on camera | 8 February 2025, Bahía El Águila, Strait of Magellan | Adrián Simancas, 24, engulfed with his yellow kayak for ~3 s, filmed by his father Dell (NPR, CNN, Reuters) |
+
+Simplifications stated plainly: the gulp is shown slowed (0.45×) and the time inside is shown 3× fast (labelled); "swallowed" is the
+everyday word the news used: a humpback's throat is far too narrow to swallow a person, the video shows it holding you in its mouth.
+The reconstructions are generic (the real whale and boats are not modelled from footage).

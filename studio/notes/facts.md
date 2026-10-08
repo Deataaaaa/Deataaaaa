@@ -68,7 +68,14 @@ real-time plunge is the "no brakes" hypothetical; the 1854 tower is a reconstruc
 | The tiny hole keeps the middle layer as a spare | breather (bleed) hole | equalises pressure so the outer pane carries the load in normal flight; also stops fogging |
 | Pilots dive to air you can breathe, ~4 minutes | to ~3,000 m (10,000 ft) | emergency descent procedure |
 | 1990: a pilot sucked halfway out of his window; held for 20 minutes; survived | British Airways 5390, 10 June 1990, ~5,300 m | cockpit windscreen fitted with wrong bolts; captain Tim Lancaster survived |
+| v2: the air rushes out at the speed of sound (≈ 1,100 km/h) | choked flow | cabin/outside pressure ratio 0.75/0.23 ≈ 3.3 > 1.89, so the flow through the hole is sonic at first (≈ 310 m/s ≈ 1,100 km/h at the throat) |
+| v2: that half ton now pushes you into the hole (≈ 500 kg) | Δp × area | the same ≈ 0.52 bar over ≈ 0.09 m², as soon as a body blocks the opening |
+| v2: masks drop, ~7.6 s after the break in the cut | cabin altitude passes ~4,300 m | timing chosen inside the few seconds a window-size hole takes |
+| v2: countdown 0:18 → 0:00 | TUC 15–30 s | shown 3× fast (labelled "shown fast") |
+| v2: the pilots dive toward air you can breathe, ~4 minutes | to ~3,000 m | emergency descent; shown fast (labelled) |
+| v2: 2018, Southwest 1380, 9,800 m | 17 April 2018, ~32,000 ft (9,750 m), climbing | fan blade fatigue failure; the inlet cowl hit the fuselage and broke the row 14 window (NTSB AAR-19/03, press coverage) |
+| v2: a passenger was pulled partly out of the window; she didn't survive | window seat, row 14, lap belt on | others pulled her back in; blunt impact trauma (coroner) |
 | Pinned comment: back flying less than 5 months later | frostbite, broken arm, wrist and thumb | accounts of the AAIB report (e.g. migflug.com, Wikipedia); first officer Alastair Atchison landed at Southampton |
 
-Simplifications stated plainly: the break is shown 6× slowed then 2×; the dive is shown sped up ("shown fast");
+Simplifications stated plainly: the break is shown 6× slowed then 2×; the countdown and the dive are shown sped up ("shown fast");
 the 1990 scene is a reconstruction (generic livery, mannequin-style figures); the sequence after the break is compressed for time.

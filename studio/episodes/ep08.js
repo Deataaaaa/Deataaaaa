@@ -508,7 +508,7 @@ export async function create() {
     else if (id === 'V') hud('Useful consciousness', timer(30 - ec), 'Without oxygen · shown fast', RED);
     else if (id === 'K') { hud('Useful consciousness', '0:00', '', RED); st.hud.a = 1 - smooth(T_K + 0.4, T_K + 1.2, t); }
     else if (id === 'DV') hud('Emergency dive', `${fmt(Math.round(lerp(11000, 3000, easeInOut(smooth(T_DV + 0.5, T_S1 - 0.3, t))) / 100) * 100)} m`, 'About 4 minutes, shown fast');
-    else if (id === 'S1') hud('Southwest 1380', '9,900 m', 'Engine failure');
+    else if (id === 'S1') hud('Southwest 1380', '9,800 m', 'Engine failure');
     else if (id === 'S2') hud('Window seat', 'ROW 14', 'Lap belt on');
     else if (id === 'O') hud('British Airways 5390', '5,300 m', 'Cockpit windscreen blew out');
     else if (id === 'P') hud('The captain', 'SURVIVED', 'Held by his crew for 20 minutes');

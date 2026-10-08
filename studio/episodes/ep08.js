@@ -8,24 +8,25 @@ import { createRenderer, Overlay, captionAt, rng, clamp, lerp, smooth, easeInOut
 import { Puffs, streakTex } from '../engine/assets.js';
 import { loadMannequin, cloneMannequin, offsetBone, twoBoneIK, cloneHuman, makeRetarget, TEX_PENDING } from '../engine/elevator.js';
 import { makeCabin, makeOutside, makeWing, makePassenger, makeMask, windowAssembly, cabinMaterials, WIN } from '../engine/cabin.js';
+import { makeJetNose, dressPilot, makeCrewHands } from '../engine/jetnose.js';
 
 // ---------- script: every caption passes the reading rule (render.mjs checks it) ----------
 const CAPTIONS = [
-  [3.8, 7.4, 'You’re cruising at 11,000 meters.'],
+  [3.8, 7.4, 'You’re cruising at 11,000 meters.', { y: 26 }],            // high: her face fills the middle of shot B
   [7.52, 12.79, 'Outside, it’s −56 °C. The air is too thin to breathe.'],
   [12.91, 18.01, 'Your window is holding back half a ton of pressure.'],
   [18.13, 21.18, 'Then it breaks.'],
   [21.3, 25.82, 'In a split second, the cabin fills with fog.'],
   [25.94, 28.99, 'The masks drop.'],
-  [29.11, 34.88, 'You have 15 to 30 seconds before you stop thinking clearly.'],
+  [29.11, 34.88, 'You have 15 to 30 seconds before you stop thinking clearly.', { y: 26 }],   // high: close-up on her face
   [35.0, 39.35, 'That’s why you put your own mask on first.'],
   [39.47, 43.82, 'But this almost never happens. Here’s why.'],
   [43.94, 47.71, 'Airplane windows have three layers.'],
   [47.83, 52.51, 'If the outer one breaks, the middle one holds.'],
   [52.63, 57.56, 'That tiny hole keeps the middle layer as a spare.'],
   [57.68, 63.53, 'And if pressure is lost, pilots dive to air you can breathe.'],
-  [63.65, 69.0, 'In 1990, a pilot was sucked halfway out of his window.'],
-  [69.12, 74.3, 'His crew held on to him for 20 minutes. He survived.'],
+  [63.65, 69.0, 'In 1990, a pilot was sucked halfway out of his window.', { shade: 1 }],
+  [69.12, 74.3, 'His crew held on to him for 20 minutes. He survived.', { shade: 1 }],
   [74.42, 79.1, 'So on your next flight… keep your seatbelt on.'],
 ];
 const TITLE = 'What if your plane’s <span class="k">window</span> broke at 11,000 m?';
@@ -215,38 +216,25 @@ export async function create() {
   const rimL = new THREE.DirectionalLight('#9cc3ff', 2.0); rimL.position.set(-1.5, 0.5, -1.2); lab.add(rimL);
   const air = new Puffs(60, { renderOrder: 9 }); lab.add(air.mesh);
 
-  // ================= 1990: the cockpit window that blew out (reconstruction) =================
+  // ================= 1990: the captain's windscreen blew out (reconstruction, engine/jetnose.js) =================
   const nose = new THREE.Scene();
   const out2 = makeOutside(); nose.add(out2.group);
   out2.cloudMat.uniforms.uGround.value.set(0.18, 0.28, 0.14); out2.cloudMat.uniforms.uCover.value = 0.5;
   out2.clouds.position.y = -4200;
-  const paint = new THREE.MeshStandardMaterial({ color: '#e9ecef', roughness: 0.38, metalness: 0.1, side: THREE.DoubleSide });
-  const bellyM = new THREE.MeshStandardMaterial({ color: '#59606b', roughness: 0.45, metalness: 0.2, side: THREE.DoubleSide });
-  const glassDark = new THREE.MeshStandardMaterial({ color: '#0e141c', roughness: 0.08, metalness: 0.4 });
-  const plane = new THREE.Group(); nose.add(plane);
-  let holeAt = null;
-  { const R0 = 1.6;
-    const fus = new THREE.Mesh(new THREE.CylinderGeometry(R0, R0, 16, 64, 1, true), paint); fus.rotation.x = Math.PI / 2; fus.position.z = 8; plane.add(fus);
-    const prof = []; for (let i = 0; i <= 24; i++) { const u = i / 24; prof.push(new THREE.Vector2(R0 * Math.sqrt(Math.max(0, 1 - Math.pow(u, 2.2))), -u * 3.6)); }
-    const cone = new THREE.Mesh(new THREE.LatheGeometry(prof, 64), paint); cone.rotation.x = Math.PI / 2; plane.add(cone);
-    const low = new THREE.Mesh(new THREE.CylinderGeometry(R0 + 0.002, R0 + 0.002, 16, 64, 1, true, Math.PI * 0.62, Math.PI * 0.76), bellyM); low.rotation.x = Math.PI / 2; low.position.z = 8; plane.add(low);
-    // nose surface: r(d) = R0*sqrt(1-(d/3.6)^2.2), d = distance forward of the joint (z = -d)
-    const rAt = (d) => R0 * Math.sqrt(Math.max(0, 1 - Math.pow(d / 3.6, 2.2)));
-    const onNose = (phi, d, lift = 0.004) => { const r = rAt(d), slope = (rAt(d - 0.01) - rAt(d + 0.01)) / 0.02;
-      const radial = new THREE.Vector3(Math.sin(phi), Math.cos(phi), 0); const n = radial.clone().add(new THREE.Vector3(0, 0, -slope)).normalize();
-      return { p: radial.multiplyScalar(r).add(new THREE.Vector3(0, 0, -d)).addScaledVector(n, lift), n }; };
-    const place = (mesh, phi, d, lift) => { const { p, n } = onNose(phi, d, lift); mesh.position.copy(p); mesh.lookAt(p.clone().add(n)); plane.add(mesh); return { p, n }; };
-    const pane = (w, h, mat = glassDark) => new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
-    place(pane(0.6, 0.42), 0.52, 1.25);
-    place(pane(0.5, 0.34), 1.08, 0.8); place(pane(0.5, 0.34), -1.08, 0.8);
-    holeAt = place(pane(0.6, 0.42, new THREE.MeshBasicMaterial({ color: '#030406' })), -0.52, 1.25, 0.006);
-    const fr = new THREE.MeshStandardMaterial({ color: '#30353d', roughness: 0.5 });
-    place(new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.46, 0.03), fr), 0, 1.25, 0.01);
-  }
-  const capt = cloneMannequin({ scene: SkeletonUtils.clone(gltf.scene), animations: gltf.animations }, { bodyColor: '#cfd5dd', jointColor: '#1d2433' });
-  capt.mixer.clipAction(capt.clips.idle).play(); plane.add(capt.root);
-  nose.add(new THREE.HemisphereLight('#cfe0f5', '#5b6a52', 1.0));
-  const nSun = new THREE.DirectionalLight('#fff3e0', 3.0); nSun.position.set(-6, 8, -4); nose.add(nSun);
+  const jet = makeJetNose(R.renderer); nose.add(jet.group);
+  nose.environment = jet.env; nose.environmentIntensity = 0.8;
+  const capt = cloneMannequin({ scene: SkeletonUtils.clone(gltf.scene), animations: gltf.animations });
+  const pilot = dressPilot(capt);
+  capt.mixer.clipAction(capt.clips.idle).play(); jet.group.add(capt.root);
+  // freeze one idle frame and restore it before every pose: offsets must never pile up from frame to frame
+  // (the mixer skips re-applying values that did not change, so setTime() alone is not a reset)
+  capt.mixer.setTime(1.0);
+  const captPose = Object.values(capt.bones).map((b) => [b, b.quaternion.clone(), b.position.clone()]);
+  const crew = makeCrewHands(); jet.group.add(crew.group);
+  nose.add(new THREE.HemisphereLight('#cfe0f5', '#5b6a52', 0.9));
+  const nSun = new THREE.DirectionalLight('#fff3e0', 3.2); nSun.position.set(-6, 8, -4); nSun.target.position.set(-0.3, 1.0, -2.2);
+  nSun.castShadow = true; nSun.shadow.mapSize.set(2048, 2048); Object.assign(nSun.shadow.camera, { left: -2.5, right: 2.5, top: 2.5, bottom: -2.5, near: 1, far: 30 });
+  nSun.shadow.bias = -0.0005; nSun.shadow.normalBias = 0.02; nose.add(nSun, nSun.target);
   const flow = new Puffs(160, { map: streakTex(), renderOrder: 9 }); nose.add(flow.mesh);
 
   const endScene = new THREE.Scene(); endScene.background = new THREE.Color('#0d0e11');
@@ -297,7 +285,7 @@ export async function create() {
     const shot = shotAt(t);
     const k = clamp((t - shot.t0) / (shot.t1 - shot.t0)), dk = easeInOut(k);
     const st = { tag: 'WHAT IF &nbsp;·&nbsp; 02', tagA: 1, labels: [] };
-    let sat = 1.0, tint = [1.0, 1.0, 1.0], vignette = 0.45, aberr = 0.0015, fadeW = 0, fadeB = 0, shake = 0, tunnel = 0, scan = 0, exposure = 0.9;
+    let sat = 1.0, tint = [1.0, 1.0, 1.0], vignette = 0.45, aberr = 0.0015, fadeW = 0, fadeB = 0, shake = 0, tunnel = 0, scan = 0, exposure = 0.9, contrast = 1.04;
     let renderScene = scene, useOut = false;
 
     // ---------------- cabin state (shared by every cabin shot) ----------------
@@ -442,27 +430,40 @@ export async function create() {
       vignette = 0.75; exposure = 1.0;
     } else if (shot.kind === 'nose') {
       renderScene = nose;
-      // hips just inside the missing pane, torso folded back over the roof, face up, arms dragged aft
-      capt.mixer.setTime(1.0);
-      const n = holeAt.n, circ = new THREE.Vector3(Math.cos(-0.52), -Math.sin(-0.52), 0);
-      const aft = new THREE.Vector3(0, 0, 1).addScaledVector(n, -n.z).normalize();
-      const Yb = aft.clone().multiplyScalar(1.0).addScaledVector(circ, 0.3).addScaledVector(n, 0.22 + Math.sin(t * 2.9) * 0.02).normalize();
-      const Zb = n.clone().addScaledVector(Yb, -n.dot(Yb)).normalize(), Xb = new THREE.Vector3().crossVectors(Yb, Zb);
+      pilot.setTime(t);
+      // captain: hips inside, just under the top of the empty frame; back arched over the roof, face to the sky,
+      // legs held inside the cockpit, arms dragged aft by the wind
+      captPose.forEach(([b, q, p]) => { b.quaternion.copy(q); b.position.copy(p); });
+      const { p: U, n, ts } = jet.holeTop;
+      // pelvis: up axis out through the hole, front toward the nose; the spine then arches back over the frame
+      const Yb = n.clone().addScaledVector(ts, 0.25).normalize();
+      const Zb = ts.clone().negate().addScaledVector(Yb, ts.dot(Yb)).normalize(), Xb = new THREE.Vector3().crossVectors(Yb, Zb);
       capt.root.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(Xb, Yb, Zb));
-      capt.root.position.copy(holeAt.p).addScaledVector(n, -0.12).addScaledVector(Yb, -1.0);
+      const wob = Math.sin(t * 2.3) * 0.04;
+      offsetBone(capt, 'Spine', -0.2 + wob, 0, 0); offsetBone(capt, 'Spine1', -0.5, 0, 0); offsetBone(capt, 'Spine2', -0.5 - wob, 0, 0);
+      offsetBone(capt, 'Neck', -0.1, 0, 0); offsetBone(capt, 'Head', -0.15 + Math.sin(t * 5.1) * 0.05, -0.6, 0.1);   // face turned away from the camera
+      offsetBone(capt, 'LeftUpLeg', -1.0, 0, 0.1); offsetBone(capt, 'RightUpLeg', -1.0, 0, -0.1); offsetBone(capt, 'LeftLeg', 1.2, 0, 0); offsetBone(capt, 'RightLeg', 1.2, 0, 0);
+      offsetBone(capt, 'LeftArm', 0.2 + Math.sin(t * 13.7) * 0.06, 0, 2.4 + Math.sin(t * 7.3) * 0.16 + Math.sin(t * 19.1) * 0.05); offsetBone(capt, 'RightArm', -0.3 + Math.sin(t * 11.3) * 0.06, 0, -1.9 + Math.sin(t * 6.1 + 1) * 0.2 + Math.sin(t * 17.3) * 0.05);
+      offsetBone(capt, 'LeftForeArm', 0, -0.35 + Math.sin(t * 9.1) * 0.12, 0); offsetBone(capt, 'RightForeArm', 0, 0.45 + Math.sin(t * 8.3) * 0.12, 0);
+      capt.root.position.set(0, 0, 0); capt.root.updateMatrixWorld(true);
+      const hipsW = capt.bones.Hips.getWorldPosition(new THREE.Vector3());
+      const hipsT = U.clone().addScaledVector(n, -0.11).addScaledVector(ts, -0.22);
+      capt.root.position.add(hipsT.sub(hipsW));
       capt.root.updateMatrixWorld(true);
-      offsetBone(capt, 'Spine', -0.12, 0, 0); offsetBone(capt, 'Head', -0.45, 0, 0);
-      offsetBone(capt, 'LeftUpLeg', 1.35, 0, 0); offsetBone(capt, 'RightUpLeg', 1.35, 0, 0); offsetBone(capt, 'LeftLeg', 0.6, 0, 0); offsetBone(capt, 'RightLeg', 0.6, 0, 0);
-      offsetBone(capt, 'LeftArm', 0, 0, 2.65 + Math.sin(t * 7.3) * 0.1); offsetBone(capt, 'RightArm', 0, 0, -2.65 + Math.sin(t * 6.1) * 0.1);
-      offsetBone(capt, 'LeftForeArm', 0, -0.25 + Math.sin(t * 9.1) * 0.08, 0); offsetBone(capt, 'RightForeArm', 0, 0.25, 0);
-      capt.root.updateMatrixWorld(true);
-      if (shot.id === 'O') look(P(lerp(-10.8, -9.8, dk), lerp(1.7, 1.75, dk), lerp(-6.0, -5.4, dk)), P(-0.2, 1.25, -0.4), 30);
-      else look(P(lerp(-3.8, -3.5, dk), lerp(2.7, 2.6, dk), lerp(-1.6, -1.4, dk)), P(-0.4, 1.8, -0.2), 34);
+      // two crew hands on his belt, reaching from behind him inside the cockpit
+      const hp = capt.bones.Hips.getWorldPosition(new THREE.Vector3());
+      crew.arms.forEach((a, i) => {
+        const sd = i ? 1 : -1, grip = hp.clone().addScaledVector(Xb, sd * 0.15).addScaledVector(Yb, 0.08).addScaledVector(Zb, -0.06);
+        const up = n.clone().multiplyScalar(0.8).addScaledVector(ts, -0.5).addScaledVector(Xb, sd * 0.2).normalize();
+        a.position.copy(grip); a.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), up);
+      });
+      if (shot.id === 'O') look(P(lerp(-5.5, -5.1, dk), lerp(0.25, 0.35, dk), lerp(-7.2, -6.8, dk)), P(-0.05, 1.35, -2.6), 30);
+      else look(P(lerp(-2.95, -2.65, dk), lerp(0.85, 0.92, dk), lerp(-4.9, -4.6, dk)), P(-0.2, 1.12, -2.45), 34);
       const r = rng(13);
-      for (let i = 0; i < flow.n; i++) { const life = (t * 1.4 + r()) % 1; const a = r() * 3.4 - 0.2, rr = 1.72 + r() * 0.6; const p = P(Math.cos(a) * rr, Math.sin(a) * rr, -3.5 + life * 12); const p0 = project(p, cam), p1 = project(p.clone().add(P(0, 0, 0.6)), cam); flow.set(i, p.x, p.y, p.z, 0.016, 0.35 * Math.sin(Math.PI * life), 1, 1, 1, Math.atan2(-(p1.y - p0.y), p1.x - p0.x), 16); }
+      for (let i = 0; i < flow.n; i++) { const life = (t * 1.4 + r()) % 1; const a = r() * 3.4 - 0.2, rr = 1.72 + r() * 0.6; const p = P(Math.cos(a) * rr, Math.sin(a) * rr, -3.5 + life * 12); const p0 = project(p, cam), p1 = project(p.clone().add(P(0, 0, 0.6)), cam); flow.set(i, p.x, p.y, p.z, 0.016, 0.3 * Math.sin(Math.PI * life), 1, 1, 1, Math.atan2(-(p1.y - p0.y), p1.x - p0.x), 16); }
       flow.commit();
       out2.cloudMat.uniforms.uOff.value.set(0, -t * 0.06); out2.cloudMat.uniforms.uCam.value.copy(cam.position);
-      shake = 0.003; scan = 1.0; sat = 0.72; tint = [1.08, 1.0, 0.9]; aberr = 0.006; vignette = 0.8; exposure = 0.95;
+      shake = 0.003; scan = 1.0; sat = 0.9; tint = [1.02, 1.0, 0.97]; aberr = 0.004; vignette = 0.7; exposure = 0.78; contrast = 1.14;
       st.labels.push({ x: W * 0.5, y: H * 0.115, a: 1, html: 'RECONSTRUCTION &nbsp;·&nbsp; 10 JUNE 1990' });
     } else { renderScene = endScene; }
 
@@ -505,7 +506,7 @@ export async function create() {
     R.bloom.strength = 0.25; R.bloom.radius = 0.5; R.bloom.threshold = 0.95;
     const U = R.grade.uniforms;
     U.uTime.value = t; U.uSat.value = sat; U.uTint.value.set(...tint); U.uVignette.value = vignette; U.uAberr.value = aberr; U.uFade.value = fadeB; U.uFadeWhite.value = fadeW;
-    U.uTunnel.value = tunnel; U.uScan.value = scan;
+    U.uTunnel.value = tunnel; U.uScan.value = scan; U.uContrast.value = contrast;
     const sr = rng(Math.floor(t * 30) + 3); U.uShake.value.set((sr() - 0.5) * shake, (sr() - 0.5) * shake);
     R.renderPass.scene = renderScene; R.renderPass.camera = cam;
     R.composer.render(); ov.apply(st);

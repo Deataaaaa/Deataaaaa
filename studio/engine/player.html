@@ -21,6 +21,9 @@
   #hud .sub2 { color: var(--accent); }
   #cap { position: absolute; left: 0; right: 0; top: 63%; margin: 0 auto; width: 800px; text-align: center; font-style: italic; font-size: 60px; line-height: 1.1;
          text-shadow: 0 2px 22px rgba(0,0,0,.7), 0 0 3px rgba(0,0,0,.5); }
+  #cap.shade { z-index: 1; }
+  #cap.shade::before { content: ''; position: absolute; left: -90px; right: -90px; top: -52px; bottom: -52px; z-index: -1;
+         background: radial-gradient(closest-side, rgba(5,7,10,.5), rgba(5,7,10,.28) 52%, rgba(5,7,10,0)); }
   #labels { position: absolute; inset: 0; }
   .lbl { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font: 500 22px 'JetBrains Mono', monospace; letter-spacing: .16em;
          text-shadow: 0 1px 10px rgba(0,0,0,.85); }

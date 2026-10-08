@@ -153,6 +153,8 @@ export class Overlay {
       this.set('cap', e.cap, 'transform', `translateY(${(1 - c.k) * 16}px)`);
       this.set('cap', e.cap, 'filter', `blur(${((1 - c.k) * 3).toFixed(2)}px)`);
       this.set('cap', e.cap, 'top', (c.opts.y ?? 63) + '%');
+      const cls = c.opts.shade ? 'shade' : '';   // shade: soft dark backdrop for captions over bright scenery
+      if (this.cache.get('capcls') !== cls) { this.cache.set('capcls', cls); e.cap.className = cls; }
     }
     // projected labels
     const labs = s.labels || [];

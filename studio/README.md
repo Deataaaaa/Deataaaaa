@@ -36,6 +36,8 @@ npm install                                   # three.js (playwright is preinsta
 # characters are not committed (Mixamo licence): fetch them from the three.js examples
 curl -o engine/models/Xbot.glb     https://cdn.jsdelivr.net/gh/mrdoob/three.js@r170/examples/models/gltf/Xbot.glb
 curl -o engine/models/Michelle.glb https://cdn.jsdelivr.net/gh/mrdoob/three.js@r170/examples/models/gltf/Michelle.glb
+# realistic people for "you" (Microsoft Rocketbox library, MIT licence; ~15-20 MB each after conversion)
+tools/fetch_rocketbox.sh Female_Adult_12 Male_Adult_10 Male_Adult_17 Female_Adult_04
 node render.mjs --ep ep03 --stills 1.5,12,30 --out /tmp/prev   # a few preview frames
 node render.mjs --ep ep03 --out /tmp/frames --from 0 --to 774  # frames (split ranges across workers)
 python3 audio/ep03.py out/ep03.wav                              # soundtrack (numpy + scipy)

@@ -49,10 +49,16 @@ often while at work, so every deliverable has to be ready to post straight from 
     pin a comment that asks a simple either/or question. The elevator post got 0 comments.
 16. **A new main character every video.** "You" must look different in each video (face, skin tone, hair,
     build, outfit). Keep the cast log below up to date and never reuse a look.
-17. **Cinematic, like the reference.** The owner's benchmark is a viral "What if electrons disappeared for
-    x seconds?" reel (10M views on TikTok; theirs reach ~1,500). File: Drive › Reel ref › "Famous reel.mp4"
-    (the Drive connector only downloads files under 10 MB: ask the owner to set "Anyone with the link" or
-    upload a smaller copy). Match its camera work, lighting, pacing and sound; animations must be flawless.
+17. **Cinematic, like the reference.** The owner's benchmark is a viral "What if neutrons disappeared for 5 seconds?"
+    reel (10M views on TikTok; theirs reach ~1,500). Breakdown: `studio/notes/reference.md` (file: Drive › Reel ref ›
+    "Famous reel.mp4"; the Drive connector only downloads files under 10 MB: ask for "Anyone with the link").
+    Every video now has: a **countdown spine** (a millisecond timer from frame 1 to the event, then a second timer,
+    slowed down if needed, to the end); **escalation of scale** every ~10 s; **4–6 long eased takes** instead of many
+    shots, hard cuts only on sound hits; golden-hour/dusk light, bloom, particles, light grain; quiet premium type
+    (serif title, small serif-italic one-line captions at ~2/3 height, tiny letter-spaced HUD on the left, all clear of
+    the Instagram UI); concrete numbers in the HUD; a score with a mid-range drone, ticks that speed up toward zero,
+    riser + downer into every cut, a hit on the cut; a **loop end card** repeating the opening title + the question.
+    Animations must be flawless: mocap-driven bodies, blinking/breathing always on, no frozen poses, no pops.
 
 ## Delivery checklist
 - `studio/encode.sh <frames> <wav> videos/postN_<slug>`: HQ + `_phone.mp4` (< 30 MB, the chat's send limit).
@@ -70,9 +76,11 @@ often while at work, so every deliverable has to be ready to post straight from 
 | 1 | `studio/episodes/ep07.js` | Elevator cable snaps (16th floor) | posted (53.8 s). 12 h: 1.2K views, skip 66%, avg watch 18 s, likes 5.6%, shares 1.8%, 0 comments |
 | 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | delivered v2 (77.2 s, worst case, hook on frame 1, tag 02; v1 83.4 s replaced after clipping feedback) |
 | 3 | `studio/episodes/ep09.js` | A humpback engulfs you (POV, Cape Cod, real cases 2021 and 2025) | delivered (75.2 s, POV, tag 03; render 3 lanes ≈ 2 h 50) |
-| 4 | – | waiting for the owner's pick: car into a lake / lightning strikes you / falling through ice | pitched (worst-case versions) |
+| 4 | – | re-pitched in the countdown format: lightning strikes you (recommended) / car into a lake / falling through ice; character pick from `studio/notes/casting_post4.jpg` (Rocketbox 1–4) | waiting for the owner's OK |
 Cast log (rule 16): post 1 elevator = Michelle (dark skin, curly black hair, red headphones); post 2 plane =
-Michelle (same); post 3 whale = POV diver, black wetsuit and gloves (body never seen). Next video: a new person.
+Michelle (same); post 3 whale = POV diver, black wetsuit and gloves (body never seen). Next video: a new person from
+the Rocketbox pool (46 realistic rigged people, MIT; post 4 candidates: Female_Adult_12, Male_Adult_10, Male_Adult_17,
+Female_Adult_04). Log the avatar name here once used.
 Other ideas: 50 km/h crash without a seatbelt; lightning hits your plane; stuck upside down on a roller coaster;
 phone battery catching fire in your pocket. Old built-but-unpublished episodes: `ep02`–`ep06` (topics too common).
 
@@ -109,3 +117,9 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
 - Zero clipping is measured, not eyeballed: `studio/tools/clipcheck.sh <ep> '[times]'` renders those frames and
   prints camera/gloves/diver/kayak distances to every whale triangle and heights above the seabed (0 = clip).
 - A torch on surfaces that get close blows out to white: dim it by shot and shade the captions over it.
+- New people come from the Microsoft Rocketbox library (MIT): `tools/fetch_rocketbox.sh <Name>` (shallow blob-less
+  clone, TGA → JPG/PNG, `avatar.json`), `engine/rocketbox.js` `loadAvatar()` (bones renamed to Mixamo names, metres,
+  feet on y = 0, facing +z), `episodes/cast.js` (casting view, `?who=&shot=face|full|three&turn=`). The FBX normals are
+  faceted: `creaseNormals` rebuilds them. Hair/lashes use the `_opacity` texture: alpha test 0.5 + a blended pass, and
+  no sheen/strong env on hair (it paints a grey veil across the fringe). The plain FBX already has facial bones (eyes,
+  blink, jaw, brows) for blinks and a gasp. Their bind pose is an A-pose: put them in the Xbot T-pose before retargeting.

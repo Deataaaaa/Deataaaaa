@@ -65,3 +65,12 @@ lightning hits your plane. Old built-but-unpublished episodes: `ep02`–`ep06` (
 - Mixamo rigs differ in bone axes: drive the human (`Michelle.glb`) through `makeRetarget` from the Xbot
   driver rig; tuned pose offsets live on the driver. Models are not committed (licence): README has the URLs.
 - Motion blur = sub-frames averaged into a 2D canvas over the WebGL canvas (see the plunge in `ep07.js`).
+- `AnimationMixer.setTime(sameTime)` does NOT reset bones (the mixer skips values that did not change), so
+  `offsetBone` on a still pose piles up frame after frame. Freeze one frame and restore it before posing
+  (`captPose` in `ep08.js`). This caused the "broken mannequin" in the first 1990 reconstruction.
+- Every frame must be a pure function of t: nothing may read state left by the previous frame (e.g. wind
+  streaks projected with the camera before this frame's camera is set). After any code change during a
+  render, render a still of an already rendered frame and diff it (must be identical), and re-render the
+  first frame of every worker if a shot reads last-frame state.
+- Mannequin people (`engine/jetnose.js` `dressPilot`): colour per bone, hair per pixel from the bind pose,
+  keep faces turned away or small; captions over white scenery get `{ shade: 1 }`.

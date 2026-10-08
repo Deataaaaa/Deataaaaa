@@ -294,7 +294,9 @@ export async function create() {
     let renderScene = scene, useOut = false;
 
     // ---------------- cabin state (shared by every cabin shot) ----------------
-    const te = id === 'Q' ? 10.0 : t;                   // Q: back to the calm cruise, so the video loops
+    // A: the hook, a flash-forward of the worst moment in slow motion (the story then starts calm in B)
+    // Q: back to the calm cruise for the last line
+    const te = id === 'Q' ? 10.0 : id === 'A' ? 21.42 + 0.33 * t : t;
     const ec = ecOf(te), broken = te >= T_BRK;
     const crackF = smooth(T_CRACK, T_BRK, te);
     if (shot.kind === 'in') setCrack(broken ? 1 : crackF);
@@ -355,7 +357,7 @@ export async function create() {
     const hand = (a) => P(Math.sin(t * 1.3 + a) * 0.004, Math.sin(t * 1.7 + a) * 0.003, 0);
     if (shot.kind === 'in') {
       useOut = true; renderScene = scene;
-      if (id === 'A') look(P(0.12, 1.52, lerp(1.85, 1.5, dk)).add(hand(0)), P(-1.1, 1.05, -1.6), 52);
+      if (id === 'A') { look(P(lerp(-0.56, -0.62, dk), 1.34, lerp(0.16, 0.1, dk)).add(hand(4)), P(-1.7, 1.0, 0.02), 46); shake = 0.006; }
       else if (id === 'B' || id === 'Q') look(P(lerp(-1.02, -1.08, dk), 1.42, lerp(-0.6, -0.66, dk)).add(hand(1)), P(-1.5, 1.08, seatA.z + 0.02), 52);
       else if (id === 'C') look(P(winC.x + 0.42, winC.y + 0.06, winC.z - 0.12).add(hand(2)), P(winC.x - 3, winC.y - 1.15, winC.z + 1.3), 62);
       else if (id === 'D') look(P(winC.x + lerp(0.4, 0.34, dk), winC.y + 0.03, winC.z + 0.3).add(hand(3)), P(winC.x, winC.y, winC.z), 40);
@@ -470,7 +472,7 @@ export async function create() {
         const x = -1.7 + r() * 3.4, y = 0.2 + r() * 2.0, z = seatA.z - 3 + r() * 6, ph = r();
         const pull = broken ? clamp((ec * 0.35 + ph) % 1) : 0;
         const pp = P(x, y, z).lerp(winC, pull * 0.6);
-        fogPuffs.set(i, pp.x, pp.y + Math.sin(t * 0.7 + i) * 0.05, pp.z, 0.5 + r() * 0.9, fog * (0.1 + 0.16 * r()) * (1 - pull * 0.5) * (id === 'R1' || id === 'R2' ? 0.5 : 1), 0.9, 0.93, 0.97, r() * 6);
+        fogPuffs.set(i, pp.x, pp.y + Math.sin(t * 0.7 + i) * 0.05, pp.z, 0.5 + r() * 0.9, fog * (0.1 + 0.16 * r()) * (1 - pull * 0.5) * (id === 'A' || id === 'R1' || id === 'R2' ? 0.5 : 1), 0.9, 0.93, 0.97, r() * 6);
       }
       fogPuffs.commit();
       for (let i = 0; i < wind.n; i++) {
@@ -512,7 +514,7 @@ export async function create() {
     else if (id === 'S2') hud('Window seat', 'ROW 14', 'Lap belt on');
     else if (id === 'O') hud('British Airways 5390', '5,300 m', 'Cockpit windscreen blew out');
     else if (id === 'P') hud('The captain', 'SURVIVED', 'Held by his crew for 20 minutes');
-    if (t < 3.6) st.title = { html: TITLE, a: Math.min(smooth(0, 0.35, t), 1 - smooth(3.2, 3.55, t)), k: smooth(0, 0.6, t) };
+    if (t < 3.6) st.title = { html: TITLE, a: 1 - smooth(3.2, 3.55, t), k: 1 };     // on screen from the very first frame
     const c = captionAt(CAPTIONS, t); if (c) st.caption = c;
     if (opts.cover) { st.title = { html: TITLE, a: 1, k: 1 }; st.caption = null; st.hud = null; st.labels = []; }
 

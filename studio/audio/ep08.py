@@ -65,7 +65,8 @@ def glass_tink(rng, f=None):
 # 1) in-flight music (lo-fi Rhodes in D, 90 BPM, 8-bar loop = 21.33 s) + engine drone
 # =====================================================================================
 BPM = 90; beat = 60 / BPM; CYC = 32 * beat
-ORIGIN = 0.15
+T_HOOK = 3.7            # 0 -> 3.7: the hook (flash-forward of the yank), then the calm story starts
+ORIGIN = T_HOOK + 0.05
 chords = [[62, 66, 69, 73], [59, 62, 66, 69], [55, 59, 62, 66], [57, 61, 64, 66]]   # Dmaj7 Bm7 Gmaj7 A6
 roots = [38, 35, 31, 33]
 n_ = int(3 * CYC * SR) + SR
@@ -94,21 +95,34 @@ MUS = (mL[int(CYC * SR):int(2 * CYC * SR)], mR[int(CYC * SR):int(2 * CYC * SR)])
 def mus_pos(t): return np.mod(t - ORIGIN, CYC)
 def mus_pos_end(t): return np.mod(t - DUR - ORIGIN, CYC)
 
-t_in = np.arange(int(T_BRK * SR)) / SR
+t_in = np.arange(int(T_HOOK * SR), int(T_BRK * SR)) / SR
 a = play_at(MUS, mus_pos(t_in))
 duck = np.interp(t_in, [0, 12.8, 16.3, T_BRK], [1, 1, 0.55, 0.4])
-m.add(0.0, (fade(a[0] * duck, 0.02, 0.01), fade(a[1] * duck, 0.02, 0.01)), gain=0.42, rev=0.15)
+m.add(T_HOOK, (fade(a[0] * duck, 0.01, 0.01), fade(a[1] * duck, 0.01, 0.01)), gain=0.42, rev=0.15)
 
 # the airliner itself: broadband engine/airflow drone + a low hum; present in every cabin shot
 tl = tt(DUR)
 drn = lp(noise(DUR, rng, 'pink'), 900); drn2 = lp(noise(DUR, np.random.default_rng(81), 'pink'), 900)
 hum = sum(a_ * np.sin(2 * np.pi * 115 * k * tl) for k, a_ in [(1, 1), (2, 0.5), (3, 0.3)])
-cabin_lvl = np.interp(tl, [0, T_BRK - 0.01, T_BRK, T_V, T_K, T_K + 0.6, T_DV, T_DV + 0.8, T_S1 - 0.05, T_S1, T_Q, T_Q + 0.6, DUR],
-                          [1, 1, 0.6, 0.45, 0.25, 0.0, 0.0, 0.7, 0.7, 0.0, 0.0, 1, 1])
+cabin_lvl = np.interp(tl, [0, T_HOOK - 0.01, T_HOOK, T_BRK - 0.01, T_BRK, T_V, T_K, T_K + 0.6, T_DV, T_DV + 0.8, T_S1 - 0.05, T_S1, T_Q, T_Q + 0.6, DUR],
+                          [0.5, 0.5, 1, 1, 0.6, 0.45, 0.25, 0.0, 0.0, 0.7, 0.7, 0.0, 0.0, 1, 1])
 dive = np.interp(tl, [T_DV, T_DV + 0.8, T_S1], [1, 0.6, 0.6])           # engines back to idle for the dive
 m.add(0.0, ((drn / np.abs(drn).max() * 0.8 + hum / np.abs(hum).max() * 0.2) * cabin_lvl * dive, (drn2 / np.abs(drn2).max() * 0.8 + hum / np.abs(hum).max() * 0.2) * cabin_lvl * dive), gain=0.14, rev=0.05)
 # seatbelt chime at the start, outside cold whistle, pressure creaks, the crack ticking
-for tc, f0 in [(0.3, midi(84)), (0.62, midi(79))]: m.add(tc, bell(f0, rng, 1.8), gain=0.1, rev=0.5)
+for tc, f0 in [(T_HOOK + 0.15, midi(84)), (T_HOOK + 0.47, midi(79))]: m.add(tc, bell(f0, rng, 1.8), gain=0.1, rev=0.5)
+# the hook (0 -> 3.7): the decompression in deep slow motion, she slams into the wall, a rewind swoosh into the calm
+hr = np.random.default_rng(97); th = np.arange(int(T_HOOK * SR)) / SR
+m.add(0.0, boom(hr, 3.5, 48, 20, 2.0, 0.8, 1.0), gain=0.9, rev=0.4)
+hw1 = noise(T_HOOK, hr, 'pink'); hw2 = noise(T_HOOK, np.random.default_rng(98), 'pink')
+henv = np.interp(th, [0, 0.03, T_HOOK - 0.35, T_HOOK - 0.08], [0, 1, 0.8, 0])
+m.add(0.0, (sweep_filter(hw1, 420 + 900 * henv, 'lowpass') * henv, sweep_filter(hw2, 440 + 900 * henv, 'lowpass') * henv), gain=0.85, rev=0.2)
+hh = bp(noise(T_HOOK, hr, 'white'), 1500, 5000) * henv
+m.add(0.0, hh / np.abs(hh).max(), gain=0.06, pan=-0.3, rev=0.15)
+m.add(1.1, thud(hr, 55, 0.9), gain=0.8, rev=0.3); m.add(1.13, thud(hr, 110, 0.4), gain=0.4, pan=-0.4, rev=0.3)
+for k in range(22): m.add(hr.uniform(0, 2.4), glass_tink(hr, hr.uniform(900, 2400)), gain=hr.uniform(0.04, 0.1), pan=hr.uniform(-0.8, 0.3), rev=0.5)
+hf = bp(hr.standard_normal(len(th)), 300, 1500) * (0.5 + 0.5 * np.sign(np.sin(2 * np.pi * 7 * th))) * henv
+m.add(0.0, hf / np.abs(hf).max(), gain=0.08, pan=-0.3, rev=0.2)
+rew = riser(hr, 0.45, 5000, 300, 1.3); m.add(T_HOOK - 0.47, fade(rew, 0.05, 0.02), gain=0.25, rev=0.1)
 whis = bp(noise(5.0, rng, 'white'), 2200, 5200) * adsr(int(5.0 * SR), 1.2, 0.5, 0.7, 1.6)
 m.add(7.6, whis / np.abs(whis).max(), gain=0.05, pan=-0.4, rev=0.3)
 tens = pad([146.8, 155.6, 220.0, 293.7], 5.4, rng, cutoff=2400, attack=2.2, release=0.1, voices=3, harmonics=14)
@@ -228,7 +242,7 @@ m.add(T_P + 0.12, bell(midi(81), rng, 2.5), gain=0.08, rev=0.7)          # "He s
 # =====================================================================================
 t_end = np.arange(int(T_Q * SR), int(DUR * SR)) / SR
 e = play_at(MUS, mus_pos_end(t_end))
-fe = np.interp(t_end, [T_Q, T_Q + 0.8, DUR], [0, 1, 1])
+fe = np.interp(t_end, [T_Q, T_Q + 0.8, DUR - 0.06, DUR], [0, 1, 1, 0])
 m.add(T_Q, (e[0] * fe, e[1] * fe), gain=0.42, rev=0.15)
 
 out = sys.argv[1] if len(sys.argv) > 1 else 'ep08.wav'

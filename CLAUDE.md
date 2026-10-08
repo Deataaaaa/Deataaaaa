@@ -41,6 +41,12 @@ often while at work, so every deliverable has to be ready to post straight from 
     tubes, phones, belts, hair, hands on armrests) must be routed around the body (curved tubes with a control
     point in front of the face, masks dangling in front of faces, hands placed clear of belts). Check every
     close-up at full resolution for intersections before rendering, at several times across each shot.
+14. **Hook on frame 1.** Never open calm. The first frame is already the most shocking moment in motion
+    (flash-forward, slow motion) with the title fully visible from frame 1 and a hit of sound; then hard-cut to
+    the calm start of the story. Data: the elevator post (calm opening) lost 66% of viewers in the first 3 s
+    (Instagram ranks skip rate first for reach), while those who stayed watched to the end.
+15. **Ask for comments.** End on a direct question in the video itself (e.g. "Still want the window seat?") and
+    pin a comment that asks a simple either/or question. The elevator post got 0 comments.
 
 ## Delivery checklist
 - `studio/encode.sh <frames> <wav> videos/postN_<slug>`: HQ + `_phone.mp4` (< 30 MB, the chat's send limit).
@@ -55,7 +61,7 @@ often while at work, so every deliverable has to be ready to post straight from 
 | Post | File | Topic | Status |
 |---|---|---|---|
 | – | `studio/episodes/ep01.js` | Earth stops spinning for 1 s (Paris) | made, not part of the posted series |
-| 1 | `studio/episodes/ep07.js` | Elevator cable snaps (16th floor) | posted (53.8 s, made before rules 1–2) |
+| 1 | `studio/episodes/ep07.js` | Elevator cable snaps (16th floor) | posted (53.8 s). 12 h: 1.2K views, skip 66%, avg watch 18 s, likes 5.6%, shares 1.8%, 0 comments |
 | 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | delivered (83.4 s, rules 1–2 enforced, tag 02) |
 | 3 | – | waiting for the owner's pick: car into a lake / lightning strikes you / falling through ice | pitched |
 Other ideas: 50 km/h crash without a seatbelt; lightning hits your plane; stuck upside down on a roller coaster;

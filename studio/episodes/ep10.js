@@ -818,14 +818,16 @@ export async function create() {
     const labels = [];
     if (t > T.NORMAL && t < T.REC && !coverMode) {
       const sp = project(SP.sunGrp.position, cam), la = smooth(47.2, 47.6, t) * (1 - smooth(51.6, 52.0, t));
-      if (!sp.behind && la > 0) labels.push({ x: sp.x, y: sp.y + 70, a: la, html: 'THE SUN &nbsp;·&nbsp; <b>STILL SHINING</b>' });
+      // labels stay clear of the HUD block (left, 700-930 px) and the caption line
+      const clearHud = (x, y, hw) => (y > 650 && y < 980 && x - hw < 600 ? [Math.min(W - hw - 30, 600 + hw), y] : [clamp(x, hw + 30, W - hw - 30), y]);
+      if (!sp.behind && la > 0) { const [lx, ly] = clearHud(sp.x, sp.y + 70, 200); labels.push({ x: lx, y: ly, a: la, html: 'THE SUN &nbsp;·&nbsp; <b>STILL SHINING</b>' }); }
       const fk = clamp((t - T.NORMAL) / (T.SUNBACK - T.NORMAL)), D = cam.position.distanceTo(SP.sunGrp.position), th = Math.asin(Math.min(0.999, fk * SP.sunGrp.position.length() / D));
       const ds = SP.sunGrp.position.clone().sub(cam.position).normalize(), de = new THREE.Vector3().sub(cam.position).normalize();
       const ang = ds.angleTo(de), dir = ds.clone().multiplyScalar(Math.sin(ang - th) / Math.sin(ang)).addScaledVector(de, Math.sin(th) / Math.sin(ang)).normalize();
       const rp = project(cam.position.clone().addScaledVector(dir, 50), cam), lb = smooth(47.8, 48.2, t) * (1 - smooth(51.8, 52.2, t));
       if (!rp.behind && !sp.behind && lb > 0 && th < ang) {   // on the ring's left side, away from the glowing planet
-        const rho = Math.hypot(rp.x - sp.x, rp.y - sp.y), lx = sp.x - rho * 0.94, ly = sp.y + rho * 0.34;
-        labels.push({ x: clamp(lx, 250, W - 250), y: clamp(ly, 380, H - 420), a: lb, html: 'SUNLIGHT &nbsp;·&nbsp; <b>ON ITS WAY</b>' });
+        const rho = Math.hypot(rp.x - sp.x, rp.y - sp.y), [lx, ly] = clearHud(sp.x - rho * 0.94, clamp(sp.y + rho * 0.34, 380, 600), 185);
+        labels.push({ x: lx, y: ly, a: lb, html: 'SUNLIGHT &nbsp;·&nbsp; <b>ON ITS WAY</b>' });
       }
     }
     ov.apply({ labels,

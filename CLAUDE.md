@@ -105,6 +105,10 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
 - Never `pkill -f`/`pgrep -f` with a pattern that also appears in your own shell command (it kills or
   matches itself). Wait on PIDs (`kill -0 PID`), or watch the frame count instead.
 - After a container restart, check render workers are really progressing (one hung silently at 0% CPU).
+- `cd dir && nohup node render.mjs ... & echo $!` prints the PID of the backgrounded subshell, not of node: killing it
+  leaves the worker running (post 4 v2: two "stopped" lanes kept rendering the same frames as their replacements for
+  1.5 h, and everything ran 2-3x slower). Launch `nohup node ... &` as its own command, then check `ps` for the exact
+  `--from/--to` arguments before and after any kill.
 - Mixamo rigs differ in bone axes: drive the human (`Michelle.glb`) through `makeRetarget` from the Xbot
   driver rig; tuned pose offsets live on the driver. Models are not committed (licence): README has the URLs.
 - Motion blur = sub-frames averaged into a 2D canvas over the WebGL canvas (see the plunge in `ep07.js`).

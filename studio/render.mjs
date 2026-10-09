@@ -12,13 +12,14 @@ const out = args.out || path.join(root, 'out', ep);
 fs.mkdirSync(out, { recursive: true });
 
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.jpg': 'image/jpeg', '.png': 'image/png', '.woff2': 'font/woff2', '.css': 'text/css' };
-const port = 8200 + Math.floor(Math.random() * 600);
 const srv = http.createServer((q, s) => {
   const p = path.join(root, decodeURIComponent(q.url.split('?')[0]));
   if (!p.startsWith(root) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { s.writeHead(404); return s.end(); }
   s.writeHead(200, { 'Content-Type': types[path.extname(p)] || 'application/octet-stream' });
   fs.createReadStream(p).pipe(s);
-}).listen(port);
+});
+// a free port: parallel workers used to collide on a random pick (EADDRINUSE killed one silently)
+const port = await new Promise((res) => { srv.once('listening', () => res(srv.address().port)); srv.listen(0, '127.0.0.1'); });
 
 const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-driver-bug-workarounds'] });
 const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });

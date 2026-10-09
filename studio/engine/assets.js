@@ -77,6 +77,32 @@ export function makeStars(n = 4000, radius = 900, seed = 7) {
   const p = new THREE.Points(g, m); p.frustumCulled = false; return p;
 }
 
+// soft noisy smoke puff and a teardrop flame (alpha textures)
+export function smokeTex(seed = 3) {
+  return canvasTex(128, 128, (g, w, h) => {
+    const r = rng(seed), img = g.createImageData(w, h);
+    const blobs = Array.from({ length: 14 }, () => [32 + r() * 64, 32 + r() * 64, 14 + r() * 26]);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      let a = 0; for (const [bx, by, br] of blobs) a += Math.exp(-((x - bx) ** 2 + (y - by) ** 2) / (br * br));
+      const d = Math.hypot(x - 64, y - 64) / 64; a = Math.min(1, a * 0.45) * Math.max(0, 1 - d * d);
+      const k = (y * w + x) * 4; img.data[k] = img.data[k + 1] = img.data[k + 2] = 255; img.data[k + 3] = Math.round(a * 255);
+    }
+    g.putImageData(img, 0, 0);
+  }, { linear: true });
+}
+export function flameTex() {
+  return canvasTex(64, 128, (g, w, h) => {
+    const img = g.createImageData(w, h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const v = 1 - y / (h - 1), u = (x / (w - 1) - 0.5) * 2;              // v: 0 bottom .. 1 top
+      const width = Math.pow(Math.sin(Math.PI * Math.min(1, v * 1.15)), 0.8) * (1 - v * 0.7);
+      const a = Math.max(0, 1 - Math.abs(u) / Math.max(width, 1e-3)) * Math.min(1, v * 6) * (1 - Math.pow(v, 3));
+      const k = (y * w + x) * 4; img.data[k] = img.data[k + 1] = img.data[k + 2] = 255; img.data[k + 3] = Math.round(Math.pow(a, 0.7) * 255);
+    }
+    g.putImageData(img, 0, 0);
+  }, { linear: true });
+}
+
 // ---------- instanced billboard puffs (dust, smoke, sparks) ----------
 export class Puffs {
   constructor(n, o = {}) {

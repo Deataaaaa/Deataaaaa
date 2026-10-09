@@ -104,3 +104,30 @@ the 1990 scene is a reconstruction (generic livery, mannequin-style figures); th
 Simplifications stated plainly: the gulp is shown slowed (0.45×) and the time inside is shown 3× fast (labelled); "swallowed" is the
 everyday word the news used: a humpback's throat is far too narrow to swallow a person, the video shows it holding you in its mouth.
 The reconstructions are generic (the real whale and boats are not modelled from footage).
+
+## EP10 (post 4) — What if light became instant for 5 seconds?
+
+Premise: only the travel speed of light changes (c → ∞ for 5 s); everything else is left as it is. Consequence used: every
+photon already on its way arrives at once, and while light is instant, new light arrives at once too.
+
+| On screen | Value | Source / calculation |
+|---|---|---|
+| Sunlight needs 8 min 19 s to get here / this light left the Sun 8 minutes ago | 499 s | 1 AU / c = 1.496e11 m / 2.998e8 m/s = 499.0 s |
+| 8 minutes of sunlight hit at once (8 min 19 s of sunlight in 1 instant) | 68 J/cm² at the top of the atmosphere | solar constant 1361 W/m² (Kopp & Lean 2011) × 499 s = 6.79e5 J/m²; at the ground (clear sky, direct ≈ 850 W/m², sun 45° high, horizontal lawn) ≈ 30 J/cm² ≈ 7 cal/cm², ≈ 10 cal/cm² on skin facing the sun |
+| Enough to set the grass on fire | fine grass ignites at 5 cal/cm² | Glasstone & Dolan, *The Effects of Nuclear Weapons* (1977), Table 7.40: fine grass 5 / 8 / 10 cal/cm² for 35 kt / 1.4 Mt / 20 Mt pulses, beech leaves 4 / 6 / 8. Shorter pulses ignite at lower exposures; an instantaneous pulse is shorter than any of them |
+| The light of every star lands too | qualitative | the starlight still in transit from the whole galaxy (up to ~100,000 years old) arrives in the same instant |
+| Light from 13.8 billion years ago (the afterglow of the Big Bang) | 13.8 Gyr | the cosmic microwave background was released 380,000 years after the Big Bang; age of the universe 13.787 ± 0.020 Gyr (Planck 2018) |
+| ≥ 1 kiloton of TNT on every square metre | 1.1 kt/m² | CMB energy density u = aT⁴ = 7.566e-16 × 2.7255⁴ = 4.17e-14 J/m³ (0.26 eV/cm³). Photons heading for Earth from a shell at distance r carry u·πR²·dr, so from the observable universe (comoving radius 46.5 Gly = 4.40e26 m) Earth receives u·L·πR²: per m² of surface u·L/4 = 4.59e12 J/m² = 1.10 kt (1 kt = 4.184e12 J). A lower bound: a larger universe gives more (Olbers' paradox) |
+| The air gets hotter than the Sun's surface | > 10,000 K | the atmosphere is opaque to much of the CMB spectrum at sea level (the 60 GHz O₂ band, the 118 GHz O₂ and 183 GHz H₂O lines, and most of the ~21 % of CMB energy above 300 GHz); even 20 % absorbed puts 9e11 J/m² into 1.03e4 kg/m² of air = 9e7 J/kg, ~3× the energy to dissociate all N₂ (3.4e7 J/kg) → a partly ionised plasma, far hotter than the photosphere (5,772 K) |
+| Enough to boil two thirds of the oceans | 66 % | total on Earth 4.59e12 J/m² × 5.10e14 m² = 2.34e27 J; boiling all oceans: 1.335e21 kg × (4.0e3 J/kg/K × 96.5 K + 2.257e6 J/kg) = 3.53e27 J |
+| And to blow the air off into space | 7× | escape energy of the whole atmosphere: 5.15e18 kg × GM/R (6.26e7 J/kg) = 3.2e26 J; 2.34e27 / 3.2e26 = 7.3 (energy comparison, not a simulation) |
+| Then the Sun goes black for 8 minutes / all its light already arrived | 499 s | when light slows back down, the space between the Sun and Earth holds no light: the next sunlight needs 8 min 19 s to arrive |
+| The stars vanish too, for years / Alpha Centauri: back in 4.4 years | 4.37 ly | Alpha Centauri A/B distance 4.37 light-years (Proxima 4.24 ly) |
+| 299,792 km/s again | c | 299,792.458 km/s |
+| Time slowed down 1,000× / real time / time sped up 50× | — | 28 s on screen for 0.028 s; then 5.0 s for the last 4.97 s; 499 s shown in 9.9 s (×50.4) |
+| In 1964, two scientists heard a strange hiss / from everywhere in the sky / they blamed pigeons | May 1964 | Arno Penzias and Robert Wilson, Bell Labs horn antenna, Holmdel, New Jersey: a hiss from every direction; they evicted nesting pigeons and cleaned their droppings, the hiss stayed: the CMB (AMNH; Nokia Bell Labs). Nobel Prize in Physics 1978 |
+| End card: the Big Bang's glow is all around you, right now | — | the CMB fills the universe: ~410 photons per cm³ |
+
+Simplifications stated plainly: the three kinds of light arrive in the same instant; the video shows them one after the other
+(slowed 1,000×) and says "the same instant" in the HUD timer that barely moves. People are shown frozen (time slowed), never hurt
+on screen. The 1964 scene is a generic reconstruction (the antenna is simplified, the two figures are not likenesses).

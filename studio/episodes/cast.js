@@ -5,6 +5,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { createRenderer, Overlay, W, H } from '../engine/core.js';
 import { loadAvatar } from '../engine/rocketbox.js';
 import { aimBone, TEX_PENDING } from '../engine/elevator.js';
+import { sit, stand } from '../engine/poses.js';
 
 export async function create() {
   const R = createRenderer();
@@ -54,12 +55,26 @@ export async function create() {
     av.root.updateMatrixWorld(true);
   }
   if (pose === 'relaxed') relax();
+  const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+  if (pose.startsWith('sit')) {
+    const [, legs, arms] = pose.split('_');
+    sit(av, { pos: V3(0, 0, 0), yaw: turn, legs, arms, lean: arms === 'behind' ? -0.28 : 0.12, look: V3(-2, 1.0, 4), curl: 0.3 });
+  }
+  if (pose === 'stand') stand(av, { pos: V3(0, 0, 0), yaw: turn, look: V3(1, 1.6, 4) });
+  if (q.get('blink')) {   // probe the eyelid bones: blink=<axis>,<angle> applied to both top lids
+    const [ax, ang] = q.get('blink').split(',');
+    for (const n of ['Bip01_LEyeBlinkTop', 'Bip01_REyeBlinkTop']) { let b = null; av.root.traverse((o) => { if (o.name === n) b = o; }); if (b) { b.rotation[ax] += Number(ang); b.updateMatrixWorld(true); } }
+    if (q.get('jaw')) { let b = null; av.root.traverse((o) => { if (o.name === 'Bip01_MJaw') b = o; }); if (b) { b.rotation[q.get('jaw').split(',')[0]] += Number(q.get('jaw').split(',')[1]); } }
+  }
 
   const cam = new THREE.PerspectiveCamera(30, W / H, 0.05, 50);
   const head = av.bones.Head ? av.bones.Head.getWorldPosition(new THREE.Vector3()) : new THREE.Vector3(0, 1.6, 0);
   function frame(t) {
     if (shot === 'face') { cam.fov = 18; cam.position.set(0.35, head.y + 0.05, 1.55); cam.lookAt(0, head.y - 0.03, 0); }
     else if (shot === 'three') { cam.fov = 24; cam.position.set(0.9, head.y - 0.2, 2.6); cam.lookAt(0, head.y - 0.45, 0); }
+    else if (shot === 'sit') { cam.fov = 30; cam.position.set(1.2, 0.9, 3.2); cam.lookAt(0, 0.45, 0); }
+    else if (shot === 'sitside') { cam.fov = 30; cam.position.set(3.2, 0.7, 0.4); cam.lookAt(0, 0.45, 0.1); }
+    else if (shot === 'sitface') { const hh = av.bones.Head.getWorldPosition(new THREE.Vector3()); cam.fov = 18; cam.position.set(hh.x + 0.5, hh.y + 0.08, hh.z + 1.6); cam.lookAt(hh.x, hh.y - 0.02, hh.z); }
     else { cam.fov = 30; cam.position.set(0.0, 1.0, 4.6); cam.lookAt(0, av.debug.height * 0.5, 0); }
     cam.updateProjectionMatrix();
     R.renderer.toneMappingExposure = Number(q.get('exp') || 1.0);

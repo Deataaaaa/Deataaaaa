@@ -57,7 +57,7 @@ export function creaseNormals(g, crease = 70) {
   g.setAttribute('normal', new THREE.BufferAttribute(out, 3));
 }
 
-export async function loadAvatar(name, { env = null, height = null, facial = false, smoothNormals = true, dbgHair = null, softHair = true } = {}) {
+export async function loadAvatar(name, { env = null, height = null, facial = false, smoothNormals = true, dbgHair = null, softHair = true, lod = 0 } = {}) {
   const dir = `/engine/models/rocketbox/${name}/`;
   const info = await (await fetch(dir + 'avatar.json')).json();
   // the FBX points at its .tga textures on the artist's disk: swallow those requests, we bind our own maps
@@ -65,7 +65,8 @@ export async function loadAvatar(name, { env = null, height = null, facial = fal
   const mgr = new THREE.LoadingManager(); mgr.setURLModifier((u) => (/\.(tga|png|jpe?g|dds|tif)$/i.test(u) && !u.startsWith('data:') ? blank : u));
   const root = await new FBXLoader(mgr).loadAsync(dir + name + (facial ? '_facial' : '') + '.fbx');
   const code = info.code;
-  const set = (k, srgb) => tex(`${dir}${k}.${/normal|opacity/.test(k) ? 'png' : 'jpg'}`, srgb);
+  const sfx = lod ? '_' + lod : '';
+  const set = (k, srgb) => tex(`${dir}${k}${sfx}.${/normal|opacity/.test(k) ? 'png' : 'jpg'}`, srgb);
   const maps = {};
   const get = (part) => (maps[part] ||= {
     map: set(`${code}_${part}_color`, true), normalMap: set(`${code}_${part}_normal`, false), spec: set(`${code}_${part}_specular`, true),
@@ -80,7 +81,7 @@ export async function loadAvatar(name, { env = null, height = null, facial = fal
     const out = mats.map((m) => {
       const n = (m.name || '').toLowerCase(); matNames.push(o.name + ':' + m.name);
       if (n.includes('opacity')) {   // hair, eyelashes, eyebrows: alpha-tested cards
-        opacity ||= tex(`${dir}${code}_opacity_color.png`, true);
+        opacity ||= tex(`${dir}${code}_opacity_color${sfx}.png`, true);
         const hm = new THREE.MeshPhysicalMaterial({ map: opacity, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.72, specularIntensity: 0.5, envMap: env, envMapIntensity: 0.3 });
         if (dbgHair) { hm.map = null; hm.color.set(dbgHair); hm.alphaTest = 0; }
         return hm;

@@ -32,7 +32,11 @@ for f in sorted(os.listdir(raw)):
         im.convert('RGB').save(os.path.join(out, base + '.jpg'), quality=93)
     print(out, base, im.size, im.mode)
 import json
-files = sorted(f for f in os.listdir(out) if f.endswith(('.jpg', '.png')) and f != 'preview.png')
+for f in sorted(os.listdir(out)):                      # 512 px copies for people far from the camera
+    if f.endswith(('.jpg', '.png')) and f != 'preview.png' and '_512' not in f:
+        im = Image.open(os.path.join(out, f)); base, ext = os.path.splitext(f)
+        im.resize((512, 512), Image.LANCZOS).save(os.path.join(out, base + '_512' + ext), **({'quality': 92} if ext == '.jpg' else {}))
+files = sorted(f for f in os.listdir(out) if f.endswith(('.jpg', '.png')) and f != 'preview.png' and '_512' not in f)
 code = next(f.split('_')[0] for f in files if '_body_color' in f)
 json.dump({'name': os.path.basename(out), 'code': code, 'files': files}, open(os.path.join(out, 'avatar.json'), 'w'), indent=1)
 PY

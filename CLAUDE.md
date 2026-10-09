@@ -80,11 +80,11 @@ often while at work, so every deliverable has to be ready to post straight from 
 | 1 | `studio/episodes/ep07.js` | Elevator cable snaps (16th floor) | posted (53.8 s). 12 h: 1.2K views, skip 66%, avg watch 18 s, likes 5.6%, shares 1.8%, 0 comments |
 | 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | delivered v2 (77.2 s, worst case, hook on frame 1, tag 02; v1 83.4 s replaced after clipping feedback) |
 | 3 | `studio/episodes/ep09.js` | A humpback engulfs you (POV, Cape Cod, real cases 2021 and 2025) | delivered (75.2 s, POV, tag 03; render 3 lanes ≈ 2 h 50) |
-| 4 | – | new pitches in the reference's format: every radioactive atom decays at once (recommended) / hydrogen bonds vanish for 5 s / light becomes instant for 5 s / Earth's magnetic field off for 1 s / chemical bonds vanish for 1 s; character from `studio/notes/casting_post4.jpg` | waiting for the owner's OK |
+| 4 | `studio/episodes/ep10.js` | Light becomes instant for 5 s (Paris, Champ de Mars → space → Holmdel 1964) | built (75.0 s, tag 04), rendering |
 Cast log (rule 16): post 1 elevator = Michelle (dark skin, curly black hair, red headphones); post 2 plane =
-Michelle (same); post 3 whale = POV diver, black wetsuit and gloves (body never seen). Next video: a new person from
-the Rocketbox pool (46 realistic rigged people, MIT; post 4 candidates: Female_Adult_12, Male_Adult_10, Male_Adult_17,
-Female_Adult_04). Log the avatar name here once used.
+Michelle (same); post 3 whale = POV diver, black wetsuit and gloves (body never seen); post 4 light = Male_Adult_17
+(beard, black cap, blue-white hoodie; his friend Female_Adult_12, brunette with bangs, black hoodie). Next video: someone
+new from the Rocketbox pool (46 realistic rigged people, MIT). Log the avatar name here once used.
 Other ideas: 50 km/h crash without a seatbelt; lightning hits your plane; stuck upside down on a roller coaster;
 phone battery catching fire in your pocket. Old built-but-unpublished episodes: `ep02`–`ep06` (topics too common).
 
@@ -127,3 +127,14 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
   faceted: `creaseNormals` rebuilds them. Hair/lashes use the `_opacity` texture: alpha test 0.5 + a blended pass, and
   no sheen/strong env on hair (it paints a grey veil across the fringe). The plain FBX already has facial bones (eyes,
   blink, jaw, brows) for blinks and a gasp. Their bind pose is an A-pose: put them in the Xbot T-pose before retargeting.
+  Careful: the plain FBX is not skinned to the eyelid bones (rotating them does nothing); blinks need the _facial FBX.
+- Posing (`engine/poses.js`): `sit()` / `stand()` rebuild the pose from rest every frame with world-space IK (legs up /
+  crossed, arms behind / on knees / lap, look-at), then lift the body so its lowest skinned vertex sits 4 mm above the
+  ground you pass (pass the blanket top, not the lawn, or they sink into the blanket). Background people use `lod: 512`.
+- Paris set (`engine/paris.js`): custom day sky (`makeDaySky`, art-directable; the Preetham Sky washed out under ACES),
+  instanced leaf-card trees (radial normals), grass blades near the hero, Haussmann blocks, the tower as a Beams lattice.
+  `heatize(material)` adds two effects to any lit material: scorch (charring + ember specks where the sun hits, organic
+  materials only, so shadows stay cool) and incandescence (blackbody ramp, stronger on edges). ACES + sRGB turns warm
+  HDR colours into pale cream: for an inferno look, push saturated low values and grade with uTint/uContrast/uSat.
+- Parallel render workers used to pick a random port and could collide (EADDRINUSE killed one silently): `render.mjs`
+  now listens on a free port. Billboard smoke seen from above reads as white blobs: fade it out when the camera rises.

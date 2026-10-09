@@ -177,7 +177,7 @@ export class SkyStars {
 // Billboards: instanced quads with an atlas tile per instance. additive (flames) or lit (smoke: normal in rgb)
 // ---------------------------------------------------------------------------------------------------------------
 export class Billboards {
-  constructor(n, { map, tiles = [2, 2], additive = true, lit = false, upright = false, anchor = 0, minPx = 1.5, near = 0.3, renderOrder = 5 } = {}) {
+  constructor(n, { map, tiles = [2, 2], additive = true, lit = false, upright = false, anchor = 0, minPx = 1.5, near = 0.3, nearK = 0, renderOrder = 5 } = {}) {
     this.n = n;
     const base = new THREE.PlaneGeometry(1, 1);
     const g = new THREE.InstancedBufferGeometry();
@@ -190,7 +190,7 @@ export class Billboards {
     this.geo = g;
     this.u = {
       map: { value: map }, uTiles: { value: new THREE.Vector2(tiles[0], tiles[1]) }, uUpright: { value: upright ? 1 : 0 }, uAnchor: { value: anchor },
-      uPR: { value: 1 }, uPxScale: { value: 1000 }, uMinPx: { value: minPx }, uNear: { value: near }, uFogD: { value: 0 },
+      uPR: { value: 1 }, uPxScale: { value: 1000 }, uMinPx: { value: minPx }, uNear: { value: near }, uNearK: { value: nearK }, uFogD: { value: 0 },
       uFogCol: { value: new THREE.Color('#c3d0dc') }, uLightV: { value: new THREE.Vector3(0, 1, 0) },
       uLitCol: { value: new THREE.Color(1, 1, 1) }, uShadeCol: { value: new THREE.Color(0.3, 0.3, 0.32) }, uGain: { value: 1 },
     };
@@ -199,7 +199,7 @@ export class Billboards {
       defines: lit ? { LIT: 1 } : {},
       vertexShader: /* glsl */`
         attribute vec3 aPos, aCol; attribute vec2 aSize; attribute float aAlpha, aRot, aTile;
-        uniform vec2 uTiles; uniform float uUpright, uAnchor, uPR, uPxScale, uMinPx, uNear, uFogD;
+        uniform vec2 uTiles; uniform float uUpright, uAnchor, uPR, uPxScale, uMinPx, uNear, uNearK, uFogD;
         varying vec2 vUv; varying vec3 vC; varying float vA; varying vec2 vR; varying float vFog;
         void main(){
           vec4 mvc = viewMatrix * vec4(aPos, 1.0);
@@ -219,6 +219,9 @@ export class Billboards {
           gl_Position = projectionMatrix * mv;
           float a = aAlpha / (k * k);
           a *= smoothstep(uNear, uNear * 2.0, d);
+          // nearK > 0: a big card fades as the camera comes within nearK times its size, instead of popping out of view
+          // in the last metre (the camera flying through a smoke cloud)
+          if (uNearK > 0.0) { float sz = max(aSize.x, aSize.y); a *= smoothstep(0.25 * uNearK * sz, uNearK * sz, d); }
           vFog = 1.0 - exp(-uFogD * uFogD * d * d);
           vUv = (vec2(mod(aTile, uTiles.x), floor(aTile / uTiles.x)) + uv) / uTiles;
           vC = aCol; vA = a; vR = vec2(c, s);

@@ -492,8 +492,10 @@ export async function create() {
   for (const s of [-1, 1]) for (let z = -170; z < 640; z += 9) bursts.push({ x: s * (122 + br2() * 20), y: 27 + br2() * 4, z: z + br2() * 6, s: 10 + br2() * 10, birth: T.KT + 0.1 + br2() * 0.7, tile: Math.floor(br2() * 4), rot: br2() * 6.28, hot: 0.6 + br2() * 0.4, up: 0.4 + br2() });
   for (const [x, z, w, h] of P.farList) if (br2() < 0.55) bursts.push({ x, y: h + 3, z, s: 16 + w * 0.6, birth: T.KT + 0.15 + br2() * 0.9, tile: Math.floor(br2() * 4), rot: br2() * 6.28, hot: 0.55 + br2() * 0.4, up: 0.5 + br2() });
   bursts.forEach((b) => { b.k = 0.5 + br2() * 1.1; b.sx = 0.8 + br2() * 0.5; b.ph = br2(); });
-  const burstBB = new Billboards(bursts.length, { map: fireballAtlas(9), additive: true, minPx: 1.6, near: 1.0, renderOrder: 6 });
-  const capBB = new Billboards(bursts.length, { map: smokeAtlas(13), additive: false, lit: true, minPx: 1.6, near: 1.0, renderOrder: 5 });
+  // nearK: the camera climbs through these clouds; a card tens of metres wide now fades as the camera comes within its
+  // own size (it used to darken the sky as it closed in, then vanish in two frames a metre from the lens)
+  const burstBB = new Billboards(bursts.length, { map: fireballAtlas(9), additive: true, minPx: 1.6, near: 1.0, nearK: 1, renderOrder: 6 });
+  const capBB = new Billboards(bursts.length, { map: smokeAtlas(13), additive: false, lit: true, minPx: 1.6, near: 1.0, nearK: 1, renderOrder: 5 });
   capBB.u.uLitCol.value.setRGB(1.0, 0.42, 0.12); capBB.u.uShadeCol.value.setRGB(0.07, 0.045, 0.035);
   scene.add(burstBB.mesh, capBB.mesh);
   const SN = 5000, streaks = new Streaks(SN, { widthPx: 2.2 });
@@ -650,6 +652,16 @@ export async function create() {
     [16.1, orb(164, 2.95, 0.86), V(C.x, 0.68, C.z - 0.05), 42],
     [17.6, orb(152, 3.05, 0.9), V(C.x - 0.03, 0.7, C.z - 0.05), 42],
   ], { easeIn: false, easeOut: false });
+  // after the hard cut at the stars, the frozen path rose from a near target to a far one and whipped up at 80 px per
+  // frame: the crane now starts from rest and rises evenly to the 21.4 s key (arc), then hands over to the frozen path
+  const crane = new CamPath([frozen.keys[4], frozen.keys[6]], { easeIn: true, easeOut: false, arc: true });
+  const _ca = new THREE.PerspectiveCamera(), _cb = new THREE.PerspectiveCamera();
+  function craneCam(t) {
+    if (t < 20.6) { crane.apply(cam, t); return; }
+    _ca.aspect = _cb.aspect = cam.aspect; crane.apply(_ca, t); frozen.apply(_cb, t); const w = smooth(20.6, 21.4, t);
+    cam.position.lerpVectors(_ca.position, _cb.position, w); cam.quaternion.slerpQuaternions(_ca.quaternion, _cb.quaternion, w);
+    cam.fov = lerp(_ca.fov, _cb.fov, w); cam.updateProjectionMatrix(); cam.updateMatrixWorld();
+  }
   function hookCam(t) {   // the flash-forward: under the vaporising tower, looking up
     const k = t / T.HOOK;
     cam.position.set(-74 + k * 5, 128 + k * 6, -88 + k * 3); cam.fov = 56; cam.updateProjectionMatrix();
@@ -687,7 +699,7 @@ export async function create() {
     if (story < T.SPACE) {
       // ---------------- PARIS ----------------
       poseAll(story);
-      if (t < T.HOOK) hookCam(t); else if (story < T.T0 + 0.2) approach.apply(cam, story); else if (story < T.STARS) arc.apply(cam, story); else frozen.apply(cam, story);
+      if (t < T.HOOK) hookCam(t); else if (story < T.T0 + 0.2) approach.apply(cam, story); else if (story < T.STARS) arc.apply(cam, story); else if (story < 21.4) craneCam(story); else frozen.apply(cam, story);
       const after = story - T.T0;
       const kick = story < T.KT ? 0 : Math.exp(-(story - T.KT) * 2.2);              // the blast
       if (kick > 0.001) { cam.rotateZ(Math.sin(story * 31) * 0.006 * kick); cam.rotateX(Math.sin(story * 23 + 1) * 0.005 * kick); cam.updateMatrixWorld(); }

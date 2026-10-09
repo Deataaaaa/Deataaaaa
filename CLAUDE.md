@@ -192,5 +192,10 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
   the same, and never leave the near plane at 5 cm without a reason.
 - Particles near the lens jump hundreds of px per frame and pop as one-frame blobs: fade sparks out within a few metres
   of the camera (`near` on `Sparks`/`Billboards`; post 4's storm: near 3, full at 7.5 m) and cap their size.
+- A camera that flies through big cards (smoke clouds tens of metres wide) sees them darken the frame as it closes in,
+  then vanish in two frames at the near fade: give such `Billboards` `nearK: 1` (they fade from one card size away).
+- A path whose target jumps from near to far (after a cut: "look ahead" → "look up at the tower") whips round in its
+  first frames: post 4's crane after the stars cut started at 80 px per frame. Start such takes with `{ arc: true }`
+  (here a separate `crane` path blended into the main one with a smoothstep weight, so later frames stay identical).
 - Parallel render workers used to pick a random port and could collide (EADDRINUSE killed one silently): `render.mjs`
   now listens on a free port. Billboard smoke seen from above reads as white blobs: fade it out when the camera rises.

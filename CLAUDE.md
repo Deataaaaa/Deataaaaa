@@ -11,9 +11,12 @@ often while at work, so every deliverable has to be ready to post straight from 
 2. **Every caption readable.** Each caption is fully visible for at least `max(2.2 s, characters / 12)`
    (12 characters per second is a calm phone reading pace) and captions never overlap. Split long sentences
    into two captions instead of cramming. Same idea for HUD lines: short, and on screen long enough to read.
-3. **Original, relatable, "wow" topics.** Situations a viewer can imagine living through (elevator, plane,
-   car, lightning…) with a spectacular moment. Avoid what every science account already did (black holes,
-   the Sun or Moon vanishing, Earth stopping, etc.).
+3. **Original "wow" topics in the reference's format** (owner, 9 Oct 2026: "closer to the one I sent"). One tiny,
+   precise change to physics for a few seconds ("What if every radioactive atom decayed at once?", "…for 5 seconds?")
+   whose consequences escalate from you and everyday things (your body, a banana, a cloud) to the whole planet, told
+   from "you" in a real, famous place. Avoid what every science account already did (gravity, oxygen or friction
+   disappearing, the Sun or Moon vanishing, Earth stopping, black holes) and the reference creator's own particle
+   series (electrons, neutrons, protons…), so we never look like a copy.
 4. **Realism first.** PBR materials, real lighting, a real-looking human ("you"), never a glowing or blown-out
    mannequin. Check exposure on every shot: nothing should be blinding on a phone screen.
 5. **Brand.** Accent colour is the logo red `#ff2e2e` (titles' key word, warnings); everything else white/
@@ -35,7 +38,8 @@ often while at work, so every deliverable has to be ready to post straight from 
     Only tease the next topic in a caption once it is approved ("Part 3 tomorrow 👀" otherwise).
 12. **Worst case, shock first.** Show the worst-case scenario all the way through and make people gasp 😳.
     Never pivot to "but this almost never happens / here's why you're safe" (the owner finds it boring).
-    Prove it with real cases ("this happened in 2018…"), keep it factual and non-graphic (no gore), end on a
+    Prove it with real cases ("this happened in 2018…"; for physics premises, a real anchor: a measured fact, a real
+   place, a real event such as Goiânia 1987), keep it factual and non-graphic (no gore), end on a
     punchy line that invites comments (e.g. "Still want the window seat?").
 13. **Zero clipping.** Nothing may pass through a body or an object: props held or worn (masks and their
     tubes, phones, belts, hair, hands on armrests) must be routed around the body (curved tubes with a control
@@ -76,7 +80,7 @@ often while at work, so every deliverable has to be ready to post straight from 
 | 1 | `studio/episodes/ep07.js` | Elevator cable snaps (16th floor) | posted (53.8 s). 12 h: 1.2K views, skip 66%, avg watch 18 s, likes 5.6%, shares 1.8%, 0 comments |
 | 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | delivered v2 (77.2 s, worst case, hook on frame 1, tag 02; v1 83.4 s replaced after clipping feedback) |
 | 3 | `studio/episodes/ep09.js` | A humpback engulfs you (POV, Cape Cod, real cases 2021 and 2025) | delivered (75.2 s, POV, tag 03; render 3 lanes ≈ 2 h 50) |
-| 4 | – | re-pitched in the countdown format: lightning strikes you (recommended) / car into a lake / falling through ice; character pick from `studio/notes/casting_post4.jpg` (Rocketbox 1–4) | waiting for the owner's OK |
+| 4 | – | new pitches in the reference's format: every radioactive atom decays at once (recommended) / hydrogen bonds vanish for 5 s / light becomes instant for 5 s / Earth's magnetic field off for 1 s / chemical bonds vanish for 1 s; character from `studio/notes/casting_post4.jpg` | waiting for the owner's OK |
 Cast log (rule 16): post 1 elevator = Michelle (dark skin, curly black hair, red headphones); post 2 plane =
 Michelle (same); post 3 whale = POV diver, black wetsuit and gloves (body never seen). Next video: a new person from
 the Rocketbox pool (46 realistic rigged people, MIT; post 4 candidates: Female_Adult_12, Male_Adult_10, Male_Adult_17,

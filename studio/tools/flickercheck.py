@@ -5,11 +5,13 @@ Each frame is predicted from the previous one moved by the optical flow (OpenCV 
 is fine, what is left over is change that does not belong to any motion: grain, aliasing sparkle, blinking particles,
 encoder pumping. Per second of video it prints:
   Jf   mean residual (luma 0-255) on flat areas (sky, walls): grain and encoder pumping show up here
-  J    mean residual where the flow is reliable (forward-backward check): sparkle on detail shows up here
+  J    mean residual where the flow is reliable (forward-backward check): sparkle on detail shows up here, but so do
+       caption fades, timer digits and fine parallax the flow cannot follow, so its limit is loose
   PSNR (with --ref) the worst frame of the encode against the source frames
 Frames at a hard cut or a flash (big jump in mean brightness) are skipped: those changes are intended.
 Seconds over the limits are flagged; exit code 1 if any is (encode.sh fails loudly).
-Calibration: post 4 v1 (film grain 0.035) flags every second; grain-free supersampled frames pass.
+Calibration (source frames): post 4 v1 with film grain 0.035 read Jf 1.1-1.3 on the hook and J 4.2-6.2 on the drone
+shot (the flicker the owner saw); v2, grain-free at 2x supersampling, reads Jf 0.2-0.7 and J 1.4-3.1 on the same shots.
 
 usage: flickercheck.py <video.mp4 | frames_dir> [--ref frames_dir] [--fps 30] [--from N --to M]"""
 import sys, os, glob, subprocess, argparse
@@ -19,7 +21,7 @@ import cv2
 ap = argparse.ArgumentParser()
 ap.add_argument('src'); ap.add_argument('--ref'); ap.add_argument('--fps', type=float, default=30)
 ap.add_argument('--scale', type=float, default=0.5, help='analysis scale (0.5 = 540x960, a phone screen)')
-ap.add_argument('--jf', type=float, default=0.9); ap.add_argument('--j', type=float, default=2.6); ap.add_argument('--psnr', type=float, default=30.0)
+ap.add_argument('--jf', type=float, default=0.9); ap.add_argument('--j', type=float, default=4.0); ap.add_argument('--psnr', type=float, default=30.0)
 ap.add_argument('--from', dest='frm', type=int, default=0); ap.add_argument('--to', type=int, default=10 ** 9)
 a = ap.parse_args()
 W, H = int(1080 * a.scale), int(1920 * a.scale)

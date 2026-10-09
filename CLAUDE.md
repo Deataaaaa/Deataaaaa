@@ -65,10 +65,12 @@ often while at work, so every deliverable has to be ready to post straight from 
     Animations must be flawless: mocap-driven bodies, blinking/breathing always on, no frozen poses, no pops.
 18. **No flicker** (owner, 9 Oct 2026, on post 4 v1: "make sure this doesn't happen again"). Never add per-frame noise
     (film grain, random sparkle): `uGrain` stays 0. Render at 2× supersampling (`ssaa=2`, MSAA off). Particles and
-    billboards come from `engine/fx.js` (never smaller than 1.6 px: their alpha drops instead); procedural detail that
-    can get smaller than a pixel is frequency-clamped (`fwidth`); shadows fade at the frustum edge (`fadeShadowBorders`)
-    and the frustum only switches inside a flash or a cut; slow the camera over fine detail. `encode.sh` runs
-    `tools/flickercheck.py` on the phone file: it must print `FLICKER CHECK: OK`.
+    billboards come from `engine/fx.js` (never smaller than 1.6 px: their alpha drops instead; faded out near the lens);
+    procedural detail that can get smaller than a pixel is frequency-clamped (`fwidth`); shadows fade at the frustum edge
+    (`fadeShadowBorders`) and the frustum only switches inside a flash or a cut; coplanar layers get a depth bias; the
+    picture moves under ~25 px per frame (check camera moves with `tools/camflow.mjs` before rendering) and effect
+    fronts are blurred over their per-frame sweep. `encode.sh` runs `tools/flickercheck.py` on the phone file: it must
+    print `FLICKER CHECK: OK`; then run `tools/popscan.py` and look at every frame it lists.
 
 ## Delivery checklist
 - `studio/encode.sh <frames> <wav> videos/postN_<slug>`: HQ + `_phone.mp4` (< 30 MB, the chat's send limit).
@@ -160,12 +162,35 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
   drawn with Paris's scorch and heat values: pale yellow trees).
 - 2x supersampling with MSAA off looks the same as with MSAA 4 and renders up to 2x faster.
 - Camera moves use `CamPath` (core.js): Catmull-Rom curves with a monotone timing curve, so the camera never stops at a
-  key (v1's per-segment easing stopped at every key).
+  key (v1's per-segment easing stopped at every key). New moves use `{ arc: true }`: the default gives every segment
+  the same share of time (the speed jumps at a key between a long and a short segment) and turns toward a target point
+  that only swings round when the camera gets close (post 4 v2's glide: a 57-degree whip at 95 px per frame in its
+  last half second, then a dead stop). `arc` travels by arc length at a C1 speed and turns by heading/pitch at C1 rates.
 - Additive puffs pile up into a white haze over a long take: give them a life (fade out after a few seconds).
 - Keep camera motion slow on screen: frames have no motion blur, so a background moving faster than ~25 px per frame
   strobes on a phone and reads as flicker (post 4 v2's first orbit swung 180 degrees in 7 s: 40-75 px per frame; the
-  fix was a slow 50-degree drift and a hard cut on a sound hit). `flickercheck.py` reports the pan speed per second.
-- `tools/flickercheck.py` calibration: v1's source frames (grain 0.035) read Jf 1.1-1.3 on the hook and J 4-6 on the
-  drone shot; grain-free supersampled frames read far lower. Hard cuts and flashes are skipped.
+  fix was a slow 50-degree drift and a hard cut on a sound hit). In a 9:16 frame a turn of 1 degree per frame moves the
+  picture ~38 px: keep turns under ~15 degrees a second and spread a big turn over the whole take (the glide's fix: a
+  spiral crane-down that turns all the way, 10-19 px per frame). Check every move before rendering with
+  `tools/camflow.mjs` (ground plane + sky model, same numbers as the pan column of `flickercheck.py`; it matched the
+  rendered frames within a few px), then measure pairs of rendered stills.
+- An effect front that sweeps across the frame (a reveal band, a shock front) strobes as separate copies when it moves
+  further per frame than its own width: blur it over the distance it travels in one frame, keeping its energy (post 4's
+  microwave-sky band moved 127 px per frame and was 100 px wide; `uCMBRd` spreads it over each frame's sweep).
+- `tools/lanes.sh` runs a render as a queue of small chunks on up to N workers (`--resume`), and counts lanes started
+  by hand (`OTHERS="pid …"`) against N, so a worker starts the moment any lane ends; nobody splits ranges by hand.
+- `tools/flickercheck.py` flags on alternation: once t-1 and t+1 are moved onto t by optical flow, flicker goes up then
+  down while motion, fades and reveals change one way. `altf` (flat areas, 90th percentile of the second) read 0.72-1.21
+  on v1's grain, 0.57-1.08 on the strobing orbit, 0.02-0.46 on clean shots: limit 0.6. `pop` (worst frame) caught the
+  vanished lawn (2.9) and the strobing scan band (1.9): limit 1.5. Jf/J are printed for information only (they also rise
+  on legitimate transitions). Hard cuts, flashes and near-white or near-black frames are skipped.
+- Pops too small to move a frame-wide average (a thin line, one spark) need `tools/popscan.py <frames> <from> <to>`
+  plus your eyes on the frames it lists (it masks the tag, HUD timer and captions, whose digits change every frame).
+- Coplanar ground layers z-fight from far away: post 4's ground (y 0), roads (0.02), water (0.03) and lawn tops (0.08)
+  with a 5 cm near plane gave horizontal stripes and a lawn that vanished for one frame in the high shots. `paris.js`
+  gives each lower layer a depth bias (`polygonOffset`): only the fighting pixels change. Give any new layered ground
+  the same, and never leave the near plane at 5 cm without a reason.
+- Particles near the lens jump hundreds of px per frame and pop as one-frame blobs: fade sparks out within a few metres
+  of the camera (`near` on `Sparks`/`Billboards`; post 4's storm: near 3, full at 7.5 m) and cap their size.
 - Parallel render workers used to pick a random port and could collide (EADDRINUSE killed one silently): `render.mjs`
   now listens on a free port. Billboard smoke seen from above reads as white blobs: fade it out when the camera rises.

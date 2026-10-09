@@ -207,17 +207,43 @@ export function monotone(xs, ys, s0 = null, s1 = null) {
 }
 // A camera move through keys [t, position, target, fov]: centripetal Catmull-Rom curves for the position and the
 // target, travelled with a C1 timing curve (no stop at the keys, eased at both ends unless told otherwise).
+// The default timing gives each segment the same share of u, so the speed jumps at a key between a long and a short
+// segment, and a target point that comes close turns the view fast at the end (post 4 v2's glide whipped round at
+// 95 px per frame, then stopped dead). { arc: true } fixes both: the position moves by arc length with a C1 speed,
+// and the view turns by heading and pitch angles at C1 rates. Check any new move with tools/camflow.mjs.
+const _look = new THREE.Vector3();
 export class CamPath {
-  constructor(keys, { easeIn = true, easeOut = true } = {}) {
+  constructor(keys, { easeIn = true, easeOut = true, arc = false } = {}) {
     this.keys = keys;
     const ts = keys.map((k) => k[0]), us = keys.map((_, i) => i / (keys.length - 1));
-    this.u = monotone(ts, us, easeIn ? 0 : null, easeOut ? 0 : null);
-    this.fov = monotone(ts, keys.map((k) => k[3]), easeIn ? 0 : null, easeOut ? 0 : null);
+    const s0 = easeIn ? 0 : null, s1 = easeOut ? 0 : null;
+    this.u = monotone(ts, us, s0, s1);
+    this.fov = monotone(ts, keys.map((k) => k[3]), s0, s1);
     this.P = new THREE.CatmullRomCurve3(keys.map((k) => k[1]), false, 'centripetal');
     this.T = new THREE.CatmullRomCurve3(keys.map((k) => k[2]), false, 'centripetal');
     this.t0 = ts[0]; this.t1 = ts[ts.length - 1];
+    if (arc) {
+      const n = keys.length - 1, per = 400;
+      this.P.arcLengthDivisions = per * n;                // fine table: getPointAt stays smooth between samples
+      const L = this.P.getLengths(), tot = L[L.length - 1];
+      this.s = monotone(ts, keys.map((_, i) => L[i * per] / tot), s0, s1);
+      const hd = [], pt = [];
+      for (const k of keys) {
+        const d = k[2].clone().sub(k[1]); let h = Math.atan2(d.x, -d.z);
+        if (hd.length) { const p = hd[hd.length - 1]; while (h - p > Math.PI) h -= 2 * Math.PI; while (h - p < -Math.PI) h += 2 * Math.PI; }
+        hd.push(h); pt.push(Math.atan2(d.y, Math.hypot(d.x, d.z)));
+      }
+      this.hd = monotone(ts, hd, s0, s1); this.pt = monotone(ts, pt, s0, s1);
+    }
   }
   apply(cam, t) {
+    if (this.s) {
+      const s = clamp(this.s(t)), h = this.hd(t), p = this.pt(t);
+      cam.position.copy(this.P.getPointAt(s)); cam.fov = this.fov(t); cam.updateProjectionMatrix();
+      _look.set(Math.sin(h) * Math.cos(p), Math.sin(p), -Math.cos(h) * Math.cos(p)).add(cam.position);
+      cam.up.set(0, 1, 0); cam.lookAt(_look); cam.updateMatrixWorld();
+      return s;
+    }
     const u = clamp(this.u(t));
     cam.position.copy(this.P.getPoint(u)); cam.fov = this.fov(t); cam.updateProjectionMatrix();
     cam.up.set(0, 1, 0); cam.lookAt(this.T.getPoint(u)); cam.updateMatrixWorld();

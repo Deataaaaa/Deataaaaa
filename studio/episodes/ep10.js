@@ -23,7 +23,7 @@ export const T = { HOOK: 3.6, T0: 10.6, STARS: 17.6, BIG: 21.0, AIR: 24.7, KT: 2
 
 const CAPTIONS = [
   [3.75, 6.66, 'A summer afternoon in Paris.'],
-  [6.70, 10.40, 'This light left the Sun 8 minutes ago.'],
+  [6.70, 10.40, 'This light left the Sun 8 minutes ago.', { shade: 1 }],
   [10.80, 14.15, '8 minutes of sunlight hit at once.', { shade: 1 }],
   [14.25, 17.45, 'Enough to set the grass on fire.', { shade: 1 }],
   [17.55, 20.90, 'The light of every star lands too.', { shade: 1 }],
@@ -588,16 +588,25 @@ export async function create() {
     [68.4, A.clone().addScaledVector(An, 1.4), A.clone().addScaledVector(An, -1), 38],
     [69.2, A.clone().addScaledVector(An, 0.6), A.clone().addScaledVector(An, -1), 36],
   ]);
-  // Paris: the drone glides down to the heroes and ends low behind them, facing the sun (the flash bursts out of it)
+  // Paris: the drone spirals down from the tower view to the heroes, turning toward the sun as the caption names it,
+  // and ends low behind them facing the sun (the flash bursts out of it). The first version flew straight in and only
+  // turned in the last second: a 57 degree whip at up to 95 px per frame that stopped dead (strobing). Now the turn is
+  // spread over the whole glide: under 19 px per frame (tools/camflow.mjs).
   const sunH = V(sunDir.x, 0, sunDir.z).normalize();
   const camT0 = V(H0.x + 2.25, 0.62, H0.z + 1.75);
   const lookT0 = camT0.clone().addScaledVector(sunH, 10 * Math.cos(0.36)).add(V(0, 10 * Math.sin(0.36), 0));
+  const glide = (t, bearing, r, h, heading, pitch, fov) => {   // camera r m from the heroes on a bearing (deg), looking along heading/pitch
+    const D = THREE.MathUtils.degToRad, pos = V(C.x - Math.sin(D(bearing)) * r, h, C.z + Math.cos(D(bearing)) * r);
+    return [t, pos, pos.clone().add(V(Math.sin(D(heading)) * Math.cos(D(pitch)), Math.sin(D(pitch)), -Math.cos(D(heading)) * Math.cos(D(pitch))).multiplyScalar(10)), fov];
+  };
   const approach = new CamPath([
     [3.6, V(-33, 30, 124), V(-12, 46, -170), 46],
-    [6.6, V(-25.5, 11, 90), V(-17, 6, -6), 46],
-    [9.0, V(C.x, 1.5, C.z).addScaledVector(sunH, -5.2), V(C.x, 1.5, C.z).addScaledVector(sunH, -5.2).addScaledVector(sunH, 9.7).add(V(0, 2.4, 0)), 50],
+    glide(5.4, 6, 42, 18, -3, -3, 46),
+    glide(7.2, -14, 20, 7.5, -19, -3, 47),
+    glide(8.6, -32, 8.5, 3.0, -34, 3, 49),
+    glide(9.8, -47, 4.3, 1.2, -47, 12, 51),
     [10.8, camT0, lookT0, 52],
-  ], { easeOut: true });
+  ], { easeIn: false, easeOut: true, arc: true });
   // time slowed: a slow orbit around the frozen picnic (in front of them -> their right -> behind), then the crane up
   const orb = (phiDeg, R, h) => { const ph = THREE.MathUtils.degToRad(phiDeg); return V(C.x + Math.sin(ph) * R, h, C.z + Math.cos(ph) * R); };
   const frozen = new CamPath([
@@ -617,8 +626,10 @@ export async function create() {
     [36.5, V(-118, 120, -8), V(0, 132, -200), 57],
     [38.6, V(-140, 104, 16), V(0, 40, -200), 58],
   ], { easeIn: false, easeOut: false });
-  // an ember storm around the camera's climb from the blast to the white-out (sparks rise past the lens)
-  const stN = 22000, storm = new Sparks(stN, { minPx: 1.6, maxPx: 36, near: 0.8 });
+  // an ember storm around the camera's climb from the blast to the white-out (sparks rise past the lens). Sparks
+  // closer than a few metres crossed the frame in one step (hundreds of px per frame): one-frame blobs. They fade out
+  // under 7.5 m now, and stay small
+  const stN = 22000, storm = new Sparks(stN, { minPx: 1.6, maxPx: 18, near: 3.0 });
   { const sr = rng(606);
     for (let i = 0; i < stN; i++) {
       const tk0 = T.KT + sr() * (T.SPACE - T.KT), c0 = frozen.P.getPoint(clamp(frozen.u(tk0))), a = sr() * Math.PI * 2, rr = 3 + 40 * Math.sqrt(sr());
@@ -697,6 +708,7 @@ export async function create() {
       P.skyU.uMilky.value = milky * 1.5; stars.u.uGain.value = milky * 2.4; P.skyU.uDim.value = 1 - Math.max(0.74 * milky, 0.5 * cmbOn);
       P.skyU.uCMB.value = cmbOn; P.skyU.uCMBI.value = 0.85;
       P.skyU.uCMBR.value = lerp(0, 1.12, smooth(T.BIG, T.BIG + 1.9, story));
+      P.skyU.uCMBRd.value = P.skyU.uCMBR.value - lerp(0, 1.12, smooth(T.BIG, T.BIG + 1.9, story - 1 / 30));   // sweep during this frame
       P.skyU.uWhite.value = smooth(0, 0.55, airK) * 0.97; P.skyU.uPlasma.value = 1;
       const hot = smooth(T.MELT - 1, T.SPACE, story);
       P.skyU.uWhiteCol.value.set(lerp(lerp(1.3, 2.6, airK), 2.5, hot), lerp(lerp(0.3, 1.0, airK), 0.9, hot), lerp(lerp(0.08, 0.3, airK), 0.28, hot));

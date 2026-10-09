@@ -514,12 +514,12 @@ export function makeDaySky(sunDir, { zen = '#2f62b8', hor = '#c8d7e6', mid = nul
     uniforms: {
       uSun: { value: sunDir.clone() }, uZen: { value: new THREE.Color(zen) }, uHor: { value: new THREE.Color(hor) }, uMid: { value: new THREE.Color(mid || hor) }, uMidK: { value: mid ? 1 : 0 },
       uSunCol: { value: new THREE.Color(sunCol) }, uI: { value: 1.0 }, uDisk: { value: 1.0 }, uWhite: { value: 0 }, uStars: { value: 0 }, uWhiteCol: { value: new THREE.Vector3(6.0, 5.7, 5.3) },
-      tMilky: { value: _blank }, uMilky: { value: 0 }, tCMB: { value: _blank }, uCMB: { value: 0 }, uCMBR: { value: 0 }, uCMBI: { value: 1.6 },
+      tMilky: { value: _blank }, uMilky: { value: 0 }, tCMB: { value: _blank }, uCMB: { value: 0 }, uCMBR: { value: 0 }, uCMBRd: { value: 0 }, uCMBI: { value: 1.6 },
       uPlasma: { value: 0 }, uDim: { value: 1 },
     },
     vertexShader: `varying vec3 vDir; void main(){ vDir = (modelMatrix * vec4(position, 1.0)).xyz - cameraPosition; vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }`,
     fragmentShader: `
-      uniform vec3 uSun, uZen, uHor, uMid, uSunCol, uWhiteCol; uniform float uI, uDisk, uWhite, uStars, uMilky, uCMB, uCMBR, uCMBI, uPlasma, uDim, uMidK;
+      uniform vec3 uSun, uZen, uHor, uMid, uSunCol, uWhiteCol; uniform float uI, uDisk, uWhite, uStars, uMilky, uCMB, uCMBR, uCMBRd, uCMBI, uPlasma, uDim, uMidK;
       uniform sampler2D tMilky, tCMB; varying vec3 vDir;
       float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
       void main(){
@@ -538,7 +538,10 @@ export function makeDaySky(sunDir, { zen = '#2f62b8', hor = '#c8d7e6', mid = nul
         if (uCMB > 0.001 || uWhite > 0.001) cm = texture2D(tCMB, euv);
         if (uCMB > 0.001) {                                                 // false-colour microwave sky, revealed from the zenith down
           float fr = 1.0 - el, rev = smoothstep(uCMBR, uCMBR - 0.08, fr);
-          float edge = exp(-pow((fr - uCMBR) / 0.012, 2.0)) * step(0.001, uCMBR) * (1.0 - smoothstep(1.0, 1.1, uCMBR));
+          // the bright front is motion-blurred over the distance it sweeps in one frame (uCMBRd): thinner than its step,
+          // it strobed down the sky as separate bands (same energy, spread over the frame's sweep)
+          float wE = sqrt(0.012 * 0.012 + uCMBRd * uCMBRd / 6.0);
+          float edge = (0.012 / wE) * exp(-pow((fr - uCMBR + 0.5 * uCMBRd) / wE, 2.0)) * step(0.001, uCMBR) * (1.0 - smoothstep(1.0, 1.1, uCMBR));
           col = mix(col, cm.rgb * uCMBI, rev * uCMB) + vec3(1.0, 0.9, 0.7) * edge * 1.1 * uCMB;
         }
         // the air glowing (CMB energy absorbed): billowing incandescent plasma (alpha channel of the CMB map = fbm)
@@ -588,6 +591,11 @@ export function makeParis(renderer, { sunAz = 230, sunEl = 40, sky: skyOpt = {},
   const tile = (t, s) => { const c = t.clone(); c.repeat.set(s, s); c.needsUpdate = true; return c; };
   const groundMat = heatize(new THREE.MeshStandardMaterial({ map: tile(Gm.map, 700), normalMap: tile(Gm.nor, 700), roughness: 0.96 }), { organic: 0.15, heat: 0.55 });
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(2800, 2800), groundMat); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+  // the ground layers are 2-8 cm apart (ground 0, roads 0.02, water 0.03, lawn tops 0.08): from 100+ m away the depth
+  // buffer cannot tell them apart and they z-fight (post 4 v2: a lawn vanished for one frame, far roads flickered
+  // grey/green). Depth bias: each lower layer loses to the one above it, whatever the distance
+  const below = (m, k) => { m.polygonOffset = true; m.polygonOffsetFactor = k; m.polygonOffsetUnits = k; };
+  below(groundMat, 4);
   const lawnMat = heatize(new THREE.MeshStandardMaterial({ map: Lm.map, normalMap: Lm.nor, normalScale: new THREE.Vector2(0.8, 0.8), roughness: 0.95 }), { organic: 1, heat: 0.6 });
   const lawns = [];
   const addLawn = (x0, x1, z0, z1) => {
@@ -601,9 +609,9 @@ export function makeParis(renderer, { sunAz = 230, sunEl = 40, sky: skyOpt = {},
   addLawn(-150, 150, -430, -300);
   // the Seine (behind the tower) with a sky reflection
   const water = new THREE.Mesh(new THREE.PlaneGeometry(3000, 110), heatize(new THREE.MeshStandardMaterial({ color: '#3d5560', roughness: 0.12, metalness: 0.0 })));
-  water.rotation.x = -Math.PI / 2; water.position.set(0, 0.03, -485); scene.add(water);
+  water.rotation.x = -Math.PI / 2; water.position.set(0, 0.03, -485); scene.add(water); below(water.material, 1);
   // avenues
-  const roadMat = heatize(new THREE.MeshStandardMaterial({ color: '#4a4c51', roughness: 0.9 }));
+  const roadMat = heatize(new THREE.MeshStandardMaterial({ color: '#4a4c51', roughness: 0.9 })); below(roadMat, 2);
   for (const s of [-1, 1]) { const road = new THREE.Mesh(new THREE.PlaneGeometry(22, 1700), roadMat); road.rotation.x = -Math.PI / 2; road.position.set(s * 109, 0.02, 120); road.receiveShadow = true; scene.add(road); }
   const roadX = new THREE.Mesh(new THREE.PlaneGeometry(1800, 26), roadMat); roadX.rotation.x = -Math.PI / 2; roadX.position.set(0, 0.02, -290); roadX.receiveShadow = true; scene.add(roadX);
 

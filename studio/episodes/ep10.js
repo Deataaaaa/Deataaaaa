@@ -707,8 +707,9 @@ export async function create() {
       const cmbOn = smooth(T.BIG, T.BIG + 0.12, story) * (1 - smooth(T.KT - 0.1, T.KT + 0.7, story));   // the microwave sky, then it burns
       P.skyU.uMilky.value = milky * 1.5; stars.u.uGain.value = milky * 2.4; P.skyU.uDim.value = 1 - Math.max(0.74 * milky, 0.5 * cmbOn);
       P.skyU.uCMB.value = cmbOn; P.skyU.uCMBI.value = 0.85;
-      P.skyU.uCMBR.value = lerp(0, 1.12, smooth(T.BIG, T.BIG + 1.9, story));
-      P.skyU.uCMBRd.value = P.skyU.uCMBR.value - lerp(0, 1.12, smooth(T.BIG, T.BIG + 1.9, story - 1 / 30));   // sweep during this frame
+      // the reveal sweeps down the sky in 3 s (in 1.9 s its band crossed each patch of sky in about one frame)
+      P.skyU.uCMBR.value = lerp(0, 1.12, smooth(T.BIG, T.BIG + 3.0, story));
+      P.skyU.uCMBRd.value = P.skyU.uCMBR.value - lerp(0, 1.12, smooth(T.BIG, T.BIG + 3.0, story - 1 / 30));   // sweep during this frame
       P.skyU.uWhite.value = smooth(0, 0.55, airK) * 0.97; P.skyU.uPlasma.value = 1;
       const hot = smooth(T.MELT - 1, T.SPACE, story);
       P.skyU.uWhiteCol.value.set(lerp(lerp(1.3, 2.6, airK), 2.5, hot), lerp(lerp(0.3, 1.0, airK), 0.9, hot), lerp(lerp(0.08, 0.3, airK), 0.28, hot));

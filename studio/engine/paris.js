@@ -540,8 +540,8 @@ export function makeDaySky(sunDir, { zen = '#2f62b8', hor = '#c8d7e6', mid = nul
           float fr = 1.0 - el, rev = smoothstep(uCMBR, uCMBR - 0.08, fr);
           // the bright front is motion-blurred over the distance it sweeps in one frame (uCMBRd): thinner than its step,
           // it strobed down the sky as separate bands (same energy, spread over the frame's sweep)
-          float wE = sqrt(0.012 * 0.012 + uCMBRd * uCMBRd / 6.0);
-          float edge = (0.012 / wE) * exp(-pow((fr - uCMBR + 0.5 * uCMBRd) / wE, 2.0)) * step(0.001, uCMBR) * (1.0 - smoothstep(1.0, 1.1, uCMBR));
+          float wE = sqrt(0.02 * 0.02 + uCMBRd * uCMBRd / 6.0);
+          float edge = (0.02 / wE) * exp(-pow((fr - uCMBR + 0.5 * uCMBRd) / wE, 2.0)) * step(0.001, uCMBR) * (1.0 - smoothstep(1.0, 1.1, uCMBR));
           col = mix(col, cm.rgb * uCMBI, rev * uCMB) + vec3(1.0, 0.9, 0.7) * edge * 1.1 * uCMB;
         }
         // the air glowing (CMB energy absorbed): billowing incandescent plasma (alpha channel of the CMB map = fbm)

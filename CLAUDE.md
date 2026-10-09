@@ -80,7 +80,8 @@ often while at work, so every deliverable has to be ready to post straight from 
 | 1 | `studio/episodes/ep07.js` | Elevator cable snaps (16th floor) | posted (53.8 s). 12 h: 1.2K views, skip 66%, avg watch 18 s, likes 5.6%, shares 1.8%, 0 comments |
 | 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | delivered v2 (77.2 s, worst case, hook on frame 1, tag 02; v1 83.4 s replaced after clipping feedback) |
 | 3 | `studio/episodes/ep09.js` | A humpback engulfs you (POV, Cape Cod, real cases 2021 and 2025) | delivered (75.2 s, POV, tag 03; render 3 lanes ≈ 2 h 50) |
-| 4 | `studio/episodes/ep10.js` | Light becomes instant for 5 s (Paris, Champ de Mars → space → Holmdel 1964) | built (75.0 s, tag 04), rendering |
+| 4 | `studio/episodes/ep10.js` | Light becomes instant for 5 s (Paris, Champ de Mars → space → Holmdel 1964) | delivered (75.0 s, tag 04; render 3+1 lanes ≈ 2 h 30) |
+| 5 | – | waiting for the owner's pick: radioactive decay at once (recommended) / hydrogen bonds 5 s / magnetic field off 1 s / chemical bonds 1 s | pitched in the plan artifact |
 Cast log (rule 16): post 1 elevator = Michelle (dark skin, curly black hair, red headphones); post 2 plane =
 Michelle (same); post 3 whale = POV diver, black wetsuit and gloves (body never seen); post 4 light = Male_Adult_17
 (beard, black cap, blue-white hoodie; his friend Female_Adult_12, brunette with bangs, black hoodie). Next video: someone

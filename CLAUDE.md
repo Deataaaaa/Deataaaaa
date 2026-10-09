@@ -88,7 +88,7 @@ often while at work, so every deliverable has to be ready to post straight from 
 | 1 | `studio/episodes/ep07.js` | Elevator cable snaps (16th floor) | posted (53.8 s). 12 h: 1.2K views, skip 66%, avg watch 18 s, likes 5.6%, shares 1.8%, 0 comments |
 | 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | delivered v2 (77.2 s, worst case, hook on frame 1, tag 02; v1 83.4 s replaced after clipping feedback) |
 | 3 | `studio/episodes/ep09.js` | A humpback engulfs you (POV, Cape Cod, real cases 2021 and 2025) | delivered (75.2 s, POV, tag 03; render 3 lanes ≈ 2 h 50) |
-| 4 | `studio/episodes/ep10.js` | Light becomes instant for 5 s (Paris, Champ de Mars → space → Holmdel 1964) | delivered (75.0 s, tag 04; render 3+1 lanes ≈ 2 h 30) |
+| 4 | `studio/episodes/ep10.js` | Light becomes instant for 5 s (Paris, Champ de Mars → space → Holmdel 1964) | delivered v2 (75.0 s, tag 04): v1 replaced after the owner saw flicker and wanted it "hella impressive". New effects; SSAA 2, no grain, smooth camera moves, depth bias, no close-spark or smoke-card pops; flicker check clean except 18 s (0.61: star/ember parallax, checked by eye). Render ≈ 10 h in all with re-renders |
 | 5 | – | waiting for the owner's pick: radioactive decay at once (recommended) / hydrogen bonds 5 s / magnetic field off 1 s / chemical bonds 1 s | pitched in the plan artifact |
 Cast log (rule 16): post 1 elevator = Michelle (dark skin, curly black hair, red headphones); post 2 plane =
 Michelle (same); post 3 whale = POV diver, black wetsuit and gloves (body never seen); post 4 light = Male_Adult_17
@@ -101,7 +101,10 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
 - This cloud box has no GPU: SwiftShader renders ~10–25 s/frame per worker with 3 workers on 4 cores, so an
   80 s video takes 3–4 h. Shots differ a lot in cost: when a worker finishes early, kill the slowest one and
   relaunch its missing frames split across two workers (`--resume` skips frames that exist).
-  Rendering on the owner's PC (Claude Desktop or `claude remote-control`) would be ~10× faster.
+  Rendering on the owner's PC (Claude Desktop or `claude remote-control`) would be ~10× faster. Owner, 9 Oct 2026:
+  "I do have a very good PC but my girlfriend would get mad if it is turned on 24/7": the PC can only be used for
+  short render sessions, started by them (plan: a one-click render kit that pulls, renders on the GPU, encodes,
+  checks, syncs the MP4 to the phone and shuts the PC down).
 - Wait for every texture before the first frame (`TEX_PENDING` in `engine/elevator.js`), or the first
   frame of each worker samples black textures.
 - Never `pkill -f`/`pgrep -f` with a pattern that also appears in your own shell command (it kills or
@@ -183,7 +186,9 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
   down while motion, fades and reveals change one way. `altf` (flat areas, 90th percentile of the second) read 0.72-1.21
   on v1's grain, 0.57-1.08 on the strobing orbit, 0.02-0.46 on clean shots: limit 0.6. `pop` (worst frame) caught the
   vanished lawn (2.9) and the strobing scan band (1.9): limit 1.5. Jf/J are printed for information only (they also rise
-  on legitimate transitions). Hard cuts, flashes and near-white or near-black frames are skipped.
+  on legitimate transitions). Hard cuts, flashes and near-white or near-black frames are skipped. Thousands of tiny
+  points moving with the camera (stars, frozen embers) read up to ~0.6 because the flow cannot follow each one: look at
+  the frames before calling it flicker (post 4's 18 s read 0.61; the points glide, none twinkles).
 - Pops too small to move a frame-wide average (a thin line, one spark) need `tools/popscan.py <frames> <from> <to>`
   plus your eyes on the frames it lists (it masks the tag, HUD timer and captions, whose digits change every frame).
 - Coplanar ground layers z-fight from far away: post 4's ground (y 0), roads (0.02), water (0.03) and lawn tops (0.08)

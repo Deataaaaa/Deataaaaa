@@ -143,5 +143,22 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
   `heatize(material)` adds two effects to any lit material: scorch (charring + ember specks where the sun hits, organic
   materials only, so shadows stay cool) and incandescence (blackbody ramp, stronger on edges). ACES + sRGB turns warm
   HDR colours into pale cream: for an inferno look, push saturated low values and grade with uTint/uContrast/uSat.
+- Post 4 v2 effects live in `engine/fx.js`: `Sparks` (points sized in metres, birth/life, velocity, drag, a global
+  acceleration such as an upward blast, cooling colour), `SkyStars` (fixed pixel size), `Billboards` (instanced quads
+  with atlas tiles: additive flames/fireballs, or lit smoke whose atlas stores a normal map), `Streaks` (screen-space
+  motion trails), `Flare` (starburst + anamorphic streak + ghosts placed in screen space), `bakeEquirect` /
+  `milkyWayMap` / `cmbMap` (half-float equirect sky maps baked once on the GPU), `fadeShadowBorders()`.
+- `DataTexture` row 0 is the bottom of the texture (v = 0): an atlas written top row first comes out upside down
+  (the first flames were upside-down candles). Dump generated textures to an image before using them.
+- UnrealBloomPass runs before tone mapping: set `bloom.threshold ≈ 0.95 / toneMappingExposure`, or a bright sky
+  blooms over the whole frame (the first melt frames were a beige wash).
+- `heatize` materials share the `FX` uniforms: set them in every branch of `frame()` (in v1 the Holmdel trees were
+  drawn with Paris's scorch and heat values: pale yellow trees).
+- 2x supersampling with MSAA off looks the same as with MSAA 4 and renders up to 2x faster.
+- Camera moves use `CamPath` (core.js): Catmull-Rom curves with a monotone timing curve, so the camera never stops at a
+  key (v1's per-segment easing stopped at every key).
+- Additive puffs pile up into a white haze over a long take: give them a life (fade out after a few seconds).
+- `tools/flickercheck.py` calibration: v1's source frames (grain 0.035) read Jf 1.1-1.3 on the hook and J 4-6 on the
+  drone shot; grain-free supersampled frames read far lower. Hard cuts and flashes are skipped.
 - Parallel render workers used to pick a random port and could collide (EADDRINUSE killed one silently): `render.mjs`
   now listens on a free port. Billboard smoke seen from above reads as white blobs: fade it out when the camera rises.

@@ -226,16 +226,23 @@ export function makeTrees(list, { seed = 3 } = {}) {
   const byVar = [[], [], []];
   list.forEach((t) => byVar[Math.floor(r() * 3)].push(t));
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
+  const mats = [[], [], []];   // same random draws, in the same order, as before chunking
   variants.forEach((V, k) => {
-    const L = byVar[k]; if (!L.length) return;
-    const wood = new THREE.InstancedMesh(V.wood, barkMat, L.length), leaves = new THREE.InstancedMesh(V.leaves, leafMat, L.length);
-    L.forEach((t, i) => {
+    byVar[k].forEach((t) => {
       q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * Math.PI * 2); const sc = (t.s || 1) * (0.9 + r() * 0.2);
-      s.set(sc, sc * (0.92 + r() * 0.16), sc); p.set(t.x, 0, t.z); m.compose(p, q, s);
-      wood.setMatrixAt(i, m); leaves.setMatrixAt(i, m);
+      s.set(sc, sc * (0.92 + r() * 0.16), sc); p.set(t.x, 0, t.z); m.compose(p, q, s); mats[k].push({ t, m: m.clone() });
     });
-    for (const im of [wood, leaves]) { im.castShadow = true; im.receiveShadow = true; group.add(im); }
   });
+  // spatial chunks: off-screen trees are culled in the camera pass and outside the shadow frustum (one InstancedMesh
+  // for every tree was drawn whole every frame, twice: the bullet-time frames spent most of their time on leaves)
+  const CELL = 40, cells = new Map();
+  mats.forEach((arr, k) => arr.forEach((e) => { const key = `${Math.floor(e.t.x / CELL)},${Math.floor(e.t.z / CELL)},${k}`; if (!cells.has(key)) cells.set(key, { k, list: [] }); cells.get(key).list.push(e.m); }));
+  for (const { k, list } of cells.values()) {
+    const V = variants[k];
+    const wood = new THREE.InstancedMesh(V.wood, barkMat, list.length), leaves = new THREE.InstancedMesh(V.leaves, leafMat, list.length);
+    list.forEach((mm, i) => { wood.setMatrixAt(i, mm); leaves.setMatrixAt(i, mm); });
+    for (const im of [wood, leaves]) { im.castShadow = true; im.receiveShadow = true; im.computeBoundingSphere(); group.add(im); }
+  }
   return { group, leafMat, barkMat };
 }
 

@@ -559,6 +559,8 @@ export async function create() {
   poseEngineers(T.REC);
   await Promise.all(TEX_PENDING);
   document.getElementById('end').style.background = 'rgba(12,13,16,0.8)';   // the end card lets the CMB show through
+  const endScene = new THREE.Scene(); endScene.add(new THREE.Mesh(HD.cmbSph.geometry, HD.cmbSph.material));
+  endScene.children[0].renderOrder = 999; endScene.children[0].frustumCulled = false;
 
   // ---- cameras ----
   const cam = new THREE.PerspectiveCamera(50, W / H, 0.05, 12000);
@@ -799,11 +801,11 @@ export async function create() {
       U.uFadeWhite.value = 0;
     } else {
       // ---------------- END CARD over the CMB ----------------
-      rscene = HD.scene;
+      rscene = endScene;   // only the CMB sphere: it covers the whole view, so the 1964 set behind it is not drawn
       FX.uScorch.value = 0; FX.uHeat.value = 0;
       cam.position.copy(A).addScaledVector(An, 0.6); cam.fov = 36; cam.updateProjectionMatrix(); cam.up.set(0, 1, 0); cam.lookAt(A.clone().addScaledVector(An, -1)); cam.updateMatrixWorld();
-      HD.cmbSph.position.copy(cam.position); HD.cmbSph.material.uniforms.uA.value = 1; HD.cmbSph.material.uniforms.uRot.value = t * 0.02;
-      R.renderer.toneMappingExposure = 0.6; R.bloom.strength = 0.1; R.bloom.threshold = 2;
+      endScene.children[0].position.copy(cam.position); HD.cmbSph.material.uniforms.uA.value = 1; HD.cmbSph.material.uniforms.uRot.value = t * 0.02;
+      R.renderer.toneMappingExposure = 0.6; R.bloom.strength = 0.1; R.bloom.threshold = 2; R.bloom.radius = 0.6;
       U.uVignette.value = 0.6; U.uFade.value = 0.25;
     }
     R.renderPass.scene = rscene; R.renderPass.camera = cam;

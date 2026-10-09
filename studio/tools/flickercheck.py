@@ -8,6 +8,8 @@ encoder pumping. Per second of video it prints:
   J    mean residual where the flow is reliable (forward-backward check): sparkle on detail shows up here, but so do
        caption fades, timer digits and fine parallax the flow cannot follow, so its limit is loose
   PSNR (with --ref) the worst frame of the encode against the source frames
+  pan  how fast the picture moves (90th percentile, px per frame at full res): without motion blur, a pan faster than
+       ~25 px per frame strobes on a phone (post 4 v2's first orbit ran at 40-75 and read as flicker)
 Frames at a hard cut or a flash (big jump in mean brightness) are skipped: those changes are intended.
 Seconds over the limits are flagged; exit code 1 if any is (encode.sh fails loudly).
 Calibration (source frames): post 4 v1 with film grain 0.035 read Jf 1.1-1.3 on the hook and J 4.2-6.2 on the drone
@@ -22,6 +24,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument('src'); ap.add_argument('--ref'); ap.add_argument('--fps', type=float, default=30)
 ap.add_argument('--scale', type=float, default=0.5, help='analysis scale (0.5 = 540x960, a phone screen)')
 ap.add_argument('--jf', type=float, default=0.9); ap.add_argument('--j', type=float, default=4.0); ap.add_argument('--psnr', type=float, default=30.0)
+ap.add_argument('--pan', type=float, default=25.0, help='px per frame (full res): faster pans strobe without motion blur')
 ap.add_argument('--from', dest='frm', type=int, default=0); ap.add_argument('--to', type=int, default=10 ** 9)
 a = ap.parse_args()
 W, H = int(1080 * a.scale), int(1920 * a.scale)
@@ -57,7 +60,7 @@ ref = frames_from_dir(a.ref) if a.ref else None
 prev = None; rows = {}; i = a.frm
 for f in src:
     sec = int(i / a.fps)
-    r = rows.setdefault(sec, {'j': [], 'jf': [], 'psnr': []})
+    r = rows.setdefault(sec, {'j': [], 'jf': [], 'psnr': [], 'pan': []})
     if ref is not None:
         g = next(ref, None)
         if g is not None:
@@ -75,17 +78,19 @@ for f in src:
         grad = cv2.blur(np.abs(cv2.Sobel(f, cv2.CV_32F, 1, 0)) + np.abs(cv2.Sobel(f, cv2.CV_32F, 0, 1)), (5, 5))
         flat = ok & (grad < 12.0)
         r['j'].append(float(res[ok].mean()) if ok.mean() > 0.05 else 0.0)
+        r['pan'].append(float(np.median(np.hypot(fw[..., 0], fw[..., 1]))) / a.scale)   # typical motion, full-res px/frame
         r['jf'].append(float(res[flat].mean()) if flat.mean() > 0.02 else 0.0)
     prev = f; i += 1
 
 bad = 0
-print(f'{"sec":>4} {"Jf":>6} {"J":>6} {"PSNR":>6}')
+print(f'{"sec":>4} {"Jf":>6} {"J":>6} {"PSNR":>6} {"pan":>5}')
 for sec in sorted(rows):
     r = rows[sec]
     if not r['j']: print(f'{sec:4d}   (cut or flash)'); continue
     J = float(np.mean(r['j'])); Jf = float(np.mean(r['jf'])); P = float(np.min(r['psnr'])) if r['psnr'] else None
-    flag = Jf > a.jf or J > a.j or (P is not None and P < a.psnr)
+    pan = float(np.percentile(r['pan'], 90)) if r['pan'] else 0.0
+    flag = Jf > a.jf or J > a.j or (P is not None and P < a.psnr) or pan > a.pan
     bad += flag
-    print(f'{sec:4d} {Jf:6.2f} {J:6.2f} {("%6.1f" % P) if P is not None else "     -"}{"  <-- FLICKER?" if flag else ""}')
+    print(f'{sec:4d} {Jf:6.2f} {J:6.2f} {("%6.1f" % P) if P is not None else "     -"} {pan:5.1f}{"  <-- FLICKER?" if flag else ""}')
 print('FLICKER CHECK:', 'OK' if not bad else f'{bad} second(s) flagged')
 sys.exit(1 if bad else 0)

@@ -601,11 +601,12 @@ export async function create() {
   // time slowed: a slow orbit around the frozen picnic (in front of them -> their right -> behind), then the crane up
   const orb = (phiDeg, R, h) => { const ph = THREE.MathUtils.degToRad(phiDeg); return V(C.x + Math.sin(ph) * R, h, C.z + Math.cos(ph) * R); };
   const frozen = new CamPath([
-    [10.8, orb(205, 2.7, 0.72), V(C.x, 0.62, C.z), 42],
-    [12.6, orb(160, 2.8, 0.8), V(C.x + 0.05, 0.64, C.z), 42],
-    [14.4, orb(108, 2.95, 0.9), V(C.x, 0.66, C.z - 0.05), 42],
-    [16.1, orb(58, 3.15, 1.02), V(C.x, 0.7, C.z - 0.3), 43],
-    [17.6, orb(22, 3.4, 1.3), V(C.x + 0.4, 1.7, C.z - 9), 44],
+    // keys before 17.6 only shape the curve's start: from 17.6 on (after the cut) the camera is behind them
+    [10.8, orb(320, 2.9, 0.78), V(C.x, 0.62, C.z), 42],
+    [12.6, orb(334, 2.85, 0.82), V(C.x, 0.63, C.z), 42],
+    [14.4, orb(348, 2.9, 0.88), V(C.x, 0.66, C.z - 0.05), 42],
+    [16.1, orb(2, 3.1, 0.98), V(C.x, 0.72, C.z - 0.3), 43],
+    [17.6, orb(12, 3.35, 1.18), V(C.x + 0.2, 1.3, C.z - 6), 44],
     [19.4, V(C.x + 1.9, 3.4, C.z + 6.6), V(-9, 62, -120), 47],
     [21.4, V(C.x + 3.2, 7.0, C.z + 10.5), V(-4, 112, -200), 50],
     [24.6, V(C.x + 4.5, 16, C.z + 16), V(-3, 120, -200), 53],
@@ -628,6 +629,16 @@ export async function create() {
     }
     storm.commit(); storm.u.uAcc.value.set(0, 5.5, 0); storm.u.uAccT0.value = T.KT; storm.u.uTurb.value = 1.2; storm.u.uTurbF.value = 0.8; storm.u.uCool.value = 0.5;
     scene.add(storm.points); }
+  // the frozen moment, in front of them (their faces), drifting slowly (8 degrees a second): the first version swung
+  // 180 degrees around them and the background strobed at 40-75 px per frame. Hard cut at the stars (sound hit) to
+  // the take from behind them that cranes up to the sky.
+  const arc = new CamPath([
+    [10.8, orb(205, 2.7, 0.72), V(C.x, 0.62, C.z), 42],
+    [12.6, orb(192, 2.75, 0.76), V(C.x + 0.03, 0.63, C.z), 42],
+    [14.4, orb(178, 2.85, 0.81), V(C.x + 0.03, 0.65, C.z - 0.03), 42],
+    [16.1, orb(164, 2.95, 0.86), V(C.x, 0.68, C.z - 0.05), 42],
+    [17.6, orb(152, 3.05, 0.9), V(C.x - 0.03, 0.7, C.z - 0.05), 42],
+  ], { easeIn: false, easeOut: false });
   function hookCam(t) {   // the flash-forward: under the vaporising tower, looking up
     const k = t / T.HOOK;
     cam.position.set(-74 + k * 5, 128 + k * 6, -88 + k * 3); cam.fov = 56; cam.updateProjectionMatrix();
@@ -665,7 +676,7 @@ export async function create() {
     if (story < T.SPACE) {
       // ---------------- PARIS ----------------
       poseAll(story);
-      if (t < T.HOOK) hookCam(t); else if (story < T.T0 + 0.2) approach.apply(cam, story); else frozen.apply(cam, story);
+      if (t < T.HOOK) hookCam(t); else if (story < T.T0 + 0.2) approach.apply(cam, story); else if (story < T.STARS) arc.apply(cam, story); else frozen.apply(cam, story);
       const after = story - T.T0;
       const kick = story < T.KT ? 0 : Math.exp(-(story - T.KT) * 2.2);              // the blast
       if (kick > 0.001) { cam.rotateZ(Math.sin(story * 31) * 0.006 * kick); cam.rotateX(Math.sin(story * 23 + 1) * 0.005 * kick); cam.updateMatrixWorld(); }

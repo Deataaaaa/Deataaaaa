@@ -162,6 +162,9 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
 - Camera moves use `CamPath` (core.js): Catmull-Rom curves with a monotone timing curve, so the camera never stops at a
   key (v1's per-segment easing stopped at every key).
 - Additive puffs pile up into a white haze over a long take: give them a life (fade out after a few seconds).
+- Keep camera motion slow on screen: frames have no motion blur, so a background moving faster than ~25 px per frame
+  strobes on a phone and reads as flicker (post 4 v2's first orbit swung 180 degrees in 7 s: 40-75 px per frame; the
+  fix was a slow 50-degree drift and a hard cut on a sound hit). `flickercheck.py` reports the pan speed per second.
 - `tools/flickercheck.py` calibration: v1's source frames (grain 0.035) read Jf 1.1-1.3 on the hook and J 4-6 on the
   drone shot; grain-free supersampled frames read far lower. Hard cuts and flashes are skipped.
 - Parallel render workers used to pick a random port and could collide (EADDRINUSE killed one silently): `render.mjs`

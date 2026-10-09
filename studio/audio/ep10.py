@@ -1,4 +1,4 @@
-"""Soundtrack for post 4 (What if light became instant for 5 seconds?). Cue times match episodes/ep10.js (T).
+"""Soundtrack for post 4 v2 (What if light became instant for 5 seconds?). Cue times match episodes/ep10.js (T).
 
 The hook: the white-hot sky over the tower, a roar and a hit -> calm Paris: wind, birds, a murmur of picnics, a
 music-box motif over a mid-range drone, ticks that speed up toward zero, a riser -> the flash: a huge hit, then a
@@ -12,7 +12,7 @@ import numpy as np
 from synth import *
 
 DUR = 75.0
-T = dict(HOOK=3.6, T0=10.6, STARS=17.6, BIG=21.0, AIR=24.7, KT=27.8, MELT=32.5, SPACE=38.6, REAL=41.5, NORMAL=46.5, DARK=46.7, SUNBACK=56.6, REC=57.0, END=69.2)
+T = dict(HOOK=3.6, T0=10.6, STARS=17.6, BIG=21.0, AIR=24.7, KT=27.8, MELT=32.5, SPACE=38.6, REAL=41.5, NORMAL=46.5, DARK=46.7, SUNBACK=56.0, REC=57.0, END=69.2)
 m = Mix(DUR, seed=10)
 rng = np.random.default_rng(100)
 
@@ -97,6 +97,14 @@ m.add(T['KT'], boom(rng, 3.0, 60, 25, 1.4, 0.5, 0.9), gain=0.65, rev=0.4)
 for k in range(30):                                     # crackle of everything igniting, denser toward the cut
     tk = T['KT'] + (T['SPACE'] - T['KT']) * (k / 30) ** 0.7
     m.add(tk, norm(bp(noise(0.12, rng, 'white'), 600, 5000) * np.exp(-tt(0.12) * 30)), gain=0.05 + 0.05 * k / 30, pan=rng.uniform(-0.8, 0.8), rev=0.3)
+m.add(T['KT'], boom(np.random.default_rng(271), 5.5, 46, 18, 2.4, 1.0, 1.0), gain=0.85, rev=0.5)     # the air exploding upward
+kt_r = lp(noise(4.5, rng, 'brown'), 260) * np.exp(-tt(4.5) * 0.6)
+m.add(T['KT'] + 0.05, norm(kt_r), gain=0.5, rev=0.4)
+for k in range(5):                                       # the tower: deep metal groans, then the hiss of boiling iron
+    m.add(T['MELT'] - 0.4 + k * 1.15, groan(np.random.default_rng(300 + k), 2.2, 70 + k * 9), gain=0.12, pan=0.2 * np.sin(k), rev=0.5)
+sz = bp(noise(T['SPACE'] - T['MELT'], rng, 'white'), 1800, 9000) * env_at(tt(T['SPACE'] - T['MELT']), [0, 0.8, 5.0, 6.1], [0, 0.6, 1.0, 0.2])
+m.add(T['MELT'], norm(sz), gain=0.05, rev=0.3)
+m.add(T['MELT'] + 0.05, metal_hit(rng, 300, 2.5), gain=0.12, rev=0.6)
 m.add(T['SPACE'] - 3.0, riser(rng, 3.0, 200, 7000, 2.5), gain=0.25, rev=0.3)
 
 # ---------- space (38.6 -> 46.5): the hit, the roar far away, the air leaving ----------
@@ -120,6 +128,9 @@ tk = T['DARK'] + 0.3
 while tk < T['SUNBACK'] - 0.05:
     m.add(tk, tick(rng, 0.8), gain=0.035, pan=-0.2, rev=0.05)
     tk += 0.18
+fs_ = T['SUNBACK'] - T['DARK']                          # the light front on its way: a glassy swell rising to the Sun's return
+sw = pad([329.63, 415.3, 493.88, 659.26], fs_, rng, cutoff=4000, attack=fs_ * 0.8, release=0.4, voices=3, harmonics=10)
+m.add(T['DARK'], (sw[0] * np.linspace(0, 1, len(sw[0])) ** 2, sw[1] * np.linspace(0, 1, len(sw[1])) ** 2), gain=0.07, rev=0.7)
 m.add(T['SUNBACK'] - 1.8, riser(rng, 1.8, 400, 5000, 2.0), gain=0.16, rev=0.3)
 sun = pad([220.0, 277.18, 329.63, 440.0], 2.6, rng, cutoff=3000, attack=0.05, release=1.8, voices=3, harmonics=12)
 m.add(T['SUNBACK'], (fade(sun[0], 0.02, 1.4), fade(sun[1], 0.02, 1.4)), gain=0.22, rev=0.7)
@@ -145,9 +156,15 @@ def coo(r):
 
 for tc_, pan in [(R0 + 1.2, 0.4), (R0 + 4.6, -0.3), (R0 + 8.4, 0.5), (T['REC'] + 8.1 + 0.4, 0.2)]: m.add(tc_, coo(rng), gain=0.06, pan=pan, rev=0.3)
 for j, nn in enumerate([69, 72, 76, 74, 72, 69, 67, 69]): m.add(R0 + 0.8 + j * 1.4, epiano(midi(nn), 2.0, 0.8) if 'epiano' in globals() else bell(midi(nn), rng, 1.6), gain=0.045, pan=0.2 * np.sin(j), rev=0.6)
+fl = np.random.default_rng(66)                            # pigeons taking off: wing claps
+for j in range(5):
+    t0 = 65.2 + j * 0.17
+    for k in range(9): m.add(t0 + k / 5.5 + fl.uniform(0, 0.02), norm(bp(noise(0.05, fl, 'white'), 500, 3500) * np.exp(-tt(0.05) * 60)), gain=0.05 * (1 - k / 11), pan=fl.uniform(-0.5, 0.5), rev=0.25)
+hs = bp(noise(2.0, rng, 'white'), 500, 7000) * env_at(tt(2.0), [0, 1.2, 1.6, 2.0], [0, 1.0, 0.8, 0.0])   # into the horn: the hiss swells
+m.add(67.4, norm(hs), gain=0.12, rev=0.2)
 reveal = pad([110.0, 164.81, 220.0, 277.18, 329.63], 4.0, rng, cutoff=2400, attack=0.08, release=2.0, voices=3, harmonics=12)
-m.add(65.1, (fade(reveal[0], 0.05, 1.8), fade(reveal[1], 0.05, 1.8)), gain=0.16, rev=0.7)
-m.add(65.1, boom(rng, 2.5, 60, 30, 1.2, 0.3, 0.8), gain=0.35, rev=0.5)
+m.add(68.45, (fade(reveal[0], 0.05, 1.8), fade(reveal[1], 0.05, 1.8)), gain=0.16, rev=0.7)   # the CMB fills the screen
+m.add(68.45, boom(rng, 2.5, 60, 30, 1.2, 0.3, 0.8), gain=0.35, rev=0.5)
 
 # ---------- end card (69.2 -> 75): hush, the motif once more ----------
 ep_ = pad([220.0, 329.63, 440.0, 493.88], DUR - R1 + 0.1, rng, cutoff=1500, attack=1.0, release=2.0, voices=2, harmonics=10)

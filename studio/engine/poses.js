@@ -143,6 +143,7 @@ export function stand(av, o) {
   const ground = o.pos.y;
   if (o.lean) { rotW(B.Spine, left, o.lean * 0.5); rotW(B.Spine1, left, o.lean * 0.5); }
   if (o.twist) { rotW(B.Spine1, up, o.twist * 0.5); rotW(B.Spine2, up, o.twist * 0.5); }
+  if (o.breath != null) { const b = Math.sin(o.breath * Math.PI * 2); rotW(B.Spine1, left, b * 0.012); rotW(B.Spine2, left, b * 0.009); }   // breathing
   const P = wp(B.Hips);
   for (const [side, s] of [['Left', 1], ['Right', -1]]) {
     const foot = P.clone().addScaledVector(left, s * 0.12).addScaledVector(fwd, (o.stride ?? 0) * s * 0.18); foot.y = ground + 0.08;

@@ -12,13 +12,16 @@ EXP=$(python3 -c "print(round($DUR*30))")
 AUD=(-c:a aac -b:a 192k -ar 48000 -ac 2)
 VID=(-pix_fmt yuv420p -profile:v high -level 4.2 -movflags +faststart)
 
+# x264 tuned for clean CG frames (no grain): film tune, variance AQ biased to dark areas (no banding or blocks
+# crawling in skies and shadows), lighter deblocking so fine sparks keep their shape
+X264=(-tune film -x264-params "aq-mode=3:aq-strength=0.85:deblock=-1,-1")
 ffmpeg -y -v error -framerate 30 -i "$FR/f_%05d.jpg" -i "$WAV" -map 0:v:0 -map 1:a:0 \
-  -c:v libx264 -preset slow -crf 18 "${VID[@]}" "${AUD[@]}" -shortest "$OUT.mp4"
+  -c:v libx264 -preset slow -crf 17 "${X264[@]}" "${VID[@]}" "${AUD[@]}" -shortest "$OUT.mp4"
 
 VB=$(python3 -c "print(int((28.5*8*1024*1024/$DUR - 200000)/1000))")
-ffmpeg -y -v error -framerate 30 -i "$FR/f_%05d.jpg" -c:v libx264 -preset slow -b:v ${VB}k -pass 1 -passlogfile "$PASSLOG" -pix_fmt yuv420p -an -f null /dev/null
+ffmpeg -y -v error -framerate 30 -i "$FR/f_%05d.jpg" -c:v libx264 -preset veryslow -b:v ${VB}k "${X264[@]}" -pass 1 -passlogfile "$PASSLOG" -pix_fmt yuv420p -an -f null /dev/null
 ffmpeg -y -v error -framerate 30 -i "$FR/f_%05d.jpg" -i "$WAV" -map 0:v:0 -map 1:a:0 \
-  -c:v libx264 -preset slow -b:v ${VB}k -pass 2 -passlogfile "$PASSLOG" "${VID[@]}" "${AUD[@]}" -shortest "${OUT}_phone.mp4"
+  -c:v libx264 -preset veryslow -b:v ${VB}k "${X264[@]}" -pass 2 -passlogfile "$PASSLOG" "${VID[@]}" "${AUD[@]}" -shortest "${OUT}_phone.mp4"
 
 REF=$(ffmpeg -hide_banner -nostats -i "$WAV" -af ebur128 -f null - 2>&1 | awk '/Summary/{s=1} s&&/I:/{print $2; exit}')
 for f in "$OUT.mp4" "${OUT}_phone.mp4"; do
@@ -29,3 +32,6 @@ for f in "$OUT.mp4" "${OUT}_phone.mp4"; do
   VD=$(ffprobe -v error -select_streams v:0 -show_entries stream=duration -of csv=p=0 "$f")
   echo "OK $f  $(du -h "$f" | cut -f1)  video ${VD}s  audio $A  ${I} LUFS (soundtrack ${REF})"
 done
+
+# flicker check (owner's note on post 4 v1): the phone file against the source frames, motion-compensated
+python3 "$(dirname "$0")/tools/flickercheck.py" "${OUT}_phone.mp4" --ref "$FR" | tail -n 12

@@ -73,7 +73,10 @@ const GradeShader = {
 
 export function createRenderer() {
   const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(1);
+  // supersampling: render at SSAA x the output size; the screenshot downsamples it (2 = a 2x2 box filter per pixel).
+  // Thin geometry (lattices, leaf cards, distant windows) sparkles frame to frame without it.
+  const SSAA = Number(new URLSearchParams(location.search).get('ssaa') || globalThis.SSAA || 1);
+  renderer.setPixelRatio(SSAA);
   renderer.setSize(W, H);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
@@ -82,7 +85,7 @@ export function createRenderer() {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   document.getElementById('stage').appendChild(renderer.domElement);
 
-  const rt = new THREE.WebGLRenderTarget(W, H, { type: THREE.HalfFloatType, samples: 4 });
+  const rt = new THREE.WebGLRenderTarget(W, H, { type: THREE.HalfFloatType, samples: Number(globalThis.MSAA ?? 4) });
   const composer = new EffectComposer(renderer, rt);
   const renderPass = new RenderPass(new THREE.Scene(), new THREE.PerspectiveCamera());
   const bloom = new UnrealBloomPass(new THREE.Vector2(W / 2, H / 2), 0.6, 0.5, 0.85);
@@ -92,7 +95,8 @@ export function createRenderer() {
   composer.addPass(bloom);
   composer.addPass(output);
   composer.addPass(grade);
-  return { renderer, composer, renderPass, bloom, grade };
+  composer.setSize(W, H);   // applies the pixel ratio to every render target and pass
+  return { renderer, composer, renderPass, bloom, grade, SSAA };
 }
 
 // ---------- overlay ----------
@@ -180,4 +184,43 @@ const _v = new THREE.Vector3();
 export function project(pos, camera) {
   _v.copy(pos).project(camera);
   return { x: (_v.x * 0.5 + 0.5) * W, y: (-_v.y * 0.5 + 0.5) * H, behind: _v.z > 1 };
+}
+
+// ---------- camera paths ----------
+// Fritsch-Carlson monotone cubic through (xs, ys): C1, no overshoot. s0/s1 = end slopes (0 = ease in/out).
+export function monotone(xs, ys, s0 = null, s1 = null) {
+  const n = xs.length, dx = [], m = [];
+  for (let i = 0; i < n - 1; i++) { dx[i] = xs[i + 1] - xs[i]; m[i] = (ys[i + 1] - ys[i]) / dx[i]; }
+  const c1 = [s0 ?? m[0]];
+  for (let i = 0; i < n - 2; i++) {
+    const a = m[i], b = m[i + 1];
+    if (a * b <= 0) c1.push(0); else { const cm = dx[i] + dx[i + 1]; c1.push(3 * cm / ((cm + dx[i + 1]) / a + (cm + dx[i]) / b)); }
+  }
+  c1.push(s1 ?? m[n - 2]);
+  const c2 = [], c3 = [];
+  for (let i = 0; i < n - 1; i++) { const inv = 1 / dx[i], cm = c1[i] + c1[i + 1] - 2 * m[i]; c2.push((m[i] - c1[i] - cm) * inv); c3.push(cm * inv * inv); }
+  return (x) => {
+    if (x <= xs[0]) return ys[0]; if (x >= xs[n - 1]) return ys[n - 1];
+    let i = 0; while (i < n - 2 && x > xs[i + 1]) i++;
+    const d = x - xs[i]; return ys[i] + c1[i] * d + c2[i] * d * d + c3[i] * d * d * d;
+  };
+}
+// A camera move through keys [t, position, target, fov]: centripetal Catmull-Rom curves for the position and the
+// target, travelled with a C1 timing curve (no stop at the keys, eased at both ends unless told otherwise).
+export class CamPath {
+  constructor(keys, { easeIn = true, easeOut = true } = {}) {
+    this.keys = keys;
+    const ts = keys.map((k) => k[0]), us = keys.map((_, i) => i / (keys.length - 1));
+    this.u = monotone(ts, us, easeIn ? 0 : null, easeOut ? 0 : null);
+    this.fov = monotone(ts, keys.map((k) => k[3]), easeIn ? 0 : null, easeOut ? 0 : null);
+    this.P = new THREE.CatmullRomCurve3(keys.map((k) => k[1]), false, 'centripetal');
+    this.T = new THREE.CatmullRomCurve3(keys.map((k) => k[2]), false, 'centripetal');
+    this.t0 = ts[0]; this.t1 = ts[ts.length - 1];
+  }
+  apply(cam, t) {
+    const u = clamp(this.u(t));
+    cam.position.copy(this.P.getPoint(u)); cam.fov = this.fov(t); cam.updateProjectionMatrix();
+    cam.up.set(0, 1, 0); cam.lookAt(this.T.getPoint(u)); cam.updateMatrixWorld();
+    return u;
+  }
 }

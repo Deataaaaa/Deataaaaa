@@ -58,11 +58,17 @@ often while at work, so every deliverable has to be ready to post straight from 
     "Famous reel.mp4"; the Drive connector only downloads files under 10 MB: ask for "Anyone with the link").
     Every video now has: a **countdown spine** (a millisecond timer from frame 1 to the event, then a second timer,
     slowed down if needed, to the end); **escalation of scale** every ~10 s; **4–6 long eased takes** instead of many
-    shots, hard cuts only on sound hits; golden-hour/dusk light, bloom, particles, light grain; quiet premium type
+    shots, hard cuts only on sound hits; golden-hour/dusk light, bloom, particles (no film grain: see rule 18); quiet premium type
     (serif title, small serif-italic one-line captions at ~2/3 height, tiny letter-spaced HUD on the left, all clear of
     the Instagram UI); concrete numbers in the HUD; a score with a mid-range drone, ticks that speed up toward zero,
     riser + downer into every cut, a hit on the cut; a **loop end card** repeating the opening title + the question.
     Animations must be flawless: mocap-driven bodies, blinking/breathing always on, no frozen poses, no pops.
+18. **No flicker** (owner, 9 Oct 2026, on post 4 v1: "make sure this doesn't happen again"). Never add per-frame noise
+    (film grain, random sparkle): `uGrain` stays 0. Render at 2× supersampling (`ssaa=2`, MSAA off). Particles and
+    billboards come from `engine/fx.js` (never smaller than 1.6 px: their alpha drops instead); procedural detail that
+    can get smaller than a pixel is frequency-clamped (`fwidth`); shadows fade at the frustum edge (`fadeShadowBorders`)
+    and the frustum only switches inside a flash or a cut; slow the camera over fine detail. `encode.sh` runs
+    `tools/flickercheck.py` on the phone file: it must print `FLICKER CHECK: OK`.
 
 ## Delivery checklist
 - `studio/encode.sh <frames> <wav> videos/postN_<slug>`: HQ + `_phone.mp4` (< 30 MB, the chat's send limit).

@@ -13,18 +13,19 @@ import { TEX_PENDING } from './elevator.js';
 
 export const FX = {
   uScorch: { value: 0 }, uHeat: { value: 0 }, uSunI: { value: 3.2 }, uTime: { value: 0 }, uMelt: { value: 0 }, uWind: { value: 0 },
+  uVapor: { value: 1e4 }, uTowerK: { value: 0.95 },
 };
 
 // ---------------------------------------------------------------------------------------------------------------
 // material patch: scorch where sunlit (organic only) + incandescence everywhere
 // ---------------------------------------------------------------------------------------------------------------
-export function heatize(mat, { organic = 0, heat = 1 } = {}) {
+export function heatize(mat, { organic = 0, heat = 1, heatU = null } = {}) {
   mat.userData.heat = { organic, heat };
   const prev = mat.onBeforeCompile;
   mat.onBeforeCompile = (sh, r) => {
     if (prev) prev(sh, r);
     sh.uniforms.uScorch = FX.uScorch; sh.uniforms.uHeat = FX.uHeat; sh.uniforms.uSunI = FX.uSunI; sh.uniforms.uFxTime = FX.uTime;
-    sh.uniforms.uOrganic = { value: organic }; sh.uniforms.uHeatK = { value: heat };
+    sh.uniforms.uOrganic = { value: organic }; sh.uniforms.uHeatK = heatU || { value: heat };
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vHeatW;')
       .replace('#include <project_vertex>', `#include <project_vertex>
         { vec4 hw = vec4(transformed, 1.0);
@@ -35,6 +36,9 @@ export function heatize(mat, { organic = 0, heat = 1 } = {}) {
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
         uniform float uScorch, uHeat, uSunI, uOrganic, uHeatK, uFxTime; varying vec3 vHeatW;
+        #ifdef BLADE
+          varying float vBladeT, vBladeH;
+        #endif
         vec3 blackbody(float k){            // k: 0 cold .. 1 white-hot
           vec3 c = mix(vec3(0.0), vec3(0.55,0.03,0.0), smoothstep(0.0,0.25,k));
           c = mix(c, vec3(1.0,0.32,0.04), smoothstep(0.2,0.5,k));
@@ -51,18 +55,25 @@ export function heatize(mat, { organic = 0, heat = 1 } = {}) {
           float sunlit = clamp(dot(reflectedLight.directDiffuse, vec3(0.2126,0.7152,0.0722)) / alb * 3.14159 / max(uSunI, 1e-3), 0.0, 1.0);
           float sc = uScorch * uOrganic * smoothstep(0.12, 0.6, sunlit);
           float ch = clamp(sc * 1.3, 0.0, 1.0);
+          #ifdef BLADE
+            totalEmissiveRadiance += blackbody(0.5 + 0.25 * vBladeH) * sc * smoothstep(0.45, 1.0, vBladeT) * (1.2 + 2.4 * vBladeH);
+          #endif
           reflectedLight.directDiffuse *= 1.0 - 0.8 * ch;                 // charring
           reflectedLight.indirectDiffuse *= 1.0 - 0.72 * ch;
-          float en = hn3(vHeatW * 38.0) * 0.6 + hn3(vHeatW * 97.0) * 0.4;
-          float ember = smoothstep(0.8, 0.9, en) * sc * step(0.95, uOrganic);  // tiny glowing specks (grass, leaves)
-          totalEmissiveRadiance += blackbody(0.5 + 0.2 * en) * ember * 5.0;
+          // tiny glowing specks (grass, leaves). Anti-flicker: once a speck gets smaller than ~1.5 px it is replaced by
+          // its average glow (fwidth of the noise coordinate = cells per pixel), so nothing sparkles from frame to frame
+          float cpp = length(fwidth(vHeatW * 24.0));
+          float en = hn3(vHeatW * 24.0) * 0.65 + hn3(vHeatW * 61.0) * 0.35;
+          float sharp = smoothstep(0.78, 0.9, en);
+          float ember = mix(sharp, 0.09, smoothstep(0.25, 0.7, cpp)) * sc * step(0.95, uOrganic);
+          totalEmissiveRadiance += blackbody(0.55 + 0.15 * en) * ember * 4.0;
           float hk = clamp(uHeat * uHeatK, 0.0, 1.0);
           float hv = 0.8 + 0.4 * hn3(vHeatW * 0.35);
           float fres = pow(1.0 - abs(dot(normal, geometryViewDir)), 2.0);
           totalEmissiveRadiance += blackbody(hk * hv * 0.8) * hk * hk * 1.8 * (0.3 + 0.9 * fres);
         }`);
   };
-  mat.customProgramCacheKey = () => `heat${organic}_${heat}`;
+  mat.customProgramCacheKey = () => `heat${organic}_${heat}${heatU ? 'U' : ''}`;
   return mat;
 }
 
@@ -250,8 +261,11 @@ export function makeGrassField(cx, cz, radius, count, { seed = 8, exclude = [] }
         { float t = position.y; vec4 ip = instanceMatrix * vec4(0.0,0.0,0.0,1.0);
           float ph = ip.x * 0.7 + ip.z * 0.45;
           transformed.z += (0.18 * t * t) + 0.05 * t * t * sin(uWind * 1.7 + ph);
-          transformed.x += 0.03 * t * t * sin(uWind * 1.3 + ph * 1.3); }`);
+          transformed.x += 0.03 * t * t * sin(uWind * 1.3 + ph * 1.3);
+          vBladeT = t; vBladeH = fract(sin(dot(ip.xz, vec2(12.9898, 78.233))) * 43758.5453); }`)
+      .replace('uniform float uWind;', 'uniform float uWind;\nvarying float vBladeT, vBladeH;');
   })(mat.onBeforeCompile);
+  mat.defines = { BLADE: 1 };
   mat.customProgramCacheKey = () => 'grassblade';
   const mesh = new THREE.InstancedMesh(g, mat, count);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3(), c = new THREE.Color();
@@ -319,7 +333,7 @@ export function makeTower() {
     for (let i = 0; i < pts.length - 1; i++) { add(pts[i], pts[i + 1], 1.0); add(pts[i].clone().setY(pts[i].y + 1.6), pts[i + 1].clone().setY(pts[i + 1].y + 1.6), 0.5); }
   }
   // paint: "brun Tour Eiffel", darker at the base (vertex colour per instance)
-  const mat = heatize(new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.6, metalness: 0.12 }), { heat: 0.95 });
+  const mat = heatize(new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.6, metalness: 0.12 }), { heat: 0.95, heatU: FX.uTowerK });
   meltize(mat);
   const lattice = B.build(mat);
   const cA = new THREE.Color('#6b5240'), cB = new THREE.Color('#a08263'), tmp = new THREE.Color();
@@ -327,7 +341,7 @@ export function makeTower() {
   lattice.instanceColor.needsUpdate = true;
   const root = new THREE.Group(); root.add(lattice);
   const solid = (geo, y, c = '#86694d') => {
-    const mm = heatize(new THREE.MeshStandardMaterial({ color: c, roughness: 0.6, metalness: 0.12 }), { heat: 0.95 }); meltize(mm);
+    const mm = heatize(new THREE.MeshStandardMaterial({ color: c, roughness: 0.6, metalness: 0.12 }), { heat: 0.95, heatU: FX.uTowerK }); meltize(mm);
     const o = new THREE.Mesh(geo, mm); o.position.y = y; o.castShadow = o.receiveShadow = true; root.add(o); return o;
   };
   // 1st floor: ring deck + frieze, 2nd floor deck, top platform, cabin, antennas
@@ -346,14 +360,15 @@ export function makeTower() {
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
     const f = new THREE.Mesh(new THREE.BoxGeometry(28, 2, 28), footMat); f.position.set(sx * (Wf(0) - 12.5), 1, sz * (Wf(0) - 12.5)); f.receiveShadow = f.castShadow = true; root.add(f);
   }
-  return { root, mat, Wf };
+  return { root, mat, Wf, beams: B.list, lattice };
 }
-// vaporising tower: noise dissolve from the top-sun side with a white-hot rim (uMelt 0..1)
+// vaporising tower: everything above a front (uVapor, metres) is gone; the metal just below it glows white-hot.
+// The front's edge is low-frequency world-space noise, so it is stable from frame to frame (no sparkle).
 function meltize(mat) {
   const prev = mat.onBeforeCompile;
   mat.onBeforeCompile = (sh, r) => {
     prev(sh, r);
-    sh.uniforms.uMelt = FX.uMelt;
+    sh.uniforms.uVapor = FX.uVapor;
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;')
       .replace('#include <worldpos_vertex>', `#include <worldpos_vertex>
         { vec4 wp4 = vec4(transformed, 1.0);
@@ -362,19 +377,18 @@ function meltize(mat) {
           #endif
           vWP = (modelMatrix * wp4).xyz; }`);
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
-        uniform float uMelt; varying vec3 vWP;
+        uniform float uVapor; varying vec3 vWP;
         float hsh(vec3 p){ return fract(sin(dot(p, vec3(12.9898,78.233,45.164))) * 43758.5453); }
         float vn(vec3 p){ vec3 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
           return mix(mix(mix(hsh(i),hsh(i+vec3(1,0,0)),f.x),mix(hsh(i+vec3(0,1,0)),hsh(i+vec3(1,1,0)),f.x),f.y),
                      mix(mix(hsh(i+vec3(0,0,1)),hsh(i+vec3(1,0,1)),f.x),mix(hsh(i+vec3(0,1,1)),hsh(i+vec3(1,1,1)),f.x),f.y),f.z); }`)
       .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
-        float mN = vn(vWP * 0.035) * 0.7 + vn(vWP * 0.12) * 0.3;
-        float mT = uMelt * 1.25 - (1.0 - clamp(vWP.y / 330.0, 0.0, 1.0)) * 0.45;
-        if (uMelt > 0.0 && mN < mT - 0.06) discard;`)
+        float vFront = uVapor + (vn(vWP * 0.07) * 0.65 + vn(vWP * 0.23) * 0.35 - 0.5) * 10.0;
+        if (vWP.y > vFront) discard;`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        if (uMelt > 0.0) totalEmissiveRadiance += vec3(1.0, 0.8, 0.5) * 5.0 * (1.0 - smoothstep(0.0, 0.05, mN - (mT - 0.06)));`);
+        { float bnd = 1.0 - smoothstep(0.0, 9.0, vFront - vWP.y); totalEmissiveRadiance += vec3(1.0, 0.86, 0.68) * 7.0 * bnd * bnd; }`);
   };
-  mat.customProgramCacheKey = () => 'melt' + (mat.userData.heat ? JSON.stringify(mat.userData.heat) : '');
+  mat.customProgramCacheKey = () => 'vapor' + (mat.userData.heat ? JSON.stringify(mat.userData.heat) : '');
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -486,31 +500,44 @@ export function makeBlock(width, depth, height, r) {
 // ---------------------------------------------------------------------------------------------------------------
 // day sky: elevation gradient (hazy horizon -> deep blue), darker and bluer away from the sun, mie glow, sun disk
 // ---------------------------------------------------------------------------------------------------------------
-export function makeDaySky(sunDir) {
+const _blank = (() => { const t = new THREE.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1); t.needsUpdate = true; return t; })();
+export function makeDaySky(sunDir, { zen = '#2f62b8', hor = '#c8d7e6', mid = null, sunCol = '#fff2dc' } = {}) {
   const mat = new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
     uniforms: {
-      uSun: { value: sunDir.clone() }, uZen: { value: new THREE.Color('#2f62b8') }, uHor: { value: new THREE.Color('#c8d7e6') },
-      uSunCol: { value: new THREE.Color('#fff2dc') }, uI: { value: 1.0 }, uDisk: { value: 1.0 }, uWhite: { value: 0 }, uStars: { value: 0 }, uWhiteCol: { value: new THREE.Vector3(6.0, 5.7, 5.3) },
+      uSun: { value: sunDir.clone() }, uZen: { value: new THREE.Color(zen) }, uHor: { value: new THREE.Color(hor) }, uMid: { value: new THREE.Color(mid || hor) }, uMidK: { value: mid ? 1 : 0 },
+      uSunCol: { value: new THREE.Color(sunCol) }, uI: { value: 1.0 }, uDisk: { value: 1.0 }, uWhite: { value: 0 }, uStars: { value: 0 }, uWhiteCol: { value: new THREE.Vector3(6.0, 5.7, 5.3) },
+      tMilky: { value: _blank }, uMilky: { value: 0 }, tCMB: { value: _blank }, uCMB: { value: 0 }, uCMBR: { value: 0 }, uCMBI: { value: 1.6 },
+      uPlasma: { value: 0 }, uDim: { value: 1 },
     },
-    vertexShader: `varying vec3 vDir; void main(){ vDir = position; vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }`,
+    vertexShader: `varying vec3 vDir; void main(){ vDir = (modelMatrix * vec4(position, 1.0)).xyz - cameraPosition; vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }`,
     fragmentShader: `
-      uniform vec3 uSun, uZen, uHor, uSunCol, uWhiteCol; uniform float uI, uDisk, uWhite, uStars; varying vec3 vDir;
+      uniform vec3 uSun, uZen, uHor, uMid, uSunCol, uWhiteCol; uniform float uI, uDisk, uWhite, uStars, uMilky, uCMB, uCMBR, uCMBI, uPlasma, uDim, uMidK;
+      uniform sampler2D tMilky, tCMB; varying vec3 vDir;
       float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
       void main(){
         vec3 d = normalize(vDir); float el = max(d.y, 0.0);
         float cs = dot(d, uSun);
         vec3 col = mix(uHor, uZen, pow(clamp(el, 0.0, 1.0), 0.42));
+        if (uMidK > 0.5) col = mix(mix(uHor, uMid, smoothstep(0.0, 0.22, el)), uZen, smoothstep(0.12, 0.85, pow(el, 0.8)));
         col *= mix(1.0, 0.82, smoothstep(0.2, -0.6, cs));                 // deeper away from the sun
         col += uSunCol * (pow(max(cs, 0.0), 8.0) * 0.35 + pow(max(cs, 0.0), 64.0) * 0.9);
         col = mix(col, uHor * 0.85, smoothstep(0.02, -0.08, d.y));          // below the horizon
-        col *= uI;
+        col *= uI * uDim;
         col += uSunCol * smoothstep(0.99996, 0.99999, cs) * 60.0 * uDisk;  // disk
-        // stars (black-sun scene)
-        vec2 g = floor(vec2(atan(d.z, d.x) * 600.0, asin(d.y) * 600.0));
-        float st = step(0.9985, h21(g)) * h21(g + 7.0);
-        col += vec3(st) * uStars * 3.0;
-        col = mix(col, uWhiteCol * (0.8 + 0.35 * pow(1.0 - el, 3.0)), uWhite);
+        vec2 euv = vec2(atan(d.z, d.x) / 6.2831853 + 0.5, asin(clamp(d.y, -1.0, 1.0)) / 3.1415927 + 0.5);
+        if (uMilky > 0.001) col += texture2D(tMilky, euv).rgb * uMilky * smoothstep(-0.04, 0.1, d.y);
+        vec4 cm = vec4(0.0);
+        if (uCMB > 0.001 || uWhite > 0.001) cm = texture2D(tCMB, euv);
+        if (uCMB > 0.001) {                                                 // false-colour microwave sky, revealed from the zenith down
+          float fr = 1.0 - el, rev = smoothstep(uCMBR, uCMBR - 0.08, fr);
+          float edge = exp(-pow((fr - uCMBR) / 0.012, 2.0)) * step(0.001, uCMBR) * (1.0 - smoothstep(1.0, 1.1, uCMBR));
+          col = mix(col, cm.rgb * uCMBI, rev * uCMB) + vec3(1.0, 0.9, 0.7) * edge * 1.1 * uCMB;
+        }
+        // the air glowing (CMB energy absorbed): billowing incandescent plasma (alpha channel of the CMB map = fbm)
+        vec3 glow = uWhiteCol * (0.8 + 0.35 * pow(1.0 - el, 3.0)) * mix(1.0, 0.55 + 0.9 * cm.a, uPlasma);
+        glow *= mix(1.0, 0.35 + 1.5 * dot(cm.rgb, vec3(0.5, 0.35, 0.15)), clamp(uCMB, 0.0, 1.0) * 0.85);   // the microwave pattern burns into the glow
+        col = mix(col, glow, uWhite);
         gl_FragColor = vec4(col, 1.0);
       }`,
   });
@@ -521,25 +548,25 @@ export function makeDaySky(sunDir) {
 // ---------------------------------------------------------------------------------------------------------------
 // the whole set
 // ---------------------------------------------------------------------------------------------------------------
-export function makeParis(renderer, { sunAz = 230, sunEl = 40 } = {}) {
+export function makeParis(renderer, { sunAz = 230, sunEl = 40, sky: skyOpt = {}, fog = '#c3d0dc', sunCol = '#fff1dc' } = {}) {
   const scene = new THREE.Scene();
   const r = rng(2026);
   // sun: azimuth measured from north; -z = north-west (315°)
   const azr = THREE.MathUtils.degToRad(sunAz - 315), elr = THREE.MathUtils.degToRad(sunEl);
   const sunDir = new THREE.Vector3(Math.sin(azr) * Math.cos(elr), Math.sin(elr), -Math.cos(azr) * Math.cos(elr)).normalize();
-  const sky = makeDaySky(sunDir); scene.add(sky);
+  const sky = makeDaySky(sunDir, skyOpt); scene.add(sky);
   // environment from the sky for PBR reflections
   const pm = new THREE.PMREMGenerator(renderer);
-  const envScene = new THREE.Scene(); envScene.add(makeDaySky(sunDir));
+  const envScene = new THREE.Scene(); envScene.add(makeDaySky(sunDir, skyOpt));
   const env = pm.fromScene(envScene, 0, 1, 20000).texture;
   scene.environment = env; scene.environmentIntensity = 0.5;
-  scene.fog = new THREE.FogExp2('#c3d0dc', 0.00042);
+  scene.fog = new THREE.FogExp2(fog, 0.00042);
   // white-hot air dome (climax), drawn over the sky
   const glowMat = new THREE.MeshBasicMaterial({ color: '#fff4e6', transparent: true, opacity: 0, side: THREE.BackSide, depthWrite: false, fog: false });
   const glow = new THREE.Mesh(new THREE.SphereGeometry(4000, 32, 16), glowMat); glow.renderOrder = -5; scene.add(glow);
 
   const hemi = new THREE.HemisphereLight('#cfe0ff', '#7d6a4c', 0.55); scene.add(hemi);
-  const sun = new THREE.DirectionalLight('#fff1dc', FX.uSunI.value);
+  const sun = new THREE.DirectionalLight(sunCol, FX.uSunI.value);
   sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096); sun.shadow.bias = -0.00025; sun.shadow.normalBias = 0.04; sun.shadow.radius = 2;
   scene.add(sun, sun.target);
   const setShadow = (x, y, z, half, depth = 1600) => {
@@ -617,5 +644,5 @@ export function makeParis(renderer, { sunAz = 230, sunEl = 40 } = {}) {
   // the tower
   const tower = makeTower(); tower.root.position.set(0, 0, -200); scene.add(tower.root);
 
-  return { scene, sky, skyU: sky.material.uniforms, sun, hemi, sunDir, setShadow, env, glow, glowMat, tower, trees, lawnMat, lawns, groundMat };
+  return { scene, sky, skyU: sky.material.uniforms, sun, hemi, sunDir, setShadow, env, glow, glowMat, tower, trees, treeList, farList, lawnMat, lawns, groundMat };
 }

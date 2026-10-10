@@ -82,14 +82,14 @@ export async function loadAvatar(name, { env = null, height = null, facial = fal
       const n = (m.name || '').toLowerCase(); matNames.push(o.name + ':' + m.name);
       if (n.includes('opacity')) {   // hair, eyelashes, eyebrows: alpha-tested cards
         opacity ||= tex(`${dir}${code}_opacity_color${sfx}.png`, true);
-        const hm = new THREE.MeshPhysicalMaterial({ map: opacity, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.72, specularIntensity: 0.5, envMap: env, envMapIntensity: 0.3 });
+        const hm = new THREE.MeshPhysicalMaterial({ name: 'hair', map: opacity, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.72, specularIntensity: 0.5, envMap: env, envMapIntensity: 0.3 });
         if (dbgHair) { hm.map = null; hm.color.set(dbgHair); hm.alphaTest = 0; }
         return hm;
       }
       const part = n.includes('head') ? 'head' : 'body';
       const t = get(part);
       return new THREE.MeshPhysicalMaterial({
-        map: t.map, normalMap: t.normalMap, specularColorMap: t.spec, specularIntensity: 0.6, roughness: part === 'head' ? 0.52 : 0.78,
+        name: part, map: t.map, normalMap: t.normalMap, specularColorMap: t.spec, specularIntensity: 0.6, roughness: part === 'head' ? 0.52 : 0.78,
         sheen: part === 'head' ? 0.15 : 0.35, sheenRoughness: 0.6, sheenColor: new THREE.Color('#ffffff'), envMap: env, envMapIntensity: 0.6,
       });
     });

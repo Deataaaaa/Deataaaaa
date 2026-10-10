@@ -69,8 +69,21 @@ export function lowestY(av, step = 7) {
   return m;
 }
 
+// lowest clearance of the skinned vertices above a ground function g(x, z) (sloping beaches, towels)
+export function lowestAbove(av, g, step = 7) {
+  let m = Infinity;
+  av.root.updateMatrixWorld(true);
+  for (const mesh of av.meshes) {
+    if (!mesh.isSkinnedMesh) continue;
+    mesh.skeleton.update();
+    const n = mesh.geometry.attributes.position.count;
+    for (let i = 0; i < n; i += step) { mesh.getVertexPosition(i, _sv); _sv.applyMatrix4(mesh.matrixWorld); const c = _sv.y - g(_sv.x, _sv.z); if (c < m) m = c; }
+  }
+  return m;
+}
+
 // sitting on the ground. o: { pos (ground point under the pelvis), yaw, legs: 'up'|'cross'|'out', arms: 'behind'|'knees'|'lap',
-// lean (rad, + forward), look (world point), breath (0..1 phase), curl }
+// lean (rad, + forward), look (world point), breath (0..1 phase), curl, groundAt (x, z) -> y for sloping ground }
 export function sit(av, o) {
   const B = av.bones;
   resetPose(av);
@@ -79,7 +92,7 @@ export function sit(av, o) {
   av.root.position.y += (o.pos.y + seat) - wp(B.Hips).y; av.root.updateMatrixWorld(true);
   const { fwd, left, up } = bodyFrame(av);
   const P = wp(B.Hips);
-  const ground = o.pos.y;
+  const ground = o.pos.y, gAt = o.groundAt || (() => ground);
   // torso
   const lean = (o.lean ?? 0) + (o.breath ? Math.sin(o.breath * Math.PI * 2) * 0.012 : 0);
   rotW(B.Spine, left, lean * 0.45); rotW(B.Spine1, left, lean * 0.3); rotW(B.Spine2, left, lean * 0.25);
@@ -89,15 +102,15 @@ export function sit(av, o) {
   for (const [side, s] of [['Left', 1], ['Right', -1]]) {
     let foot, pole, toe;
     if (legs === 'up') {
-      foot = P.clone().addScaledVector(fwd, 0.46 + (o.spread ?? 0) * 0.05).addScaledVector(left, s * (0.16 + (o.spread ?? 0) * 0.08)); foot.y = ground + 0.085;
+      foot = P.clone().addScaledVector(fwd, 0.46 + (o.spread ?? 0) * 0.05).addScaledVector(left, s * (0.16 + (o.spread ?? 0) * 0.08)); foot.y = gAt(foot.x, foot.z) + 0.085;
       pole = P.clone().addScaledVector(fwd, 0.5).addScaledVector(up, 0.8).addScaledVector(left, s * 0.25);
-      toe = foot.clone().addScaledVector(fwd, 0.14); toe.y = ground + 0.02;
+      toe = foot.clone().addScaledVector(fwd, 0.14); toe.y = gAt(toe.x, toe.z) + 0.02;
     } else if (legs === 'cross') {
-      foot = P.clone().addScaledVector(fwd, 0.3 + (s > 0 ? 0.04 : 0)).addScaledVector(left, -s * 0.13); foot.y = ground + 0.07 + (s > 0 ? 0.0 : 0.03);
+      foot = P.clone().addScaledVector(fwd, 0.3 + (s > 0 ? 0.04 : 0)).addScaledVector(left, -s * 0.13); foot.y = gAt(foot.x, foot.z) + 0.07 + (s > 0 ? 0.0 : 0.03);
       pole = P.clone().addScaledVector(left, s * 0.9).addScaledVector(fwd, 0.35).addScaledVector(up, 0.12);
       toe = foot.clone().addScaledVector(left, -s * 0.12).addScaledVector(fwd, 0.04); toe.y = foot.y - 0.02;
     } else {   // out: stretched, one knee slightly bent
-      foot = P.clone().addScaledVector(fwd, s > 0 ? 0.86 : 0.72).addScaledVector(left, s * 0.17); foot.y = ground + 0.07;
+      foot = P.clone().addScaledVector(fwd, s > 0 ? 0.86 : 0.72).addScaledVector(left, s * 0.17); foot.y = gAt(foot.x, foot.z) + 0.07;
       pole = P.clone().addScaledVector(fwd, 0.4).addScaledVector(up, 1.0);
       toe = foot.clone().addScaledVector(up, 0.14).addScaledVector(fwd, 0.04);
     }
@@ -109,7 +122,7 @@ export function sit(av, o) {
   for (const [side, s] of [['Left', 1], ['Right', -1]]) {
     let hand, pole, F, N;
     if (arms === 'behind') {
-      hand = P.clone().addScaledVector(fwd, -0.24).addScaledVector(left, s * 0.3); hand.y = ground + 0.03;
+      hand = P.clone().addScaledVector(fwd, -0.24).addScaledVector(left, s * 0.3); hand.y = gAt(hand.x, hand.z) + 0.03;
       pole = P.clone().addScaledVector(fwd, -0.7).addScaledVector(left, s * 0.55).addScaledVector(up, 0.5);
       F = fwd.clone().multiplyScalar(-0.6).addScaledVector(left, s * 0.6).normalize(); N = V(0, -1, 0);
     } else if (arms === 'knees') {
@@ -130,6 +143,7 @@ export function sit(av, o) {
   }
   if (o.look) lookAt(av, o.look, o.lookK ?? 1);
   // rest on the ground: lowest vertex 4 mm above it
+  if (o.groundAt) { av.root.position.y += 0.004 - lowestAbove(av, o.groundAt); av.root.updateMatrixWorld(true); return; }
   const low = lowestY(av);
   av.root.position.y += (ground + 0.004) - low; av.root.updateMatrixWorld(true);
 }
@@ -140,16 +154,16 @@ export function stand(av, o) {
   resetPose(av);
   av.root.position.copy(o.pos); av.root.rotation.set(0, o.yaw || 0, 0); av.root.updateMatrixWorld(true);
   const { fwd, left, up } = bodyFrame(av);
-  const ground = o.pos.y;
+  const ground = o.pos.y, gAt = o.groundAt || (() => ground);
   if (o.lean) { rotW(B.Spine, left, o.lean * 0.5); rotW(B.Spine1, left, o.lean * 0.5); }
   if (o.twist) { rotW(B.Spine1, up, o.twist * 0.5); rotW(B.Spine2, up, o.twist * 0.5); }
   if (o.breath != null) { const b = Math.sin(o.breath * Math.PI * 2); rotW(B.Spine1, left, b * 0.012); rotW(B.Spine2, left, b * 0.009); }   // breathing
   const P = wp(B.Hips);
   for (const [side, s] of [['Left', 1], ['Right', -1]]) {
-    const foot = P.clone().addScaledVector(left, s * 0.12).addScaledVector(fwd, (o.stride ?? 0) * s * 0.18); foot.y = ground + 0.08;
+    const foot = P.clone().addScaledVector(left, s * 0.12).addScaledVector(fwd, (o.stride ?? 0) * s * 0.18); foot.y = gAt(foot.x, foot.z) + 0.08;
     const pole = P.clone().addScaledVector(fwd, 1.0).addScaledVector(up, -0.4);
     twoBoneIK(av, side + 'UpLeg', side + 'Leg', side + 'Foot', foot, pole);
-    if (B[side + 'ToeBase']) { const toe = foot.clone().addScaledVector(fwd, 0.15); toe.y = ground + 0.02; aimBone(B[side + 'Foot'], wp(B[side + 'ToeBase']), toe); }
+    if (B[side + 'ToeBase']) { const toe = foot.clone().addScaledVector(fwd, 0.15); toe.y = gAt(toe.x, toe.z) + 0.02; aimBone(B[side + 'Foot'], wp(B[side + 'ToeBase']), toe); }
   }
   for (const [side, s] of [['Left', 1], ['Right', -1]]) {
     const fn = side === 'Left' ? o.armL : o.armR;
@@ -161,6 +175,7 @@ export function stand(av, o) {
     curlFingers(av, side, a.curl ?? 0.35, 0.15);
   }
   if (o.look) lookAt(av, o.look, o.lookK ?? 1);
+  if (o.groundAt) { av.root.position.y += 0.004 - lowestAbove(av, o.groundAt); av.root.updateMatrixWorld(true); return; }
   const low = lowestY(av);
   av.root.position.y += (ground + 0.004) - low; av.root.updateMatrixWorld(true);
 }

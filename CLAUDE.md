@@ -97,7 +97,7 @@ often while at work, so every deliverable has to be ready to post straight from 
 | 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | delivered v2 (77.2 s, worst case, hook on frame 1, tag 02; v1 83.4 s replaced after clipping feedback) |
 | 3 | `studio/episodes/ep09.js` | A humpback engulfs you (POV, Cape Cod, real cases 2021 and 2025) | delivered (75.2 s, POV, tag 03; render 3 lanes ≈ 2 h 50) |
 | 4 | `studio/episodes/ep10.js` | Light becomes instant for 5 s (Paris, Champ de Mars → space → Holmdel 1964) | delivered v2 (75.0 s, tag 04): v1 replaced after the owner saw flicker and wanted it "hella impressive". New effects; SSAA 2, no grain, smooth camera moves, depth bias, no close-spark or smoke-card pops; flicker check clean except 18 s (0.61: star/ember parallax, checked by eye). Render ≈ 10 h in all with re-renders |
-| 5 | `studio/episodes/ep11.js` | Every radioactive atom decays at once (Guarapari black-sand beach → your body and banana → granite → continents → Goiânia 1987) | approved 10 Oct (owner's pick); first video with Apple and a WTF moment (rule 19); in progress |
+| 5 | `studio/episodes/ep11.js` | Every radioactive atom decays at once (Guarapari black-sand beach → your body and banana → granite → continents → Goiânia 1987) | delivered 10 Oct (68 s, tag 05; first video with Apple and the hand-spinner WTF, rule 19). First render on the owner's PC: 4 min in all (the cloud box needed ~6 h). Covers: `videos/post5_cover.jpg` (burning city), `post5_cover_apple.jpg` |
 Cast log (rule 16): post 1 elevator = Michelle (dark skin, curly black hair, red headphones); post 2 plane =
 Michelle (same); post 3 whale = POV diver, black wetsuit and gloves (body never seen); post 4 light = Male_Adult_17
 (beard, black cap, blue-white hoodie; his friend Female_Adult_12, brunette with bangs, black hoodie); post 5 radioactive =
@@ -121,7 +121,8 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
   Google Drive › DeatAnimation (`<name>_phone.mp4`, cover, `_sheet.jpg`, `_flicker.txt`, `_log.txt`; read them back with
   the Drive connector), wait for the upload, shut down. To hand over a video: finish and check it here with previews,
   set `pc/job.json` (ep, name, cover, workers), add any new avatar to `pc/avatars.txt`, push, then tell the owner to
-  double-click RENDER.bat. Keep `pc/*.ps1` ASCII only (PowerShell 5.1) and bash scripts LF (`.gitattributes`); Windows
+  double-click RENDER.bat. The owner's PC has no winget (App Installer missing): `setup.ps1` falls back to direct downloads
+  (Node zip, python.org installer, gyan.dev ffmpeg, Git installer); Git itself came from git-scm.com. Keep `pc/*.ps1` ASCII only (PowerShell 5.1) and bash scripts LF (`.gitattributes`); Windows
   tools print `\r\n`, so strip `\r` from every `$(...)` in bash. `render.mjs --gpu` exits 3 if Chromium lands on a
   software renderer; `renderall.mjs` then retries with `--headed`.
 - Wait for every texture before the first frame (`TEX_PENDING` in `engine/elevator.js`), or the first

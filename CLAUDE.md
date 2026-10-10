@@ -103,8 +103,16 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
   relaunch its missing frames split across two workers (`--resume` skips frames that exist).
   Rendering on the owner's PC (Claude Desktop or `claude remote-control`) would be ~10× faster. Owner, 9 Oct 2026:
   "I do have a very good PC but my girlfriend would get mad if it is turned on 24/7": the PC can only be used for
-  short render sessions, started by them (plan: a one-click render kit that pulls, renders on the GPU, encodes,
-  checks, syncs the MP4 to the phone and shuts the PC down).
+  short render sessions, started by them. Their PC: Windows, AMD RX 6700 XT, Google Drive for desktop.
+- PC render kit (`pc/`, instructions in `pc/README.md`): `SETUP.bat` once (winget tools, npm + Chromium, pip, the 3D
+  people from `pc/avatars.txt`, a GPU test frame); then `RENDER.bat` per video: `git pull`, soundtrack,
+  `tools/renderall.mjs --gpu` (N interleaved workers), `checkframes.py`, `encode.sh` (Git Bash), `sheet1fps.py`, copy to
+  Google Drive › DeatAnimation (`<name>_phone.mp4`, cover, `_sheet.jpg`, `_flicker.txt`, `_log.txt`; read them back with
+  the Drive connector), wait for the upload, shut down. To hand over a video: finish and check it here with previews,
+  set `pc/job.json` (ep, name, cover, workers), add any new avatar to `pc/avatars.txt`, push, then tell the owner to
+  double-click RENDER.bat. Keep `pc/*.ps1` ASCII only (PowerShell 5.1) and bash scripts LF (`.gitattributes`); Windows
+  tools print `\r\n`, so strip `\r` from every `$(...)` in bash. `render.mjs --gpu` exits 3 if Chromium lands on a
+  software renderer; `renderall.mjs` then retries with `--headed`.
 - Wait for every texture before the first frame (`TEX_PENDING` in `engine/elevator.js`), or the first
   frame of each worker samples black textures.
 - Never `pkill -f`/`pgrep -f` with a pattern that also appears in your own shell command (it kills or

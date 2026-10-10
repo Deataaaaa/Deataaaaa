@@ -3,3 +3,5 @@ studio/out/
 videos/*.mp4
 __pycache__/
 studio/engine/models/
+videos/*_flicker.txt
+pc/setup_log.txt

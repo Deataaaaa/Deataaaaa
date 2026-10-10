@@ -4,6 +4,7 @@
 # Usage: tools/fetch_rocketbox.sh Female_Adult_12 Male_Adult_10 Sports_Male_04 ...
 set -euo pipefail
 cd "$(dirname "$0")/.."
+PY=${PYTHON:-python3}   # Windows (pc/setup.ps1): PYTHON="py -3"
 REPO=${ROCKETBOX_REPO:-/home/user/microsoft/microsoft-rocketbox}
 if [ ! -d "$REPO/.git" ]; then
   GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --filter=blob:none --no-checkout https://github.com/microsoft/microsoft-rocketbox "$REPO"
@@ -18,7 +19,7 @@ for n in "$@"; do
   for f in $(git -C "$REPO" ls-tree --name-only HEAD "$src/Textures/" | grep -i '\.tga$'); do
     git -C "$REPO" show "HEAD:$f" > "$out/raw/$(basename "$f")"
   done
-  python3 -I - "$out" <<'PY'
+  $PY -I - "$out" <<'PY'
 import os, sys
 from PIL import Image
 out = sys.argv[1]; raw = os.path.join(out, 'raw')

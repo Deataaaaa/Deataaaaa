@@ -1,0 +1,7 @@
+{
+  "ep": "ep10",
+  "name": "post4_light_pc_test",
+  "cover": "videos/post4_cover.jpg",
+  "workers": 3,
+  "note": "First run on the PC: post 4 again, to measure the speed and compare with the cloud render (do not post it)."
+}

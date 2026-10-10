@@ -80,6 +80,12 @@ often while at work, so every deliverable has to be ready to post straight from 
     He mostly sits, lies, turns his head, blinks and flicks his tail (a walking cat is hard to make convincing). He is
     never hurt on screen. The caption can add "Did you spot Apple?"; the pinned comment stays an either/or question.
 
+20. **"Follow for more" on every end card** (owner, 10 Oct 2026, from post 6 on; they said "subscribe for more", Instagram's
+    word is Follow, wording to confirm with them). A tiny letter-spaced line at the bottom middle of the end card (y ≈ 1486,
+    above the strip Instagram covers with the username and caption), and Apple's tiny head peeking up from behind it for
+    about two seconds: he looks at you, blinks, ducks back down. `engine/endtag.js` `makeEndTag({ text })`, then
+    `tag.update(t, endFullyIn, endA)` every frame (look-dev: `episodes/endtagview.js`).
+
 ## Delivery checklist
 - `studio/encode.sh <frames> <wav> videos/postN_<slug>`: HQ + `_phone.mp4` (< 30 MB, the chat's send limit).
   (`day1_*` files = the Earth video, outside the series.)

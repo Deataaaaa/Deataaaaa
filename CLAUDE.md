@@ -241,5 +241,9 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
   of buildings with per-building window grids, frames, sliding panes, curtains, AC units, ceramic-tile cladding, shops,
   balconies, roofs and water tanks; cars that drive until the decay; benches, a kiosk, umbrellas, a footvolley net;
   hills with houses. Keep children out of the frames where things burn (frame them in the calm part only).
+- Every Rocketbox FBX carries an ambient light (#808080 at intensity 1) that FBXLoader adds to the avatar: post 5's 20
+  people flooded the beach with flat light 4x stronger than the sun, so no shadow showed anywhere (not even yours on the
+  towel) and the town looked like flat CG. `loadAvatar` now strips lights from the FBX. If a scene looks flat, list its
+  lights (`scene.traverse(o => o.isLight && ...)`) before touching materials.
 - Parallel render workers used to pick a random port and could collide (EADDRINUSE killed one silently): `render.mjs`
   now listens on a free port. Billboard smoke seen from above reads as white blobs: fade it out when the camera rises.

@@ -348,6 +348,9 @@ export async function create() {
   scene.add(steam.mesh);
   const seaLight = new THREE.DirectionalLight('#3a8cff', 0); seaLight.position.set(H0.x + 40, H0.y + 34, H0.z); seaLight.target.position.copy(H0); scene.add(seaLight, seaLight.target);   // high enough that its glint on the wet sand never faces the lens
   const groundGlow = new THREE.HemisphereLight('#ff9a50', '#ffb070', 0); scene.add(groundGlow);
+  // the light from the sea side (the bright eastern sky and its reflection on the water): a soft fill on faces turned to the sea
+  const seaFill = new THREE.DirectionalLight('#dfe5ff', 0.9); seaFill.position.set(H0.x + 60, H0.y + 28, H0.z + 12); seaFill.target.position.copy(H0); scene.add(seaFill, seaFill.target);
+  scene.environmentIntensity = 1.15;
 
   // ---- space and the 1987 shed ----
   const [day, night, clouds] = await Promise.all([loadTex('/engine/tex/earth_day_4k.jpg'), loadTex('/engine/tex/earth_night_4k.jpg'), loadTex('/engine/tex/earth_clouds.jpg', false)]);
@@ -355,6 +358,7 @@ export async function create() {
   const spin2 = makeSpinner(); SPc.scene.add(spin2.root);
   const shed = makeShed(env);
   const man = await loadAvatar('Male_Adult_04', { env }); shed.scene.add(man.root);
+  shed.scene.add(new THREE.AmbientLight('#808080', 1.0));   // the shed was lit (and checked) with the ambient light the man's FBX used to bring along
   const apple2 = makeCat({ seed: 2 }); apple2.root.position.copy(shed.shelfTop); apple2.root.rotation.y = 2.6; shed.scene.add(apple2.root);
   await Promise.all(TEX_PENDING);
 
@@ -399,6 +403,8 @@ export async function create() {
       // ---------------- the beach ----------------
       poseAll(story);
       if (t < T.HOOK) hookCam(cam, t); else if (story < T.T0) glide.apply(cam, story); else if (story < T.ERUPT) slowmo.apply(cam, story); else coast.apply(cam, story);
+      // the sun's shadows: round you, except in the glide, where they cover the promenade and the avenue (switches only on cuts)
+      if (t >= T.HOOK && story < T.T0) B.setShadow(-50, 0, 12, 70); else B.setShadow(shoreX(0) - 15, 0, 0, 30);
       if (q.get('dcam')) { const c = q.get('dcam').split(',').map(Number); cam.position.set(c[0], c[1], c[2]); cam.lookAt(c[3], c[4], c[5]); cam.fov = c[6] || 40; cam.updateProjectionMatrix(); cam.updateMatrixWorld(); }
       apple.update(t, { look: cam.position, slowBlinkAt: [1.6], earAt: [0.7], pr: R.SSAA });
       apple.root.visible = story < 19.6;
@@ -426,7 +432,8 @@ export async function create() {
       BLD.slabMat.emissive.copy(heatC).multiplyScalar(town * town * 1.6); BLD.railMat.emissive.copy(heatC).multiplyScalar(town * 1.2);
       FX.uScorch.value = smooth(22.0, 27.5, story); FX.uHeat.value = smooth(23.5, 30.0, story);
       groundGlow.intensity = smooth(20.5, 24.0, story) * 0.7 + smooth(24.4, 25.6, story) * 1.2 * (story < T.ERUPT ? 1 : 0) + coastK * 1.2;
-      B.sun.intensity = 3.3 * (1 - 0.75 * coastK) * dim; B.skyU.uSkyI.value = (1 - 0.8 * coastK) * (1 - 0.3 * cher); B.hemi.intensity = 0.7 * dim * (1 - 0.6 * coastK);
+      B.sun.intensity = 4.6 * (1 - 0.75 * coastK) * dim; B.skyU.uSkyI.value = (1 - 0.8 * coastK) * (1 - 0.3 * cher); B.hemi.intensity = 1.15 * dim * (1 - 0.6 * coastK);
+      seaFill.intensity = 0.9 * dim * (1 - coastK);
       if (story >= T.ERUPT) { B.skyU.uFlashCol.value.setRGB(1.0, 0.36, 0.1); B.skyU.uFlash.value = 0.55 * coastK; } else B.skyU.uFlashCol.value.set('#3a8cff');
       // particles
       grains.update(story, cam, R.SSAA);

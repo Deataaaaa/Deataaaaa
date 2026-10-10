@@ -64,6 +64,9 @@ export async function loadAvatar(name, { env = null, height = null, facial = fal
   const blank = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
   const mgr = new THREE.LoadingManager(); mgr.setURLModifier((u) => (/\.(tga|png|jpe?g|dds|tif)$/i.test(u) && !u.startsWith('data:') ? blank : u));
   const root = await new FBXLoader(mgr).loadAsync(dir + name + (facial ? '_facial' : '') + '.fbx');
+  // the FBX's global settings carry an ambient light (grey #808080 at full intensity): FBXLoader adds it to every avatar,
+  // so a crowd of 20 people floods the scene with flat light (post 5: shadows invisible, everything flat). Drop them.
+  const fbxLights = []; root.traverse((o) => { if (o.isLight) fbxLights.push(o); }); for (const l of fbxLights) l.parent.remove(l);
   const code = info.code;
   const sfx = lod ? '_' + lod : '';
   const set = (k, srgb) => tex(`${dir}${k}${sfx}.${/normal|opacity/.test(k) ? 'png' : 'jpg'}`, srgb);

@@ -34,7 +34,7 @@ const GROUND_GLSL = `
   float shoreX(float z){ float k = clamp(z / 270.0, -1.0, 1.0); return -16.0 * (1.0 - k * k); }
   float headland(vec2 p){ vec2 d = (p - vec2(70.0, 360.0)) / vec2(130.0, 150.0); return 75.0 * exp(-dot(d, d) * 2.2); }
   float groundY(vec2 p){ float d = p.x - shoreX(p.y); float y = max(d < 0.0 ? min(2.3, -d * 0.055) : -d * 0.035, -14.0); return y + headland(p); }`;
-const NOISE_GLSL = `
+export const NOISE_GLSL = `
   float bh21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   float bnoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
     return mix(mix(bh21(i), bh21(i + vec2(1.0, 0.0)), f.x), mix(bh21(i + vec2(0.0, 1.0)), bh21(i + vec2(1.0, 1.0)), f.x), f.y); }
@@ -42,7 +42,7 @@ const NOISE_GLSL = `
   // the same fbm with each octave faded to its mean once it gets smaller than ~2 pixels (fw: pixel footprint in p units)
   float bfbmAA(vec2 p, float fw){ float s = 0.0, a = 0.5, f = 1.0;
     for (int i = 0; i < 5; i++){ s += a * mix(0.5, bnoise(p), 1.0 - smoothstep(0.2, 0.5, fw * f)); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; f *= 2.03; } return s; }`;
-const BLACKBODY_GLSL = `
+export const BLACKBODY_GLSL = `
   vec3 bbody(float k){ vec3 c = mix(vec3(0.0), vec3(0.55, 0.03, 0.0), smoothstep(0.0, 0.25, k));
     c = mix(c, vec3(1.0, 0.32, 0.04), smoothstep(0.2, 0.5, k)); c = mix(c, vec3(1.0, 0.75, 0.35), smoothstep(0.45, 0.75, k));
     return mix(c, vec3(1.0, 0.97, 0.92), smoothstep(0.7, 1.0, k)); }`;
@@ -473,7 +473,7 @@ export function makeTowers(seed = 9) {
 // ---------------------------------------------------------------------------------------------------------------
 // promenade: low white wall, light stone pavement, the avenue, street lamps (lit), palms
 // ---------------------------------------------------------------------------------------------------------------
-function frondTex() {
+export function frondTex() {
   return canvasTex(256, 512, (g, w, h) => {
     g.clearRect(0, 0, w, h); g.strokeStyle = 'rgba(70,96,40,1)'; g.lineWidth = 5;
     g.beginPath(); g.moveTo(w / 2, h); g.lineTo(w / 2, 0); g.stroke();
@@ -487,7 +487,7 @@ function frondTex() {
     }
   });
 }
-function palmVariant(seed, frondMat, barkMat) {
+export function palmVariant(seed, frondMat, barkMat) {
   const r = rng(seed), H = 8 + r() * 4, lean = (r() - 0.5) * 1.6;
   const pts = []; for (let i = 0; i <= 12; i++) { const t = i / 12; pts.push(new THREE.Vector3(lean * t * t, H * t, lean * 0.4 * t * t)); }
   const curve = new THREE.CatmullRomCurve3(pts);
@@ -508,7 +508,7 @@ function palmVariant(seed, frondMat, barkMat) {
   const fr = mergeGeometries(fronds); fr.computeVertexNormals();
   return { trunk, fronds: fr };
 }
-export function makePromenade(seed = 4) {
+export function makePromenade(seed = 4, { strips = true } = {}) {
   const group = new THREE.Group(), r = rng(seed);
   const zs = []; for (let z = -460; z <= 230; z += 10) zs.push(z);
   const strip = (x0, x1, y, mat) => {   // a strip following the bay's curve between x offsets x0..x1 from promX
@@ -519,7 +519,7 @@ export function makePromenade(seed = 4) {
   };
   const stone = new THREE.MeshStandardMaterial({ color: '#cfc6b8', roughness: 0.85 });
   const asphalt = new THREE.MeshStandardMaterial({ color: '#3a3b3e', roughness: 0.9 });
-  strip(0, -9, PROM_Y, stone); strip(-9, -22, PROM_Y - 0.05, asphalt); strip(-22, -30, PROM_Y, stone);
+  if (strips) { strip(0, -9, PROM_Y, stone); strip(-9, -22, PROM_Y - 0.05, asphalt); strip(-22, -30, PROM_Y, stone); }
   // the low wall on the beach side
   const wallG = []; zs.forEach((z, j) => { if (!j) return; const z0 = zs[j - 1], x0 = promX(z0), x1 = promX(z); const L = Math.hypot(x1 - x0, z - z0);
     const b = new THREE.BoxGeometry(0.35, 0.75, L); b.rotateY(Math.atan2(x1 - x0, z - z0)); b.translate((x0 + x1) / 2, PROM_Y + 0.12, (z0 + z) / 2); wallG.push(b); });
@@ -575,8 +575,8 @@ export function makeBeach(renderer, o = {}) {
   for (let i = 0; i < 60; i++) { const z = 175 + r() * 110, x = shoreX(z) - 6 + r() * 26; rocks.push({ x, z, s: 1.2 + r() * 3.2 }); }   // where the headland meets the sea
   for (let i = 0; i < 14; i++) { const z = -240 - r() * 40, x = shoreX(z) - 4 + r() * 12; rocks.push({ x, z, s: 0.8 + r() * 2.2 }); }   // north end
   const boulders = makeBoulders(rocks.concat(o.rocks || [])); scene.add(boulders.group);
-  const towers = makeTowers(); scene.add(towers.mesh);
-  const prom = makePromenade(); scene.add(prom.group);
+  const towers = o.noTown ? null : makeTowers(); if (towers) scene.add(towers.mesh);    // noTown: engine/town5.js builds the town
+  const prom = makePromenade(4, { strips: !o.noTown }); scene.add(prom.group);
   const tl = []; const tr = rng(61);
   for (let i = 0; i < 900; i++) {   // Atlantic forest on the headland
     const x = -40 + tr() * 260, z = 230 + tr() * 330, h = headland(x, z);

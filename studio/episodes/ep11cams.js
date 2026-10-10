@@ -23,9 +23,9 @@ export function hookCam(cam, t) {
 
 // the glide (3.6-10.6 s): a drone comes in from over the sea at dusk, descending round to a three-quarter view of you
 export const glide = new CamPath([
-  [3.6, V(26, 13, -20), V(-6, 1.5, 4), 44],
-  [6.2, V(15, 7, -7), V(-2, 1.1, 1.2), 44],
-  [8.5, V(7.5, 2.9, -0.6), V(-0.4, 0.85, 0.2), 44],
+  [3.6, V(26, 13, -20), V(-14, 7.0, 6), 44],
+  [6.2, V(15, 7, -7), V(-3.5, 1.9, 1.8), 44],
+  [8.5, V(7.5, 2.9, -0.6), V(-0.4, 0.9, 0.2), 44],
   [10.6, V(4.1, 1.6, 0.9), V(-0.15, 0.8, 0.05), 44],
 ], { easeIn: false, easeOut: true, arc: true });
 

@@ -234,5 +234,12 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
   bursting out of the streaks line up with them; elsewhere the streaks are procedural (fwidth-clamped fbm).
 - ACES turns bright saturated blue into lavender: the Cherenkov glow keeps its blue below ~2-3 (before exposure) and
   darkens the reflections it outshines instead of adding more light.
+- Rocketbox children (`Female_Child_01/02`, `Male_Child_01/02`) have a `Bip02` skeleton: `rocketbox.js` maps `Bip0N`.
+  `sit()` has `legs: 'chair'` (seat height in `pos.y`, feet on `floor`) for benches and plastic chairs.
+- Post 5's town (`engine/town5.js`, owner: "the town doesn't have a floor and the buildings are all the same... add
+  life"): one ground shader for the mosaic promenade, bike lane, avenue markings, pavements, streets and lots; four rows
+  of buildings with per-building window grids, frames, sliding panes, curtains, AC units, ceramic-tile cladding, shops,
+  balconies, roofs and water tanks; cars that drive until the decay; benches, a kiosk, umbrellas, a footvolley net;
+  hills with houses. Keep children out of the frames where things burn (frame them in the calm part only).
 - Parallel render workers used to pick a random port and could collide (EADDRINUSE killed one silently): `render.mjs`
   now listens on a free port. Billboard smoke seen from above reads as white blobs: fade it out when the camera rises.

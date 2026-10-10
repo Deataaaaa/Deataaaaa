@@ -109,6 +109,11 @@ export function sit(av, o) {
       foot = P.clone().addScaledVector(fwd, 0.3 + (s > 0 ? 0.04 : 0)).addScaledVector(left, -s * 0.13); foot.y = gAt(foot.x, foot.z) + 0.07 + (s > 0 ? 0.0 : 0.03);
       pole = P.clone().addScaledVector(left, s * 0.9).addScaledVector(fwd, 0.35).addScaledVector(up, 0.12);
       toe = foot.clone().addScaledVector(left, -s * 0.12).addScaledVector(fwd, 0.04); toe.y = foot.y - 0.02;
+    } else if (legs === 'chair') {   // sitting on a seat: feet on the floor (o.floor) in front, shins near vertical
+      const fl = o.floor ?? ground;
+      foot = P.clone().addScaledVector(fwd, 0.5).addScaledVector(left, s * 0.13); foot.y = fl + 0.085;
+      pole = P.clone().addScaledVector(fwd, 1.2).addScaledVector(up, 0.4).addScaledVector(left, s * 0.15);
+      toe = foot.clone().addScaledVector(fwd, 0.14); toe.y = fl + 0.02;
     } else {   // out: stretched, one knee slightly bent
       foot = P.clone().addScaledVector(fwd, s > 0 ? 0.86 : 0.72).addScaledVector(left, s * 0.17); foot.y = gAt(foot.x, foot.z) + 0.07;
       pole = P.clone().addScaledVector(fwd, 0.4).addScaledVector(up, 1.0);
@@ -143,6 +148,7 @@ export function sit(av, o) {
   }
   if (o.look) lookAt(av, o.look, o.lookK ?? 1);
   // rest on the ground: lowest vertex 4 mm above it
+  if (legs === 'chair') return;   // the hips sit at pos.y + seat; the feet reach the floor (nothing to lift)
   if (o.groundAt) { av.root.position.y += 0.004 - lowestAbove(av, o.groundAt); av.root.updateMatrixWorld(true); return; }
   const low = lowestY(av);
   av.root.position.y += (ground + 0.004) - low; av.root.updateMatrixWorld(true);

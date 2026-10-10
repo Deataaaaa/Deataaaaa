@@ -16,7 +16,7 @@ const BIP = {
 };
 const FING = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky'];
 function mixamoName(n) {
-  const s = n.replace(/^Bip0?1[ _]?/, '').replace(/ /g, '_');
+  const s = n.replace(/^Bip0?\d[ _]?/, '').replace(/ /g, '_');   // Bip01 (adults) or Bip02 (children)
   if (BIP[s]) return BIP[s];
   const m = s.match(/^([LR])_Finger(\d)(\d?)$/);   // Bip01 L Finger0 (thumb root), Finger01, Finger02 ...
   if (m) return (m[1] === 'L' ? 'Left' : 'Right') + 'Hand' + FING[+m[2]] + (m[3] === '' ? 1 : +m[3] + 1);

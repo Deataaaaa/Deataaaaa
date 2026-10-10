@@ -17,6 +17,7 @@ import { loadAvatar } from '../engine/rocketbox.js';
 import { sit, stand } from '../engine/poses.js';
 import { makeTowel, makeBanana, makeSpinner, makeMound } from '../engine/props5.js';
 import { makeCat } from '../engine/cat.js';
+import { townLayout, makeTownGround, makeBuildings, makeCars, makeFurniture, makeHills } from '../engine/town5.js';
 import { H0 as H0c, T, DUR, APPLE, hookCam, glide, slowmo, coast } from './ep11cams.js';
 
 const TITLE = 'What if every <span class="k">radioactive</span> atom decayed at once?';
@@ -180,8 +181,15 @@ export async function create() {
   const R = createRenderer();
   const ov = new Overlay();
   document.body.classList.add('cine');
-  const B = makeBeach(R.renderer);
+  const B = makeBeach(R.renderer, { noTown: true });
   const scene = B.scene;
+  // the town: streets and the mosaic promenade, varied buildings, cars, benches, a kiosk, umbrellas, a footvolley net, hills
+  const layout = townLayout();
+  const TG = makeTownGround(layout.cross); scene.add(TG.group);
+  const BLD = makeBuildings(layout); scene.add(BLD.group);
+  const CARS = makeCars(layout.cross); scene.add(CARS.group);
+  const FURN = makeFurniture(layout.cross); scene.add(FURN.group);
+  const HILLS = makeHills(); scene.add(HILLS.group);
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
   const cam = new THREE.PerspectiveCamera(50, W / H, 0.12, 12000);
   B.setShadow(shoreX(0) - 15, 0, 0, 30);
@@ -220,6 +228,23 @@ export async function create() {
     [crowd.Male_Adult_06, gp(shoreX(-34) - 5, -34), 1.9, 0.1],
   ];
   const sitter = [crowd.Female_Adult_04, gp(shoreX(-15) - 12, -15), Math.PI / 2 + 0.25];
+  // life on the beach and the promenade: a family at a sandcastle, footvolley, a table at the kiosk, people on benches
+  const lifeN = ['Male_Child_02', 'Female_Child_01', 'Sports_Female_01', 'Sports_Male_01', 'Sports_Male_02', 'Female_Adult_03', 'Male_Adult_12',
+    'Male_Adult_03', 'Female_Adult_06', 'Female_Child_02', 'Female_Adult_02', 'Male_Adult_05', 'Male_Child_01', 'Female_Adult_09'];
+  const life = {}; for (const n of lifeN) { life[n] = await loadAvatar(n, { env, lod: 512 }); scene.add(life[n].root); }
+  const castle = new THREE.Group(); {                                       // a sandcastle: a mound, three towers, a bucket
+    const C = V(-38.0, 0, 10.0); C.y = groundY(C.x, C.z);                 // seen in the glide's first seconds, never in the eruption shots
+    const m = makeMound(C.x - 0.25, C.z, { x: 1, z: 0 }, B.sand, { L: 0.55, Wd: 0.55, Hh: 0.16, seed: 4 }); castle.add(m);
+    for (const [dx, dz, h] of [[0.0, 0.0, 0.26], [0.14, 0.12, 0.2], [-0.1, 0.15, 0.18]]) { const tw = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.075, h, 14), B.sand); tw.position.set(C.x + dx, C.y + h / 2 + 0.04, C.z + dz); tw.castShadow = true; tw.receiveShadow = true; castle.add(tw); }
+    const bucket = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.075, 0.17, 18, 1, true), new THREE.MeshStandardMaterial({ color: '#e84d2a', roughness: 0.5, side: THREE.DoubleSide }));
+    bucket.position.set(C.x + 0.45, C.y + 0.085, C.z - 0.3); bucket.castShadow = true; castle.add(bucket);
+    castle.userData.C = C;
+  }
+  scene.add(castle);
+  const CC = castle.userData.C, NET = FURN.net, KT = FURN.tables, BEN = FURN.benches;
+  const benchAt = (k) => { let best = BEN[0], bd = 1e9; for (const b of BEN) { const d = Math.abs(b.z - k); if (d < bd) { bd = d; best = b; } } return best; };
+  const b1 = benchAt(-9), b2 = benchAt(14);
+  const fwdOf = (yaw) => V(Math.sin(yaw), 0, Math.cos(yaw));
   const qLie = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, Math.PI / 2, 0, 'YXZ'));
   // skin glows blue in the Cherenkov flash (the potassium in your cells): the head materials get an emissive copy of their map
   const skins = [];
@@ -252,7 +277,34 @@ export async function create() {
     buried.root.position.set(BU.x - hd.x, BU.y - hd.y - 0.02, BU.z - hd.z); buried.root.updateMatrixWorld(true);
     walkers.forEach(([av, p, yaw, ph], i) => stand(av, { pos: p, groundAt: groundY, yaw, breath: br(ph + i * 0.3), stride: 0.25 * Math.sin(ph * 6), look: V(p.x + 40, 1.6, p.z + 3) }));
     sit(sitter[0], { pos: sitter[1], groundAt: groundY, yaw: sitter[2], legs: 'out', arms: 'behind', lean: -0.25, breath: br(0.8), look: V(80, 4, -20) });
+    // the family: a boy building the castle, his sister watching, their mother on the sand behind them
+    sit(life.Male_Child_02, { pos: V(CC.x - 0.5, groundY(CC.x - 0.5, CC.z + 0.05), CC.z + 0.05), groundAt: groundY, yaw: Math.PI / 2, legs: 'cross', arms: 'lap', lean: 0.32, breath: br(0.1), look: CC.clone().add(V(0, 0.1, 0)),
+      handR: (P, f, l, u) => ({ hand: CC.clone().add(V(-0.12, 0.22, -0.08)), pole: P.clone().addScaledVector(l, -0.5).addScaledVector(u, -0.2), F: f.clone().addScaledVector(u, -0.5).normalize(), N: V(0, -1, 0) }) });
+    stand(life.Female_Child_01, { pos: gp(CC.x + 0.15, CC.z + 0.85), groundAt: groundY, yaw: Math.PI + 0.4, breath: br(0.6), look: CC.clone().add(V(0, 0.15, 0)), lean: 0.12 });
+    sit(life.Sports_Female_01, { pos: gp(CC.x - 2.6, CC.z + 1.4), groundAt: groundY, yaw: Math.PI / 2 - 0.5, legs: 'out', arms: 'behind', lean: -0.28, breath: br(0.35), look: CC.clone().add(V(0, 0.4 + 0.1 * Math.sin(tp * 0.4), 0)) });
+    // footvolley: a player ready, the other heading the ball over the net
+    const bt = (tp * 0.55) % 1, ballP = NET.clone().add(V(Math.cos(bt * Math.PI) * 2.6, 2.6 + Math.sin(bt * Math.PI) * 2.2, 0.4));
+    FURN.ball.position.copy(ballP); FURN.ball.rotation.set(tp * 3, tp * 2, 0);
+    stand(life.Sports_Male_01, { pos: gp(NET.x - 3.2, NET.z + 0.6), groundAt: groundY, yaw: Math.PI / 2, breath: br(0.2), look: ballP, stride: 0.5, lean: 0.15,
+      armL: (sh, f, l, u) => ({ hand: sh.clone().addScaledVector(u, -0.45).addScaledVector(l, 0.22).addScaledVector(f, 0.15), pole: sh.clone().addScaledVector(l, 0.6).addScaledVector(f, -0.3), F: u.clone().negate(), N: l.clone().negate() }),
+      armR: (sh, f, l, u) => ({ hand: sh.clone().addScaledVector(u, -0.45).addScaledVector(l, -0.22).addScaledVector(f, 0.15), pole: sh.clone().addScaledVector(l, -0.6).addScaledVector(f, -0.3), F: u.clone().negate(), N: l.clone() }) });
+    stand(life.Sports_Male_02, { pos: gp(NET.x + 3.0, NET.z - 0.7), groundAt: groundY, yaw: -Math.PI / 2, breath: br(0.7), look: ballP, stride: -0.4, lean: 0.2 });
+    // the kiosk: two friends at a red plastic table
+    const onChair = (av, tb, k, ph, lookAt) => { const a = (k / 4) * Math.PI * 2 + 0.4, P0 = V(tb.x + Math.cos(a) * 0.75, tb.y + 0.44, tb.z + Math.sin(a) * 0.75);
+      sit(av, { pos: P0, seat: 0.13, floor: tb.y, yaw: Math.atan2(-Math.cos(a), -Math.sin(a)), legs: 'chair', arms: 'lap', breath: br(ph), look: lookAt }); return P0; };
+    const kA = onChair(life.Female_Adult_03, KT[0], 0, 0.15, V(KT[0].x - 0.6, KT[0].y + 1.15, KT[0].z - 0.3));
+    onChair(life.Male_Adult_12, KT[0], 2, 0.45, kA.clone().add(V(0, 0.75, 0)));
+    // the promenade: an old man on a bench, a mother on another with her daughter beside her, a couple at the wall, a boy with his mother
+    const onBench = (av, b, dz, ph) => { const yaw = Math.PI / 2 + b.ang; const P0 = V(b.x + 0.02, 2.5 + 0.45, b.z + dz); sit(av, { pos: P0, seat: 0.13, floor: 2.5, yaw, legs: 'chair', arms: 'lap', breath: br(ph), look: P0.clone().add(V(40, 0.5 + 0.3 * Math.sin(tp * 0.25 + ph * 6), 6 * Math.sin(tp * 0.2 + ph))) }); };
+    onBench(life.Male_Adult_03, b1, -0.35, 0.9); onBench(life.Female_Adult_06, b2, 0.4, 0.25);
+    stand(life.Female_Child_02, { pos: V(b2.x + 0.6, 2.5, b2.z - 0.55), yaw: Math.PI / 2 - 0.5, breath: br(0.5), look: V(b2.x + 30, 1.5, b2.z - 6) });
+    const W0 = V(-58.65, 2.5, 4.2);
+    stand(life.Female_Adult_02, { pos: W0, yaw: Math.PI / 2 + 0.15, breath: br(0.4), look: V(W0.x + 40, 3, W0.z + 3 * Math.sin(tp * 0.3)) });
+    stand(life.Male_Adult_05, { pos: W0.clone().add(V(0.15, 0, 0.62)), yaw: Math.PI / 2 - 0.35, breath: br(0.05), look: W0.clone().add(V(0, 1.55, 0)) });
+    stand(life.Female_Adult_09, { pos: V(-62.0, 2.5, 21.5), yaw: Math.PI * 0.7, breath: br(0.3), look: V(-61.5, 1.9, 22.1) });
+    stand(life.Male_Child_01, { pos: V(-61.5, 2.5, 22.1), yaw: -Math.PI * 0.3, breath: br(0.85), look: V(-62.0, 3.9, 21.5) });
   }
+  const allLife = () => Object.values(life).map((a) => a.root).concat([castle]);
 
   // ---- Apple: sitting on the black sand by you, side-on to the shore ----
   const apple = makeCat();
@@ -352,6 +404,8 @@ export async function create() {
       apple.root.visible = story < 19.6;
       for (const [av] of walkers) av.root.visible = story < T.ERUPT;   // nobody small and far away caught in the coast shot
       sitter[0].root.visible = story < T.ERUPT;
+      for (const o of allLife()) o.visible = story < T.ERUPT;
+      CARS.update(Math.min(story, T.T0));
       // the decay: a blue flash (Cherenkov light in the sea and in every body), then heat
       const after = story - T.T0, on = story >= T.T0 ? 1 : 0;
       const cher = on * Math.max(0, 1 - smooth(19.2, 20.6, story)) * (0.85 + 0.15 * smooth(T.T0, T.T0 + 0.4, story));
@@ -369,7 +423,7 @@ export async function create() {
       BX.uTown.value = smooth(27.4, 35.0, story);
       BX.uSteam.value = smooth(33.0, 37.5, story) * 0.8;
       const town = BX.uTown.value, heatC = new THREE.Color(1.0, 0.45, 0.12);
-      B.towers.slabMat.emissive.copy(heatC).multiplyScalar(town * town * 1.6); B.towers.railMat.emissive.copy(heatC).multiplyScalar(town * 1.2);
+      BLD.slabMat.emissive.copy(heatC).multiplyScalar(town * town * 1.6); BLD.railMat.emissive.copy(heatC).multiplyScalar(town * 1.2);
       FX.uScorch.value = smooth(22.0, 27.5, story); FX.uHeat.value = smooth(23.5, 30.0, story);
       groundGlow.intensity = smooth(20.5, 24.0, story) * 0.7 + smooth(24.4, 25.6, story) * 1.2 * (story < T.ERUPT ? 1 : 0) + coastK * 1.2;
       B.sun.intensity = 3.3 * (1 - 0.75 * coastK) * dim; B.skyU.uSkyI.value = (1 - 0.8 * coastK) * (1 - 0.3 * cher); B.hemi.intensity = 0.7 * dim * (1 - 0.6 * coastK);

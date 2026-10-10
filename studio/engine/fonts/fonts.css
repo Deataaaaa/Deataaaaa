@@ -3,3 +3,6 @@
 @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:block;src:url('/engine/fonts/JetBrainsMono-normal-400.woff2') format('woff2');}
 @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:500;font-display:block;src:url('/engine/fonts/JetBrainsMono-normal-500.woff2') format('woff2');}
 @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:700;font-display:block;src:url('/engine/fonts/JetBrainsMono-normal-700.woff2') format('woff2');}
+@font-face{font-family:'Anton';font-style:normal;font-weight:400;font-display:block;src:url('/engine/fonts/Anton-normal-400.woff2') format('woff2');}
+@font-face{font-family:'Archivo Black';font-style:normal;font-weight:400;font-display:block;src:url('/engine/fonts/ArchivoBlack-normal-400.woff2') format('woff2');}
+@font-face{font-family:'Inter';font-style:normal;font-weight:100 900;font-display:block;src:url('/engine/fonts/Inter-variable.woff2') format('woff2');}

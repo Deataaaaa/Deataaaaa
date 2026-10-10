@@ -156,8 +156,10 @@ function wallColJS(st, h) {
   if (WALLS[st]) return WALLS[st].find(([k]) => h < k)[1];
   return PASTEL_JS[Math.min(6, Math.floor(h * 7))].map((x) => x * (st === 1 ? 0.72 : 0.76));
 }
-export function makeBuildings(layout) {
-  const group = new THREE.Group(), r = rng(31);
+// the facade material (instanced boxes with aStyle = (style, tint, kind, hue) and aFace = along-street unit vector):
+// window grids, rooms behind the glass, shops, cladding. baseY = street level; front = the direction the main facades
+// face (balcony doors and shops always on that side)
+export function makeFacadeMaterial({ baseY = PROM_Y, front = [1, 0], key = 'town_bld_v2', power = null } = {}) {
   const FACADE = `
     varying vec3 vTW; varying vec3 vTN; varying vec4 vSt; varying vec2 vFace;
     uniform float uTown;
@@ -217,23 +219,23 @@ export function makeBuildings(layout) {
       return c; }`;
   const mat = new THREE.MeshStandardMaterial({ color: '#d4d6dc', roughness: 0.82, metalness: 0, envMapIntensity: 0.7 });   // facades in the dusk shade: a little darker and cooler
   mat.onBeforeCompile = (sh) => {
-    sh.uniforms.uTown = BX.uTown;
+    sh.uniforms.uTown = BX.uTown; sh.uniforms.uRoomP = power || { value: 1 };
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute vec4 aStyle; attribute vec2 aFace; varying vec3 vTW; varying vec3 vTN; varying vec4 vSt; varying vec2 vFace;')
       .replace('#include <project_vertex>', `#include <project_vertex>
         vTW = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz; vTN = normalize(mat3(modelMatrix * instanceMatrix) * objectNormal); vSt = aStyle; vFace = aFace;`);
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
         ${FACADE}
-        float gGlass, gLit, gRefl, gPar, gRec; vec3 gRoomE;`)
+        float gGlass, gLit, gRefl, gPar, gRec; vec3 gRoomE; uniform float uRoomP;`)
       .replace('#include <map_fragment>', `#include <map_fragment>
         float vert = 1.0 - abs(vTN.y), st = vSt.x, tint = vSt.y, kind = vSt.z, hue = vSt.w;
         // the face's horizontal axis: the building's own along-street direction (vFace) or across it
         vec2 fa = normalize(vFace), fb = vec2(-fa.y, fa.x);
         bool endW = abs(dot(vTN.xz, fa)) > 0.5;                       // the end walls (across the street)
-        float hz = endW ? dot(vTW.xz, fb) : dot(vTW.xz, fa), y = vTW.y - ${PROM_Y.toFixed(2)};
+        float hz = endW ? dot(vTW.xz, fb) : dot(vTW.xz, fa), y = vTW.y - ${baseY.toFixed(2)};
         vec3 T3 = endW ? vec3(fb.x, 0.0, fb.y) : vec3(fa.x, 0.0, fa.y);
         vec3 Vd = normalize(vTW - cameraPosition);
         vec3 rd = vec3(dot(Vd, T3), Vd.y, -dot(Vd, normalize(vTN)));   // the view ray in face space (z into the building)
-        bool sea = dot(vTN.xz, vec2(1.0, 0.0)) > 0.7;                 // faces the beach (+x)
+        bool sea = dot(vTN.xz, vec2(${front[0].toFixed(3)}, ${front[1].toFixed(3)})) > 0.7;                 // faces the beach (+x)
         float FH = st > 3.5 && st < 4.5 ? 3.0 : 2.9, fy = y / FH, fwy = fwidth(fy);
         // how big a window is on screen: interior detail fades to its average before it gets smaller than a few pixels
         float fwm = max(fwidth(hz) / 3.0, fwidth(y) / 2.9), idet = 1.0 - smoothstep(0.1, 0.3, fwm);
@@ -346,12 +348,17 @@ export function makeBuildings(layout) {
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         float fwm2 = max(fwidth(vTW.x + vTW.z) / 3.0, fwidth(vTW.y) / 2.9);
         float sub = smoothstep(0.35, 0.9, fwm2);
-        float avg = 0.34 * 0.6 * 0.5 * step(1.0, (vTW.y - ${PROM_Y.toFixed(2)}) / 2.9) * (1.0 - abs(vTN.y)) * (1.0 - step(0.5, vSt.z) * (1.0 - step(1.5, vSt.z)));
-        totalEmissiveRadiance += mix(gLit * gRoomE, vec3(1.0, 0.7, 0.42) * avg, sub) * 1.45;
+        float avg = 0.34 * 0.6 * 0.5 * step(1.0, (vTW.y - ${baseY.toFixed(2)}) / 2.9) * (1.0 - abs(vTN.y)) * (1.0 - step(0.5, vSt.z) * (1.0 - step(1.5, vSt.z)));
+        totalEmissiveRadiance += mix(gLit * gRoomE, vec3(1.0, 0.7, 0.42) * avg, sub) * 1.45 * uRoomP;
         float tk = uTown * (0.75 + 0.25 * bnT(vTW.xy * 0.08 + vTW.zy * 0.05)) * (0.6 + 0.4 * smoothstep(0.0, 40.0, vTW.y - 2.5));
         totalEmissiveRadiance += (bb2(clamp(tk * 0.8, 0.0, 1.0)) * tk * tk * 1.1 + vec3(1.0, 0.5, 0.2) * gGlass * smoothstep(0.0, 0.4, uTown) * 1.3);`);
   };
-  mat.customProgramCacheKey = () => 'town_bld_v2';
+  mat.customProgramCacheKey = () => key;
+  return mat;
+}
+export function makeBuildings(layout) {
+  const group = new THREE.Group(), r = rng(31);
+  const mat = makeFacadeMaterial();
   // instances: cores (kind 0), roof boxes (1), podiums (2)
   const inst = [], slabs = [], rails = [], roofs = [], tanks = [], ants = [];
   for (const b of layout.blds) {
@@ -512,7 +519,7 @@ function makeBus(livery) {
   grp.add(contactShadow(L + 1.0, W + 0.9));
   return { group: grp, L, paint: plain };
 }
-function makeCar(type, color, r) {
+export function makeCar(type, color, r) {
   if (type === 'bus') return makeBus(['#1d5fae', '#1f8a4c', '#d9661f', '#b3262a'][Math.floor(r() * 4)]);
   const T = CAR_TYPES[type], grp = new THREE.Group();
   const paint = new THREE.MeshPhysicalMaterial({ color, metalness: 0.55, roughness: 0.38, clearcoat: 1, clearcoatRoughness: 0.08 });

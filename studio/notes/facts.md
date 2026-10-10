@@ -167,3 +167,26 @@ EP11 on-screen extras (HUD lines and timer):
   in water or tissue (picoseconds to nanoseconds); the deposited energy is heat within nanoseconds; hot rock vapour
   expands at a few km/s (about a millimetre per microsecond, metres per millisecond), so the sand only bulges and glows
   at the microsecond scale and erupts at the millisecond scale, as shown.
+
+## EP12 (post 6) — What if every atom on Earth stopped moving for 1 second?
+
+Premise: for one second every atom on Earth is at rest relative to the ground (thermal jiggling, wind, waves, cars, you;
+Earth itself keeps turning and orbiting, so this is not "Earth stops"). When the second is over the atoms start again
+from rest: the part of the heat that was motion is gone. Temperature measures exactly that motion, so at the restart
+everything is at absolute zero. In solids and liquids the bonds between atoms were stretched at that instant and give
+part of the energy back within picoseconds (in a harmonic solid, half the thermal energy is potential), so they re-warm
+part of the way; a gas has no bonds between molecules and stays at absolute zero until it falls (below).
+
+| On screen | Value | Source / calculation |
+|---|---|---|
+| Air molecules: about 500 m/s → 0 | 507 m/s rms (467 m/s mean) | N2 at 15 °C: v_rms = √(3RT/M) = √(3 × 8.314 × 288 / 0.028) |
+| No sound: sound is atoms moving | definition | a sound wave is a travelling pattern of molecular motion; with every molecule at rest, nothing carries it |
+| Everything at −273.15 °C (absolute zero) | 0 K at the restart | temperature is the mean kinetic energy of the atoms' random motion; at the restart it is zero everywhere |
+| The water in the air falls as snow: 13 trillion tonnes | 1.27e16 kg | water vapour in the atmosphere ≈ 12,900 km³ of liquid water (USGS / Shiklomanov), 25 mm averaged over Earth; at 0 K it can only condense |
+| Nothing holds the sky up | air pressure = molecular impacts | the atmosphere is held up by its own pressure, i.e. by molecules moving; at rest, every molecule simply falls |
+| Air from 10 km up hits at up to 1,600 km/h | 443 m/s after 45 s | free fall from 10 km (all the air below falls with it at the same rate, so it falls through near-vacuum): v = √(2gh), t = √(2h/g). "Up to": it lands on the air already piled up near the ground |
+| The air's fall: 100 million megatons of heat | 4.3e23 J | potential energy of the atmosphere = surface pressure × scale height per m² = 101,325 Pa × 8.4 km = 8.5e8 J/m² × 5.1e14 m² = 4.3e23 J = 1.0e8 Mt TNT. It turns into heat in the fallen air, which ends up around 80 K (−190 °C): 82.7 kJ/kg ÷ (cv + R) |
+| Times Square: 330,000 people a day | Times Square Alliance | pedestrian counts, "more than 330,000 people pass through on a typical day" |
+| Earth turns white | qualitative | the snowed-out water vapour, frost on every surface and frozen sea surface (water re-warms only to about its freezing point) |
+| Snowball Earth, about 700 million years ago | 717-635 Ma | Sturtian (717-660 Ma) and Marinoan (~650-635 Ma) glaciations: ice reached the tropics (Hoffman et al., Science 1998; Rooney et al. 2015) |
+| Coldest temperature ever measured on Earth: −89.2 °C, Vostok, 1983 | 21 July 1983 | WMO Weather and Climate Extremes Archive, Vostok station, Antarctica |

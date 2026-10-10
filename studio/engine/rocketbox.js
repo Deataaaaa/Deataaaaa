@@ -116,5 +116,11 @@ export async function loadAvatar(name, { env = null, height = null, facial = fal
   const box2 = new THREE.Box3().setFromObject(root, true);
   root.position.y -= box2.min.y; root.updateMatrixWorld(true);
   const rest = {}; for (const [k, b] of Object.entries(bones)) rest[k] = b.quaternion.clone();
-  return { root, bones, meshes, rest, code, debug: { matNames, bipNames, height: box2.max.y - box2.min.y, rawHeight: h } };
+  // the _facial FBX carries blend shapes (ARKit-style "AK_09_EyeBlinkLeft", FACS "AU_45_Blink"...): blink(k) closes both
+  // eyes, k in 0..1 (no-op on the plain FBX, which has no shapes and is not skinned to the eyelids)
+  const shapes = [];
+  for (const m of meshes) { const d = m.morphTargetDictionary; if (!d) continue; for (const [n, i] of Object.entries(d)) if (/EyeBlink(Left|Right)|AU_45_Blink/.test(n)) shapes.push([m, i, /AU_45/.test(n)]); }
+  const useFacs = !shapes.some(([, , f]) => !f);
+  const blink = (k) => { for (const [m, i, f] of shapes) if (f === useFacs) m.morphTargetInfluences[i] = k; };
+  return { root, bones, meshes, rest, code, blink, shapeNames: meshes.flatMap((m) => Object.keys(m.morphTargetDictionary || {})), debug: { matNames, bipNames, height: box2.max.y - box2.min.y, rawHeight: h } };
 }

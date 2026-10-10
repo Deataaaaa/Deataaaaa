@@ -8,6 +8,10 @@ $env:PYTHONUTF8 = '1'
 $env:PYTHON = 'py -3'                                       # used by encode.sh and fetch_rocketbox.sh (Git Bash)
 $script:LogFile = $null
 $bash = Join-Path $env:ProgramFiles 'Git\bin\bash.exe'      # Git Bash (not C:\Windows\System32\bash.exe, which is WSL)
+if (-not (Test-Path -LiteralPath $bash)) {                  # Git installed for this user only
+  $alt = Join-Path $env:LOCALAPPDATA 'Programs\Git\bin\bash.exe'
+  if (Test-Path -LiteralPath $alt) { $bash = $alt }
+}
 
 function Start-Log([string]$path, [string]$title) {
   $script:LogFile = $path

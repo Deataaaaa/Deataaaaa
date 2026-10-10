@@ -14,7 +14,56 @@ function Fail([string]$t) {
 }
 
 Say '== 1/6 Tools: Node.js, Python, ffmpeg, Git'
-if (-not (Has 'winget')) { Fail 'winget is missing: install "App Installer" from the Microsoft Store, then run SETUP.bat again.' }
+if (-not (Has 'winget')) {                                    # App Installer present but not registered for this user
+  try { Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe -ErrorAction Stop } catch { }
+  RefreshPath
+}
+# without winget: direct downloads (Node.js and ffmpeg unzipped next to the project, Python installed for this user)
+$toolsDir = Join-Path (Split-Path -Parent $repo) 'tools'
+function Add-UserPath([string]$dir) {
+  $u = [Environment]::GetEnvironmentVariable('Path', 'User'); if (-not $u) { $u = '' }
+  if (($u -split ';') -notcontains $dir) { [Environment]::SetEnvironmentVariable('Path', ($dir + ';' + $u).TrimEnd(';'), 'User') }
+  RefreshPath
+}
+function Get-File([string]$url, [string]$out) {
+  Say ('downloading ' + $url)
+  Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $out
+  return (Test-Path -LiteralPath $out)
+}
+function Install-Direct([string]$cmd) {
+  New-Item -ItemType Directory -Force -Path $toolsDir | Out-Null
+  if ($cmd -eq 'node') {
+    $zip = Join-Path $toolsDir 'node.zip'
+    if (Get-File 'https://nodejs.org/dist/v22.11.0/node-v22.11.0-win-x64.zip' $zip) {
+      Expand-Archive -Force -LiteralPath $zip -DestinationPath $toolsDir; Remove-Item -Force -LiteralPath $zip
+      Add-UserPath (Join-Path $toolsDir 'node-v22.11.0-win-x64')
+    }
+  } elseif ($cmd -eq 'ffmpeg') {
+    $zip = Join-Path $toolsDir 'ffmpeg.zip'
+    if (Get-File 'https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip' $zip) {
+      $dst = Join-Path $toolsDir 'ffmpeg'
+      Expand-Archive -Force -LiteralPath $zip -DestinationPath $dst; Remove-Item -Force -LiteralPath $zip
+      $exe = Get-ChildItem -LiteralPath $dst -Recurse -Filter 'ffmpeg.exe' | Select-Object -First 1
+      if ($exe) { Add-UserPath $exe.DirectoryName }
+    }
+  } elseif ($cmd -eq 'py') {
+    $exe = Join-Path $toolsDir 'python-setup.exe'
+    if (Get-File 'https://www.python.org/ftp/python/3.12.7/python-3.12.7-amd64.exe' $exe) {
+      Say 'installing Python 3.12 for this user (a minute or two)'
+      Start-Process -Wait -FilePath $exe -ArgumentList '/quiet', 'InstallAllUsers=0', 'PrependPath=1', 'Include_launcher=1', 'InstallLauncherAllUsers=0', 'Include_test=0'
+      Remove-Item -Force -LiteralPath $exe
+      RefreshPath
+    }
+  } elseif ($cmd -eq 'git') {
+    $exe = Join-Path $toolsDir 'git-setup.exe'
+    if (Get-File 'https://github.com/git-for-windows/git/releases/download/v2.47.0.windows.2/Git-2.47.0.2-64-bit.exe' $exe) {
+      Say 'installing Git (say yes if Windows asks for permission)'
+      Start-Process -Wait -FilePath $exe -ArgumentList '/VERYSILENT', '/NORESTART'
+      Remove-Item -Force -LiteralPath $exe
+      RefreshPath
+    }
+  }
+}
 $tools = @(
   @{ cmd = 'node'; id = 'OpenJS.NodeJS.LTS' },
   @{ cmd = 'py'; id = 'Python.Python.3.12' },
@@ -23,9 +72,12 @@ $tools = @(
 )
 foreach ($t in $tools) {
   if (Has $t.cmd) { Say ($t.cmd + ': already installed'); continue }
-  Say ('installing ' + $t.id + ' (say yes if Windows asks for permission)')
-  $null = Run 'winget' @('install', '--id', $t.id, '-e', '--silent', '--accept-source-agreements', '--accept-package-agreements')
-  RefreshPath
+  if (Has 'winget') {
+    Say ('installing ' + $t.id + ' (say yes if Windows asks for permission)')
+    $null = Run 'winget' @('install', '--id', $t.id, '-e', '--silent', '--accept-source-agreements', '--accept-package-agreements')
+    RefreshPath
+  }
+  if (-not (Has $t.cmd)) { Install-Direct $t.cmd }
 }
 RefreshPath
 foreach ($c in 'node', 'npm', 'npx', 'py', 'ffmpeg', 'ffprobe', 'git') {

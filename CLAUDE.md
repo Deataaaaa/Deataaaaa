@@ -100,8 +100,11 @@ often while at work, so every deliverable has to be ready to post straight from 
 | 5 | `studio/episodes/ep11.js` | Every radioactive atom decays at once (Guarapari black-sand beach → your body and banana → granite → continents → Goiânia 1987) | approved 10 Oct (owner's pick); first video with Apple and a WTF moment (rule 19); in progress |
 Cast log (rule 16): post 1 elevator = Michelle (dark skin, curly black hair, red headphones); post 2 plane =
 Michelle (same); post 3 whale = POV diver, black wetsuit and gloves (body never seen); post 4 light = Male_Adult_17
-(beard, black cap, blue-white hoodie; his friend Female_Adult_12, brunette with bangs, black hoodie). Next video: someone
-new from the Rocketbox pool (46 realistic rigged people, MIT). Log the avatar name here once used.
+(beard, black cap, blue-white hoodie; his friend Female_Adult_12, brunette with bangs, black hoodie); post 5 radioactive =
+Male_Adult_10 (East Asian, short black hair, red track jacket, black track pants; extras: Female_Adult_01 buried in the
+sand, Male_Adult_04 bearded in a hoodie in the 1987 shed). Next video: someone new from the Rocketbox pool (46 realistic
+rigged people, MIT). Log the avatar name here once used. Apple (rule 19) is `engine/cat.js` `makeCat()`, the same cat
+every video.
 Other ideas: 50 km/h crash without a seatbelt; lightning hits your plane; stuck upside down on a roller coaster;
 phone battery catching fire in your pocket. Old built-but-unpublished episodes: `ep02`–`ep06` (topics too common).
 
@@ -218,5 +221,18 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
 - A path whose target jumps from near to far (after a cut: "look ahead" → "look up at the tower") whips round in its
   first frames: post 4's crane after the stars cut started at 80 px per frame. Start such takes with `{ arc: true }`
   (here a separate `crane` path blended into the main one with a smoothstep weight, so later frames stay identical).
+- Apple (`engine/cat.js`): body and head are signed-distance sculptures turned into meshes by surface nets, fur = 14-18
+  shells drawn as one InstancedMesh (layer = gl_InstanceID + 1, inner first, blended, mipmapped clump texture so far
+  strands average out), per-vertex `aWhite` (tuxedo pattern) and `aLen` (fur length). Look-dev in `episodes/catview.js`
+  (`?cam=three|front|side|close|eye&glow=1`). Eyelids are shells turning about the eye's horizontal axis (almond opening).
+- A NaN in any pixel blooms into a big black rectangle (UnrealBloom blurs it): degenerate triangles give zero normals and
+  `normalize(0)` is NaN. Never collapse a mesh edge to a point (stop parametric tips at 97%) and guard normalize.
+- Screen-space ribbons (whiskers) need `side: DoubleSide`: their winding flips with the screen direction and back faces
+  are culled (the whiskers were invisible). Draw them at least 1.6 px wide, alpha = true width / 1.6 px.
+- A low directional light facing the lens glints on wet sand (roughness 0.3) as a huge blob: put fill lights high.
+- Post 5's black sand near the hero is a JS-drawn mask texture (`makeStreakMask`) shared with the shader, so particles
+  bursting out of the streaks line up with them; elsewhere the streaks are procedural (fwidth-clamped fbm).
+- ACES turns bright saturated blue into lavender: the Cherenkov glow keeps its blue below ~2-3 (before exposure) and
+  darkens the reflections it outshines instead of adding more light.
 - Parallel render workers used to pick a random port and could collide (EADDRINUSE killed one silently): `render.mjs`
   now listens on a free port. Billboard smoke seen from above reads as white blobs: fade it out when the camera rises.

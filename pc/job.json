@@ -1,7 +1,7 @@
 {
-  "ep": "ep10",
-  "name": "post4_light_pc_test",
-  "cover": "videos/post4_cover.jpg",
+  "ep": "ep11",
+  "name": "post5_radioactive",
+  "cover": "videos/post5_cover.jpg",
   "workers": 3,
-  "note": "First run on the PC: post 4 again, to measure the speed and compare with the cloud render (do not post it)."
+  "note": "Post 5: What if every radioactive atom decayed at once? (68 s)."
 }

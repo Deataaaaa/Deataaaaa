@@ -35,7 +35,7 @@ export const slowmo = new CamPath([
   [10.6, V(-2.1, 1.25, 1.0), V(0.6, 0.95, -0.25), 46],
   [14.4, V(-0.95, 1.15, 2.2), V(0.35, 0.9, -0.1), 45],
   [18.6, V(0.85, 0.92, 1.7), V(0.05, 0.74, 0.1), 40],
-  [21.6, V(0.8, 0.56, 1.42), V(-0.05, 0.1, 0.33), 40],
+  [21.6, V(1.0, 0.66, 1.6), V(-0.12, 0.3, 0.22), 42],
   [24.2, V(1.6, 0.55, 1.8), V(0.15, 0.22, 0.25), 43],
   [26.8, V(2.5, 0.78, 2.45), V(0.0, 0.32, 0.0), 47],
 ], { easeIn: false, easeOut: false, arc: true });
@@ -43,7 +43,7 @@ export const slowmo = new CamPath([
 // the coast (26.8-38 s): 300 m out over the sea, low, looking at the beach and the towers as the land lifts off into a
 // curtain of rock vapour; a slow push-in
 export const coast = new CamPath([
-  [26.8, new THREE.Vector3(250, 30, -60), new THREE.Vector3(-110, 62, 50), 42],
-  [32.4, new THREE.Vector3(232, 31, -52), new THREE.Vector3(-110, 70, 52), 42],
-  [38.0, new THREE.Vector3(212, 33, -44), new THREE.Vector3(-110, 80, 54), 42],
+  [26.8, new THREE.Vector3(255, 29, -64), new THREE.Vector3(-110, 60, 48), 42],
+  [32.4, new THREE.Vector3(228, 31, -50), new THREE.Vector3(-110, 70, 52), 42],
+  [38.0, new THREE.Vector3(200, 34, -36), new THREE.Vector3(-110, 82, 56), 41],
 ], { easeIn: false, easeOut: false, arc: true });

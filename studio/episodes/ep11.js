@@ -23,20 +23,20 @@ const TITLE = 'What if every <span class="k">radioactive</span> atom decayed at 
 const CAPTIONS = [
   [3.75, 6.85, 'This black sand is radioactive.'],
   [6.95, 10.15, 'People lie in it to feel better.'],
-  [10.85, 13.95, 'Every unstable atom goes off at once.', { shade: 1 }],
-  [14.05, 17.1, 'Your body: the energy of 7 kg of TNT.', { shade: 1 }],
-  [17.25, 19.95, 'Your banana: 20 grams of TNT.', { shade: 1 }],
-  [20.05, 23.4, 'Black sand: 4 tonnes of TNT per kilo.', { shade: 1 }],
-  [23.55, 26.65, 'Under your towel alone: a kiloton.', { shade: 1 }],
+  [10.8, 13.8, 'Every unstable atom goes off.', { shade: 1 }],
+  [13.9, 17.25, 'Your body: as much as 7 kg of TNT.', { shade: 1 }],
+  [17.35, 20.3, 'Your banana: 20 grams of TNT.', { shade: 1 }],
+  [20.4, 23.85, 'Black sand: 4 tonnes of TNT a kilo.', { shade: 1 }],
+  [23.9, 26.8, 'Under your towel: a kiloton.', { shade: 1 }],
   [27.0, 30.6, 'Granite: 80 kg of TNT in every kilo.', { shade: 1 }],
-  [30.7, 34.1, 'The ground itself boils into rock vapour.', { shade: 1 }],
+  [30.7, 34.1, 'The ground boils into rock vapour.', { shade: 1 }],
   [34.2, 37.7, 'The sea heats up by 36 °C at once.', { shade: 1 }],
   [38.25, 41.8, 'Every continent explodes at once.', { shade: 1 }],
-  [41.9, 45.6, '1.3 million years of sunlight, in a second.', { shade: 1 }],
+  [41.9, 45.6, 'That’s 1.3 million years of sunlight.', { shade: 1 }],
   [45.7, 49.6, 'Earth doesn’t blow apart. It melts.', { shade: 1 }],
-  [50.3, 53.9, 'Brazil, 1987. Scrap collectors found this.', { shade: 1 }],
-  [54.0, 57.8, 'A powder that glowed blue in the dark.', { shade: 1 }],
-  [57.9, 61.8, 'They shared it with family. 4 people died.', { shade: 1 }],
+  [50.25, 54.05, 'Brazil, 1987: scrap dealers found this.', { shade: 1 }],
+  [54.15, 57.85, 'A powder that glowed blue in the dark.', { shade: 1 }],
+  [57.95, 61.85, 'They shared it with family. 4 died.', { shade: 1 }],
 ];
 
 const fmtT = (s) => { s = Math.max(0, s); const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r.toFixed(3).padStart(6, '0')}`; };
@@ -120,9 +120,10 @@ function makeSpace(tex) {
   scene.add(veil);
   const sunL = new THREE.DirectionalLight('#fff4e6', 2.4); scene.add(sunL, sunL.target);
   const glowL = new THREE.PointLight('#ff7a30', 0, 0, 0); scene.add(glowL);
-  const upL = new THREE.DirectionalLight('#ff8a40', 2.2); scene.add(upL, upL.target);   // the burning planet lights whatever floats above it
+  const upL = new THREE.DirectionalLight('#ff8a40', 2.6); scene.add(upL, upL.target);   // the burning planet lights whatever floats above it
+  const camL = new THREE.DirectionalLight('#c8d4ff', 0.9); scene.add(camL, camL.target);  // a soft fill from the lens side (starlight) so the spinner reads red
   scene.add(new THREE.AmbientLight('#404a60', 0.25));
-  return { scene, earth, veil, U, sunL, glowL, upL };
+  return { scene, earth, veil, U, sunL, glowL, upL, camL };
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -190,7 +191,7 @@ export async function create() {
   const H0 = V(shoreX(0) - 14, 0, 0); H0.y = groundY(H0.x, H0.z);
   if (H0.distanceTo(H0c) > 0.02) console.error('ep11cams H0 out of date', H0.toArray());
   BX.uHero.value.set(H0.x + 0.6, H0.z - 0.4, 5.5, 1);
-  const mask = makeStreakMask(H0.x + 0.4, H0.z, 44, 880);                // the streaks round you, known to JS
+  const mask = makeStreakMask(H0.x + 0.4, H0.z, 26, 1300);               // the streaks round you, known to JS (2 cm texels)
   BX.uHeroMap.value = mask.tex; BX.uHeroRect.value.copy(mask.rect);
   const streakPts = (n, rMax, thr, seed) => { const r = rng(seed), out = []; let guard = 0;
     while (out.length < n && guard++ < n * 400) { const a = r() * Math.PI * 2, rr = 0.55 + Math.sqrt(r()) * rMax, x = H0.x + 0.2 + Math.cos(a) * rr, z = H0.z + Math.sin(a) * rr;
@@ -255,7 +256,7 @@ export async function create() {
 
   // ---- Apple: sitting on the black sand by you, side-on to the shore ----
   const apple = makeCat();
-  apple.root.position.copy(APPLE.pos); apple.root.position.y = groundY(APPLE.pos.x, APPLE.pos.z) + 0.004; apple.root.rotation.y = APPLE.yaw;
+  apple.root.position.copy(APPLE.pos); apple.root.position.y = groundY(APPLE.pos.x, APPLE.pos.z) + 0.006; apple.root.rotation.y = APPLE.yaw;
   scene.add(apple.root);
 
   // ---- the eruption (milliseconds): jets of white-hot sand and plasma from the black streaks round your towel ----
@@ -309,7 +310,7 @@ export async function create() {
   function hudAt(t) {
     if (t < T.T0) return { a: 1, lab: 'Every radioactive atom decays in', val: fmtT(T.T0 - t), sub: 'Guarapari, Brazil · black sand', sub2: 'Up to 100× normal radiation' };
     if (t < T.GOI) {
-      const sub2 = t < 14.0 ? '' : t < T.BANANA ? 'Your dose: 400,000 Gy · 5 Gy kills' : t < T.SAND ? 'A banana holds 0.42 g of potassium' : t < T.ERUPT ? 'Black sand: up to 0.1% thorium'
+      const sub2 = t < 14.0 ? '' : t < T.BANANA ? 'Your dose: 400,000 Gy · 5 Gy kills' : t < T.SAND ? 'A banana holds 0.42 g of potassium' : t < T.ERUPT ? 'Black sand: ~0.1% thorium'
         : t < T.SPACE ? 'Crust: 8× the energy to boil it' : 'Released: 7 × 10³⁰ joules';
       return { a: 1, lab: 'Time since the decay', val: fmtTau(tauAt(t)), sub: slowLabel(t), sub2 };
     }
@@ -356,7 +357,7 @@ export async function create() {
       const cher = on * Math.max(0, 1 - smooth(19.2, 20.6, story)) * (0.85 + 0.15 * smooth(T.T0, T.T0 + 0.4, story));
       BX.uCher.value = cher * 1.0;
       for (const m of skins) m.emissiveIntensity = cher * 1.5;
-      banana.material.emissiveIntensity = cher * 0.55;
+      banana.material.emissiveIntensity = cher * 0.22;
       B.skyU.uFlash.value = cher * 0.06;
       seaLight.intensity = cher * 2.2;
       const dim = 1 - 0.45 * cher;                                     // the blue light outshines the dusk
@@ -445,13 +446,14 @@ export async function create() {
       const sunD = dirG.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), -1.35).normalize();   // dusk at Guarapari: the sun over the west
       SPc.U.uSun.value.copy(sunD); SPc.sunL.position.copy(sunD).multiplyScalar(10);
       SPc.U.uTime.value = story; SPc.U.uHot.value = 0.75 + 0.25 * smooth(T.SPACE, 44, story); SPc.U.uBoil.value = smooth(T.SPACE, T.GOI, story);
-      SPc.U.uVap.value = 0.6 + 0.6 * k; SPc.veil.material.uniforms.uR.value = 1.01 + 0.07 * k;
+      SPc.U.uVap.value = 0.5 + 0.4 * k; SPc.veil.material.uniforms.uR.value = 1.01 + 0.07 * k;
       SPc.glowL.position.copy(dirG).multiplyScalar(1.6); SPc.glowL.intensity = 1.6;
       // the spinner drifting through space above the burning planet, still spinning at full speed
       spin2.root.position.copy(cam.position).addScaledVector(cam.getWorldDirection(_v), 0.55).add(new THREE.Vector3(0.04 - 0.05 * k, 0.055 + 0.012 * k, 0).applyQuaternion(cam.quaternion));
       spin2.root.quaternion.copy(cam.quaternion); spin2.root.rotateX(1.05 + 0.1 * k); spin2.root.rotateZ(0.35 - 0.2 * k);
       spin2.rotor.rotation.y = -t * 2.2 * Math.PI * 2;
-      SPc.upL.position.copy(spin2.root.position).addScaledVector(dirG, -1); SPc.upL.target.position.copy(spin2.root.position); SPc.upL.target.updateMatrixWorld();
+      SPc.upL.position.copy(spin2.root.position).addScaledVector(dirG, -1).addScaledVector(new THREE.Vector3(0, -1, 0), 0.6); SPc.upL.target.position.copy(spin2.root.position); SPc.upL.target.updateMatrixWorld();
+      SPc.camL.position.copy(cam.position).add(new THREE.Vector3(0.3, 0.5, 0)); SPc.camL.target.position.copy(spin2.root.position); SPc.camL.target.updateMatrixWorld();
       R.renderer.toneMappingExposure = 0.62; R.bloom.strength = 0.45; R.bloom.radius = 0.6; R.bloom.threshold = 0.95 / 0.62;
       U.uFadeWhite.value = Math.exp(-(story - T.SPACE) * 5) * 0.6;
     } else {

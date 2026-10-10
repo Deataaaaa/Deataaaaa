@@ -156,3 +156,14 @@ mass. 1 kg TNT = 4.184e6 J.
 | The continents flash into rock vapour | 29 kg TNT per kg of crust | bulk continental crust 1.3 ppm U, 5.6 ppm Th, 1.5% K (Rudnick & Gao 2003) → 1.23e8 J/kg, ~8× the ~1.6e7 J/kg needed to heat, melt and boil silicate rock; whole continental crust (2.2e22 kg) 2.7e30 J |
 | 1.3 million years of sunlight, in one instant | 7.1e30 J | bulk silicate Earth 20 ppb U, 80 ppb Th, 240 ppm K (McDonough & Sun 1995), 4.0e24 kg → 7.1e30 J; sunlight intercepted by Earth 1.74e17 W → 4.1e13 s = 1.3 Myr. (3% of Earth's gravitational binding energy: the planet stays whole; enough to melt its surface back into a magma ocean) |
 | 1987, Goiânia: the powder inside glowed blue / 4 people died | Goiânia accident | 13 Sept 1987, scavengers took a radiotherapy head from the abandoned Instituto Goiano de Radioterapia; the capsule held ~93 g of caesium-137 chloride (50.9 TBq); opened at a scrapyard, it showed "a deep blue light"; 4 deaths, 249 people contaminated, ~112,000 checked (IAEA, *The Radiological Accident in Goiânia*, 1988) |
+
+EP11 on-screen extras (HUD lines and timer):
+- "Black sand: ~0.1% thorium": the conservative grade used above (reports up to 0.116% Th-232).
+- "Crust: 8× the energy to boil it": 1.23e8 J/kg vs ~1.6e7 J/kg to heat, melt and boil silicate rock (row above).
+- "Released: 7 × 10³⁰ joules": the bulk-silicate-Earth total above (7.1e30 J).
+- "Your body: 4,400 potassium-40 decays a second" (end card): 4,442 Bq (row above).
+- The "time since the decay" timer: slow motion 10⁹× during the blue flash, 10⁶× while the sand heats, 10³× for the blast
+  and the coast, then sped up 10³× in space. Time scales: Cherenkov light is emitted while each beta electron slows down
+  in water or tissue (picoseconds to nanoseconds); the deposited energy is heat within nanoseconds; hot rock vapour
+  expands at a few km/s (about a millimetre per microsecond, metres per millisecond), so the sand only bulges and glows
+  at the microsecond scale and erupts at the millisecond scale, as shown.

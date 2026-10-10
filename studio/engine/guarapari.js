@@ -165,7 +165,7 @@ export function makeOcean(sky) {
         float vol = 1.0 - exp(-max(thick, 0.0) * 0.55);
         float var = 0.8 + 0.4 * bfbm(p * 0.03 + 3.1);
         float face = 0.75 + 0.25 * max(dot(N, V), 0.0);
-        vec3 cher = uCherCol * uCher * (vol * var * face * (1.0 - fres * 0.3) * 2.6 + clamp(wash * 0.4 + brk, 0.0, 1.0) * 0.9 * smoothstep(0.02, 0.4, thick) + 0.18 * smoothstep(0.0, 0.3, thick));
+        vec3 cher = uCherCol * uCher * (vol * var * face * (1.0 - fres * 0.3) * 3.1 + clamp(wash * 0.4 + brk, 0.0, 1.0) * 0.9 * smoothstep(0.02, 0.4, thick) + 0.18 * smoothstep(0.0, 0.3, thick));
         col = mix(col, col * 0.5, uCher);                                  // the glow outshines the dusk reflections
         col = mix(col, vec3(0.92, 0.9, 0.88) * uSkyI * 1.4, uSteam * (0.55 + 0.35 * bfbm(p * 0.02 - uTime * 0.05)));
         float fog = 1.0 - exp(-uFogD * uFogD * dist * dist);
@@ -254,12 +254,11 @@ export function makeSandMaterial() {
           float patches = smoothstep(0.64, 0.74, bfbmAA(w.xz * 0.05 + 4.0, fwm * 0.05)) * 0.6;
           return clamp(max(streak * zone + feather * 0.85 + patches, 0.33 * hk), 0.0, 1.0); }`)
       .replace('#include <map_fragment>', `#include <map_fragment>
-        float bsk0 = blackSand(vHeatW) * uBlackK, dsh = vHeatW.x - shoreX(vHeatW.z);
-        if (uHeroRect.w > 0.0) {
-          vec2 hu = (vHeatW.xz - uHeroRect.xy) / uHeroRect.z;
-          float inR = smoothstep(0.0, 0.12, min(min(hu.x, hu.y), min(1.0 - hu.x, 1.0 - hu.y)));
-          if (inR > 0.0) bsk0 = mix(bsk0, texture2D(uHeroMap, hu).r * uBlackK, inR);
-        }
+        float dsh = vHeatW.x - shoreX(vHeatW.z), inR = 0.0;
+        vec2 hu = (vHeatW.xz - uHeroRect.xy) / uHeroRect.z;
+        if (uHeroRect.w > 0.0) inR = smoothstep(0.0, 0.12, min(min(hu.x, hu.y), min(1.0 - hu.x, 1.0 - hu.y)));
+        float bsk0 = inR < 1.0 ? blackSand(vHeatW) * uBlackK : 0.0;          // fully inside the mask: no procedural streaks needed
+        if (inR > 0.0) bsk0 = mix(bsk0, texture2D(uHeroMap, hu).r * uBlackK, inR);
         float bsk = smoothstep(0.0, 1.0, clamp(bsk0 * 1.25 + (diffuseColor.r - 0.64) * 2.4 * (1.0 - abs(bsk0 * 2.0 - 1.0)), 0.0, 1.0));   // salt-and-pepper edges, grain by grain (mipmapped)
         float wet = smoothstep(-7.0, -0.8, dsh);
         float rockK = smoothstep(2.6, 7.0, vHeatW.y - max(vHeatW.x - shoreX(vHeatW.z) < 0.0 ? 0.0 : 0.0, 0.0));
@@ -274,7 +273,8 @@ export function makeSandMaterial() {
         float sg = uSandGlow * (0.06 + 0.94 * core);
         totalEmissiveRadiance += bbody(clamp(sg * 0.74, 0.0, 1.0)) * (uSandGlow * 0.05 + sg * sg * 1.5) * (1.0 - rockK);
         totalEmissiveRadiance += vec3(0.05, 0.3, 1.0) * uCherS * smoothstep(-6.0, -0.5, dsh) * 0.12 * (1.0 - rockK);   // the wet sand glows faintly with the swash
-        totalEmissiveRadiance += bbody(clamp(uGround * (0.55 + 0.45 * bfbmAA(vHeatW.xz * 0.11, max(fwidth(vHeatW.x), fwidth(vHeatW.z)) * 0.11)), 0.0, 1.0)) * uGround * 1.4;
+        float gfw = max(fwidth(vHeatW.x), fwidth(vHeatW.z)) * 0.11;
+        if (uGround > 0.0) totalEmissiveRadiance += bbody(clamp(uGround * (0.55 + 0.45 * bfbmAA(vHeatW.xz * 0.11, gfw)), 0.0, 1.0)) * uGround * 1.4;
         totalEmissiveRadiance += bbody(clamp(uRockGlow, 0.0, 1.0)) * uRockGlow * 2.2 * rockK;`);
   };
   const ck = mat.customProgramCacheKey; mat.customProgramCacheKey = () => ck() + '_sand';

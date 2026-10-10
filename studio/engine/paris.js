@@ -63,14 +63,18 @@ export function heatize(mat, { organic = 0, heat = 1, heatU = null } = {}) {
           // tiny glowing specks (grass, leaves). Anti-flicker: once a speck gets smaller than ~1.5 px it is replaced by
           // its average glow (fwidth of the noise coordinate = cells per pixel), so nothing sparkles from frame to frame
           float cpp = length(fwidth(vHeatW * 24.0));
-          float en = hn3(vHeatW * 24.0) * 0.65 + hn3(vHeatW * 61.0) * 0.35;
-          float sharp = smoothstep(0.78, 0.9, en);
-          float ember = mix(sharp, 0.09, smoothstep(0.25, 0.7, cpp)) * sc * step(0.95, uOrganic);
-          totalEmissiveRadiance += blackbody(0.55 + 0.15 * en) * ember * 4.0;
+          if (uScorch * uOrganic > 0.0) {                                  // (skipped while nothing burns: same picture, less work)
+            float en = hn3(vHeatW * 24.0) * 0.65 + hn3(vHeatW * 61.0) * 0.35;
+            float sharp = smoothstep(0.78, 0.9, en);
+            float ember = mix(sharp, 0.09, smoothstep(0.25, 0.7, cpp)) * sc * step(0.95, uOrganic);
+            totalEmissiveRadiance += blackbody(0.55 + 0.15 * en) * ember * 4.0;
+          }
           float hk = clamp(uHeat * uHeatK, 0.0, 1.0);
-          float hv = 0.8 + 0.4 * hn3(vHeatW * 0.35);
-          float fres = pow(1.0 - abs(dot(normal, geometryViewDir)), 2.0);
-          totalEmissiveRadiance += blackbody(hk * hv * 0.8) * hk * hk * 1.8 * (0.3 + 0.9 * fres);
+          if (hk > 0.0) {
+            float hv = 0.8 + 0.4 * hn3(vHeatW * 0.35);
+            float fres = pow(1.0 - abs(dot(normal, geometryViewDir)), 2.0);
+            totalEmissiveRadiance += blackbody(hk * hv * 0.8) * hk * hk * 1.8 * (0.3 + 0.9 * fres);
+          }
         }`);
   };
   mat.customProgramCacheKey = () => `heat${organic}_${heat}${heatU ? 'U' : ''}`;

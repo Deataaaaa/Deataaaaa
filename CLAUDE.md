@@ -72,6 +72,14 @@ often while at work, so every deliverable has to be ready to post straight from 
     fronts are blurred over their per-frame sweep. `encode.sh` runs `tools/flickercheck.py` on the phone file: it must
     print `FLICKER CHECK: OK`; then run `tools/popscan.py` and look at every frame it lists.
 
+19. **A WTF moment and Apple the cat** (owner, 10 Oct 2026: "add some wtf moment so people comment about it, like
+    'why tf is there a hand spinner'"). Every video has exactly one absurd detail, rendered as realistically as the rest
+    and never in the way of the story (post 5: a hand spinner that keeps spinning through the whole catastrophe). And
+    Apple, the recurring mascot: a black-and-white cat with red pupils, in every video. Sometimes he is in the hook with
+    an arrow and his name (house typography, the name in brand red), otherwise he is hidden somewhere for viewers to find.
+    He mostly sits, lies, turns his head, blinks and flicks his tail (a walking cat is hard to make convincing). He is
+    never hurt on screen. The caption can add "Did you spot Apple?"; the pinned comment stays an either/or question.
+
 ## Delivery checklist
 - `studio/encode.sh <frames> <wav> videos/postN_<slug>`: HQ + `_phone.mp4` (< 30 MB, the chat's send limit).
   (`day1_*` files = the Earth video, outside the series.)
@@ -89,7 +97,7 @@ often while at work, so every deliverable has to be ready to post straight from 
 | 2 | `studio/episodes/ep08.js` | Plane window breaks at 11,000 m | delivered v2 (77.2 s, worst case, hook on frame 1, tag 02; v1 83.4 s replaced after clipping feedback) |
 | 3 | `studio/episodes/ep09.js` | A humpback engulfs you (POV, Cape Cod, real cases 2021 and 2025) | delivered (75.2 s, POV, tag 03; render 3 lanes ≈ 2 h 50) |
 | 4 | `studio/episodes/ep10.js` | Light becomes instant for 5 s (Paris, Champ de Mars → space → Holmdel 1964) | delivered v2 (75.0 s, tag 04): v1 replaced after the owner saw flicker and wanted it "hella impressive". New effects; SSAA 2, no grain, smooth camera moves, depth bias, no close-spark or smoke-card pops; flicker check clean except 18 s (0.61: star/ember parallax, checked by eye). Render ≈ 10 h in all with re-renders |
-| 5 | – | waiting for the owner's pick: radioactive decay at once (recommended) / hydrogen bonds 5 s / magnetic field off 1 s / chemical bonds 1 s | pitched in the plan artifact |
+| 5 | `studio/episodes/ep11.js` | Every radioactive atom decays at once (Guarapari black-sand beach → your body and banana → granite → continents → Goiânia 1987) | approved 10 Oct (owner's pick); first video with Apple and a WTF moment (rule 19); in progress |
 Cast log (rule 16): post 1 elevator = Michelle (dark skin, curly black hair, red headphones); post 2 plane =
 Michelle (same); post 3 whale = POV diver, black wetsuit and gloves (body never seen); post 4 light = Male_Adult_17
 (beard, black cap, blue-white hoodie; his friend Female_Adult_12, brunette with bangs, black hoodie). Next video: someone

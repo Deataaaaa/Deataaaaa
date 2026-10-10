@@ -133,3 +133,26 @@ photon already on its way arrives at once, and while light is instant, new light
 Simplifications stated plainly (v2 adds the visual effects below): the tower boils away from the top down over a few slowed seconds, while the air heats everywhere at once (artistic order); the burning lawn, embers and fireballs are frozen in slow motion; the Milky Way is shown blazing in the daylight sky because all of its light in transit lands at once (shown with the camera's exposure adapting); the light front of the black Sun is drawn as a glowing shell, a diagram, since light itself is invisible in empty space; the Earth is shown burning with glowing cracks (artistic). The three kinds of light arrive in the same instant; the video shows them one after the other
 (slowed 1,000×) and says "the same instant" in the HUD timer that barely moves. People are shown frozen (time slowed), never hurt
 on screen. The 1964 scene is a generic reconstruction (the antenna is simplified, the two figures are not likenesses).
+
+## EP11 (post 5) — What if every radioactive atom decayed at once?
+
+Premise: every radioactive nucleus decays in the same instant, and so does every radioactive daughter it produces, down
+to a stable nucleus (each U-238 atom goes all the way to Pb-206, each Th-232 to Pb-208). Energies are the heat each
+isotope will still release, neutrinos excluded: heat production per kg of isotope (Turcotte & Schubert, *Geodynamics*:
+U-238 9.46e-5, U-235 5.69e-4, Th-232 2.64e-5, K-40 2.92e-5 W/kg) × mean life (half-life / ln 2: 4.468, 0.704, 14.05,
+1.248 Gyr) = 1.924e13, 1.824e13, 1.689e13 and 1.659e12 J per kg of isotope. K-40 is 0.01197% of natural potassium by
+mass. 1 kg TNT = 4.184e6 J.
+
+| On screen | Value | Source / calculation |
+|---|---|---|
+| Your body: about 8,000 decays a second | ~4,400 Bq K-40 + ~3,700 Bq C-14 | 140 g of potassium in a 70 kg adult → 0.0168 g K-40 → 4,442 Bq (half-life 1.248 Gyr); C-14 ≈ 3.7 kBq (ICRP 23 reference man; standard background-radiation tables) |
+| Your body, all at once: 28 MJ, about 7 kg of TNT | 2.78e7 J | 1.676e-5 kg K-40 × 1.659e12 J/kg = 2.78e7 J = 6.6 kg TNT (C-14 adds a few joules). ≈ 400,000 Gy in 70 kg (a lethal dose is ~5 Gy) |
+| Your banana: about 20 g of TNT | 8.3e4 J | a medium banana holds ~0.42 g of potassium ("banana equivalent dose") → 5.0e-8 kg K-40 × 1.659e12 = 8.3e4 J = 20 g TNT |
+| Its black sand is radioactive / HUD: up to 20 µSv/h, ~100× normal | 20 µSv/h (spots up to 55-131) | Guarapari's black monazite sand: ~6% rare earths + thorium (Química Nova 28 (2005), doi 10.1590/S0100-40422005000200013); press and travel reports quote ~20 µSv/h on the sand (Idealista 2023, Amusing Planet 2021); normal ground 0.1-0.3 µSv/h |
+| People lie in it to feel better | tradition | visitors lie on or cover themselves with the sand for rheumatism, a "therapy" promoted by physician Silva Mello (Amusing Planet 2021, Oddity Central); no proven benefit |
+| The sand under your towel: a kiloton | ~1 kt | taking a conservative 0.1% thorium in the black sand (reports up to 0.116% Th-232; ~10% monazite with ~3% Th fits 0.3%): 1e-3 kg Th × 1.689e13 = 1.7e10 J per kg = 4 t TNT per kg; a towel's footprint 10 cm deep (1.8 × 0.9 × 0.1 m at 1,600 kg/m³ = 259 kg) → 1.05 kt |
+| A kilo of granite: 80 kg of TNT | 3.4e8 J/kg | typical granite: 4 ppm U, 15 ppm Th, 3.5% K → 7.6e7 + 0.05e7 + 25.3e7 + 0.7e7 = 3.37e8 J/kg = 80.6 kg TNT |
+| The sea flashes blue and warms by 36 °C | +36 K | seawater: 0.399 g K and 3.3 µg U per kg → 7.9e4 + 6.3e4 = 1.42e5 J/kg ÷ 3,990 J/(kg·K) = 36 K. The flash: K-40 betas (up to 1.31 MeV) exceed the 0.26 MeV Cherenkov threshold in water: the blue glow of reactor pools |
+| The continents flash into rock vapour | 29 kg TNT per kg of crust | bulk continental crust 1.3 ppm U, 5.6 ppm Th, 1.5% K (Rudnick & Gao 2003) → 1.23e8 J/kg, ~8× the ~1.6e7 J/kg needed to heat, melt and boil silicate rock; whole continental crust (2.2e22 kg) 2.7e30 J |
+| 1.3 million years of sunlight, in one instant | 7.1e30 J | bulk silicate Earth 20 ppb U, 80 ppb Th, 240 ppm K (McDonough & Sun 1995), 4.0e24 kg → 7.1e30 J; sunlight intercepted by Earth 1.74e17 W → 4.1e13 s = 1.3 Myr. (3% of Earth's gravitational binding energy: the planet stays whole; enough to melt its surface back into a magma ocean) |
+| 1987, Goiânia: the powder inside glowed blue / 4 people died | Goiânia accident | 13 Sept 1987, scavengers took a radiotherapy head from the abandoned Instituto Goiano de Radioterapia; the capsule held ~93 g of caesium-137 chloride (50.9 TBq); opened at a scrapyard, it showed "a deep blue light"; 4 deaths, 249 people contaminated, ~112,000 checked (IAEA, *The Radiological Accident in Goiânia*, 1988) |

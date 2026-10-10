@@ -230,7 +230,7 @@ export function makeTrees(list, { seed = 3 } = {}) {
   variants.forEach((V, k) => {
     byVar[k].forEach((t) => {
       q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r() * Math.PI * 2); const sc = (t.s || 1) * (0.9 + r() * 0.2);
-      s.set(sc, sc * (0.92 + r() * 0.16), sc); p.set(t.x, 0, t.z); m.compose(p, q, s); mats[k].push({ t, m: m.clone() });
+      s.set(sc, sc * (0.92 + r() * 0.16), sc); p.set(t.x, t.y || 0, t.z); m.compose(p, q, s); mats[k].push({ t, m: m.clone() });   // t.y: hillsides (ep11)
     });
   });
   // spatial chunks: off-screen trees are culled in the camera pass and outside the shadow frustum (one InstancedMesh

@@ -1,7 +1,7 @@
 {
-  "ep": "ep11",
-  "name": "post5_radioactive",
-  "cover": "videos/post5_cover.jpg",
+  "ep": "ep12",
+  "name": "post6_atoms_stop",
+  "cover": "videos/post6_cover.jpg",
   "workers": 3,
-  "note": "Post 5: What if every radioactive atom decayed at once? (68 s)."
+  "note": "Post 6: What if every atom on Earth stopped moving for 1 second? (68 s)."
 }

@@ -104,11 +104,12 @@ often while at work, so every deliverable has to be ready to post straight from 
 | 3 | `studio/episodes/ep09.js` | A humpback engulfs you (POV, Cape Cod, real cases 2021 and 2025) | delivered (75.2 s, POV, tag 03; render 3 lanes ≈ 2 h 50) |
 | 4 | `studio/episodes/ep10.js` | Light becomes instant for 5 s (Paris, Champ de Mars → space → Holmdel 1964) | delivered v2 (75.0 s, tag 04): v1 replaced after the owner saw flicker and wanted it "hella impressive". New effects; SSAA 2, no grain, smooth camera moves, depth bias, no close-spark or smoke-card pops; flicker check clean except 18 s (0.61: star/ember parallax, checked by eye). Render ≈ 10 h in all with re-renders |
 | 5 | `studio/episodes/ep11.js` | Every radioactive atom decays at once (Guarapari black-sand beach → your body and banana → granite → continents → Goiânia 1987) | delivered 10 Oct (68 s, tag 05; first video with Apple and the hand-spinner WTF, rule 19). First render on the owner's PC: 4 min in all (the cloud box needed ~6 h). Covers: `videos/post5_cover.jpg` (burning city), `post5_cover_apple.jpg` |
+| 6 | `studio/episodes/ep12.js` | Every atom on Earth stops moving for 1 s (Times Square at blue hour → the frozen second → absolute zero, frost, snow → the sky falls → Earth turns white → Vostok 1983) | built 10 Oct (68 s, tag 06; WTF = a snowman in sunglasses next to you; Apple on the plaza in front of the steps at 8.6-10.6 s; first Follow-for-more end tag). Look approved by the owner ("fine as is"); rendered on the owner's PC via RENDER.bat. Cover `videos/post6_cover.jpg` |
 Cast log (rule 16): post 1 elevator = Michelle (dark skin, curly black hair, red headphones); post 2 plane =
 Michelle (same); post 3 whale = POV diver, black wetsuit and gloves (body never seen); post 4 light = Male_Adult_17
 (beard, black cap, blue-white hoodie; his friend Female_Adult_12, brunette with bangs, black hoodie); post 5 radioactive =
 Male_Adult_10 (East Asian, short black hair, red track jacket, black track pants; extras: Female_Adult_01 buried in the
-sand, Male_Adult_04 bearded in a hoodie in the 1987 shed). Next video: someone new from the Rocketbox pool (46 realistic
+sand, Male_Adult_04 bearded in a hoodie in the 1987 shed). post 6 atoms = Female_Adult_05 (black bob, pink blazer, white shirt, jeans, a coffee; extras: 14 Rocketbox people on the steps and the plaza plus 150 posed copies of them). Next video: someone new from the Rocketbox pool (46 realistic
 rigged people, MIT). Log the avatar name here once used. Apple (rule 19) is `engine/cat.js` `makeCat()`, the same cat
 every video.
 Other ideas: 50 km/h crash without a seatbelt; lightning hits your plane; stuck upside down on a roller coaster;
@@ -252,5 +253,18 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
   people flooded the beach with flat light 4x stronger than the sun, so no shadow showed anywhere (not even yours on the
   towel) and the town looked like flat CG. `loadAvatar` now strips lights from the FBX. If a scene looks flat, list its
   lights (`scene.traverse(o => o.isLight && ...)`) before touching materials.
+- A material patched twice by the same `onBeforeCompile` helper redefines its uniforms and functions: the shader fails
+  to compile and the mesh silently vanishes (post 6's coffee cup: `frostize` ran in `props6.js` and again in the episode).
+  `frostize` is now idempotent (`userData.frostized`); grep render logs for `Shader Error` after any material change.
+- Props held in a hand are fitted, not eyeballed: post 6's cup is placed once by a search (no hand joint inside the cup by
+  its skin thickness, then the spot that nestles deepest into the palm and fingers) and rides the hand bone at that offset
+  (`cupFit` in `ep12.js`, `?cupdbg=1` logs every joint's clearance). For a right hand, `(Index1 - Pinky1) x (Middle1 - Hand)`
+  points OUT of the palm. A cup grip needs the thumb opened (`thumbR: -0.6`), a firm curl (0.75) and the pinky under the base.
+- `sit({ arms: 'lap' })` used to sink the palms into the thighs: `fit: true` measures the thigh top under each hand
+  (`topYIn`) and rests the palm on it. `curlL`/`curlR`, `thumbL`/`thumbR` set each hand separately.
+- Sets that rise behind a seated hero (stairs, bleachers) swallow a camera placed behind them at head height: check a new
+  camera position against the set before rendering (post 6's first hook rendered from inside the TKTS steps).
+- A hidden Apple must still be findable: project his position along the camera path and keep him 25+ px tall for 1.5 s or
+  more, clear of the captions, the HUD and Instagram's bottom strip (post 6's first spot, top of the steps, was 13 px).
 - Parallel render workers used to pick a random port and could collide (EADDRINUSE killed one silently): `render.mjs`
   now listens on a free port. Billboard smoke seen from above reads as white blobs: fade it out when the camera rises.

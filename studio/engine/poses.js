@@ -69,6 +69,26 @@ export function lowestY(av, step = 7) {
   return m;
 }
 
+// highest skinned vertex over a footprint on the ground plane: a rectangle centred on c, half sizes ha (along the unit
+// xz axis a) and hb (across it); vertices within skipR of `skip` are ignored (the hand being placed)
+export function topYIn(av, c, a, ha, hb, skip = null, skipR = 0.12, step = 2) {
+  let m = -Infinity;
+  av.root.updateMatrixWorld(true);
+  for (const mesh of av.meshes) {
+    if (!mesh.isSkinnedMesh) continue;
+    mesh.skeleton.update();
+    const n = mesh.geometry.attributes.position.count;
+    for (let i = 0; i < n; i += step) {
+      mesh.getVertexPosition(i, _sv); _sv.applyMatrix4(mesh.matrixWorld);
+      const dx = _sv.x - c.x, dz = _sv.z - c.z;
+      if (Math.abs(dx * a.x + dz * a.z) > ha || Math.abs(-dx * a.z + dz * a.x) > hb) continue;
+      if (skip && _sv.distanceTo(skip) < skipR) continue;
+      if (_sv.y > m) m = _sv.y;
+    }
+  }
+  return m;
+}
+
 // lowest clearance of the skinned vertices above a ground function g(x, z) (sloping beaches, towels)
 export function lowestAbove(av, g, step = 7) {
   let m = Infinity;
@@ -83,7 +103,8 @@ export function lowestAbove(av, g, step = 7) {
 }
 
 // sitting on the ground. o: { pos (ground point under the pelvis), yaw, legs: 'up'|'cross'|'out', arms: 'behind'|'knees'|'lap',
-// lean (rad, + forward), look (world point), breath (0..1 phase), curl, groundAt (x, z) -> y for sloping ground }
+// lean (rad, + forward), look (world point), breath (0..1 phase), curl (curlL / curlR per hand), groundAt (x, z) -> y for
+// sloping ground, fit (lap: palms measured onto the thighs) }
 export function sit(av, o) {
   const B = av.bones;
   resetPose(av);
@@ -139,12 +160,18 @@ export function sit(av, o) {
       hand = P.clone().addScaledVector(fwd, 0.24).addScaledVector(left, s * 0.1).addScaledVector(up, 0.12);
       pole = wp(B[side + 'Arm']).addScaledVector(left, s * 0.6).addScaledVector(up, -0.6).addScaledVector(fwd, -0.3);
       F = fwd.clone().addScaledVector(left, -s * 0.5).normalize(); N = V(0, -1, 0);
+      if (o.fit && !(side === 'Left' ? o.handL : o.handR)) {   // rest the palm on the thigh as posed (measured), never in it
+        hand = P.clone().addScaledVector(fwd, 0.2).addScaledVector(left, s * 0.11);
+        F = fwd.clone().addScaledVector(left, -s * 0.3).normalize();
+        const c = hand.clone().addScaledVector(F, 0.1);
+        hand.y = topYIn(av, c, F, 0.13, 0.06, wp(B[side + 'Hand'])) + 0.035;
+      }
     }
     if (o.handL && side === 'Left') ({ hand, pole, F, N } = o.handL(P, fwd, left, up));
     if (o.handR && side === 'Right') ({ hand, pole, F, N } = o.handR(P, fwd, left, up));
     twoBoneIK(av, side + 'Arm', side + 'ForeArm', side + 'Hand', hand, pole);
     if (F && N) orientHand(av, side, F, N);
-    curlFingers(av, side, o.curl ?? 0.3, 0.15);
+    curlFingers(av, side, (side === 'Left' ? o.curlL : o.curlR) ?? o.curl ?? 0.3, (side === 'Left' ? o.thumbL : o.thumbR) ?? 0.15);
   }
   if (o.look) lookAt(av, o.look, o.lookK ?? 1);
   // rest on the ground: lowest vertex 4 mm above it

@@ -31,6 +31,8 @@ export const TQ = { uScrT: { value: 0 }, uPower: { value: 1 }, uFrost: { value: 
 // frost: any lit material grows white crystalline frost (more on surfaces facing up), driven by TQ.uFrost (0..1).
 // Frequency-clamped noise so it never sparkles.
 export function frostize(mat, { k = 1 } = {}) {
+  if (mat.userData.frostized) return mat;                 // twice would redefine its uniforms and functions (the shader fails: the mesh vanishes)
+  mat.userData.frostized = true;
   const prev = mat.onBeforeCompile;
   mat.onBeforeCompile = (sh, r) => {
     if (prev) prev(sh, r);
@@ -58,7 +60,8 @@ export function frostize(mat, { k = 1 } = {}) {
           float fw = length(fwidth(vFrW)) * 9.0;
           float n = frFbm(vFrW * 9.0, fw), up = clamp(normalize(vFrN).y * 0.5 + 0.55, 0.0, 1.0);
           gFrost = smoothstep(1.0 - uFrost * ${(1.05 * k).toFixed(3)}, 1.0 - uFrost * ${(1.05 * k).toFixed(3)} + 0.25, n * 0.55 + up * 0.55);
-          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.9, 0.95) * (0.85 + 0.15 * n), gFrost * 0.92);
+          float upK = smoothstep(0.25, 0.85, normalize(vFrN).y);          // ledges and floors frost white, walls keep their detail
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.8, 0.85, 0.92) * (0.85 + 0.15 * n), gFrost * mix(0.5, 0.92, upK));
         }`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = mix(roughnessFactor, 0.55, gFrost);`);
@@ -136,7 +139,7 @@ export function makeGround() {
 // ---------------------------------------------------------------------------------------------------------------
 export function makeSteps() {
   const S = TSQ.STEP, grp = new THREE.Group(), w = S.x1 - S.x0;
-  const red = new THREE.MeshPhysicalMaterial({ color: '#3a0507', roughness: 0.22, clearcoat: 0.8, clearcoatRoughness: 0.12, emissive: '#ff1810', emissiveIntensity: 0.025 });
+  const red = new THREE.MeshPhysicalMaterial({ color: '#3a0507', roughness: 0.22, clearcoat: 0.8, clearcoatRoughness: 0.12, emissive: '#ff1810', emissiveIntensity: 0.07 });   // red glass lit from inside
   const riser = new THREE.MeshStandardMaterial({ color: '#1c0304', roughness: 0.35, emissive: '#ff1a10', emissiveIntensity: 0.07 });
   const nosing = new THREE.MeshStandardMaterial({ color: '#200', emissive: '#ff2a18', emissiveIntensity: 1.1 });
   frostize(red); frostize(riser);
@@ -163,8 +166,27 @@ export function makeSteps() {
     const L = Math.hypot(S.n * S.run, S.n * S.rise), rail = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, L, 8), steel);
     rail.position.set(x, S.n * S.rise / 2 + 1.1, S.zF - S.n * S.run / 2); rail.rotation.x = Math.PI / 2 - Math.atan2(S.n * S.rise, S.n * S.run); grp.add(rail);
   }
+  // the back of the steps: the ticket booth's glass front facing north (lit panes, mullions, a red sign band)
+  const cv = document.createElement('canvas'); cv.width = 1024; cv.height = 300; const c = cv.getContext('2d');
+  c.fillStyle = '#121214'; c.fillRect(0, 0, 1024, 300);
+  c.fillStyle = '#7a0b0d'; c.fillRect(0, 0, 1024, 46);
+  c.fillStyle = '#f4f1ea'; c.font = '30px "Archivo Black", Arial, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillText('TICKETS  ·  TODAY\u2019S SHOWS  ·  TICKETS', 512, 25);
+  const br = rng(12);
+  for (let i = 0; i < 12; i++) {
+    const x0 = 14 + i * 83.3, gr = c.createLinearGradient(0, 60, 0, 290);
+    gr.addColorStop(0, '#f6d7a4'); gr.addColorStop(0.55, '#e7b77a'); gr.addColorStop(1, '#8e6a44');
+    c.fillStyle = gr; c.fillRect(x0, 60, 72, 228);
+    c.fillStyle = 'rgba(40,28,20,0.55)'; c.fillRect(x0, 182, 72, 8);                      // the counter
+    if (br() < 0.6) { c.fillStyle = 'rgba(30,22,18,0.75)'; const hx = x0 + 20 + br() * 30; c.beginPath(); c.arc(hx, 150, 9, 0, 7); c.fill(); c.fillRect(hx - 13, 160, 26, 26); }   // staff behind the windows
+    c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(x0 + 6, 66, 10, 210);              // a reflection on the glass
+  }
+  const bt = new THREE.CanvasTexture(cv); bt.colorSpace = THREE.SRGBColorSpace; bt.anisotropy = 4;
+  const booth = frostize(new THREE.MeshStandardMaterial({ map: bt, emissiveMap: bt, emissive: '#ffffff', emissiveIntensity: 0.55, roughness: 0.18, metalness: 0.1 }), { k: 0.6 });
+  const bf = new THREE.Mesh(new THREE.PlaneGeometry(w + 0.5, S.n * S.rise - 0.06), booth);
+  bf.position.set(S.x0 + w / 2, (S.n * S.rise - 0.06) / 2, S.zF - S.n * S.run - 0.012); bf.rotation.y = Math.PI; grp.add(bf);
   const seat = (i) => ({ y: (i + 1) * S.rise, z: S.zF - i * S.run });   // the tread top of step i and its front edge
-  return { group: grp, seat, red, riser, nosing };
+  return { group: grp, seat, red, riser, nosing, booth };
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -198,8 +220,8 @@ const SCREEN_FS = `uniform float uT, uPower, uFrost; uniform sampler2D uWide, uT
     // a dark bezel
     vec2 dd = abs(px - vSize.xy * 0.5) - (vSize.xy * 0.5 - 0.1); float edge = smoothstep(-fw.x, fw.x, max(dd.x, dd.y));
     vec3 col = c * (1.0 - edge) * uPower * (1.7 + 0.6 * fract(seed * 11.0));
-    col = mix(col, vec3(0.03) + vec3(0.6, 0.65, 0.7) * 0.25 * uFrost, edge);
-    col = mix(col, vec3(0.06, 0.065, 0.07) + vec3(0.55, 0.6, 0.66) * 0.18 * uFrost, (1.0 - uPower) * (1.0 - edge));   // a dead screen: dark glass, frosting over
+    col = mix(col, vec3(0.02) + vec3(0.6, 0.65, 0.7) * 0.07 * uFrost, edge);
+    col = mix(col, vec3(0.012, 0.013, 0.015) + vec3(0.55, 0.6, 0.68) * 0.06 * uFrost, (1.0 - uPower) * (1.0 - edge));   // a dead screen: black glass under a thin veil of frost
     gl_FragColor = vec4(col, 1.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>

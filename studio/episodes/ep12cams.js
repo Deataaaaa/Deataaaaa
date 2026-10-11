@@ -10,11 +10,12 @@ export const T = { HOOK: 3.6, STOP: 10.6, RESTART: 17.0, SKY: 27.0, SPACE: 38.0,
 export const DUR = 68.0;
 const V = (x, y, z) => new THREE.Vector3(HERO.x + x, HERO.y + y, HERO.z + z);
 
-// the hook (0-3.6 s): a flash-forward to the sky falling, low on the plaza looking up past the steps at the towers
+// the hook (0-3.6 s): a flash-forward in slow motion: low in front of you on the frosted steps, looking up at you frozen
+// white, the steps and the towers behind you, the frozen sky coming down on them
 export function hookCam(cam, t) {
-  const k = t / T.HOOK, e = k * k * (3 - 2 * k) * 0.3 + k * 0.7;
-  cam.position.set(HERO.x + 6.5 - e * 0.6, 1.1 + e * 0.15, HERO.z + 16 - e * 1.2); cam.fov = 46; cam.updateProjectionMatrix();
-  cam.up.set(0, 1, 0); cam.lookAt(HERO.x - 2, 24 + e * 2, HERO.z + 60); cam.updateMatrixWorld();
+  const k = t / T.HOOK, e = k * k * (3 - 2 * k) * 0.35 + k * 0.65;
+  cam.position.set(HERO.x - 1.3 + 0.1 * e, HERO.y + 0.4 + 0.03 * e, HERO.z + 3.0 - 0.3 * e); cam.fov = 46; cam.updateProjectionMatrix();
+  cam.up.set(0, 1, 0); cam.lookAt(HERO.x + 4.5, HERO.y + 6.6 + 0.5 * e, HERO.z - 12); cam.updateMatrixWorld();   // past you at the towers of 47th St
 }
 
 // the glide (3.6-10.6 s): a drone high over Duffy Square looking south down the bowtie to One Times Square, sinking
@@ -41,9 +42,9 @@ export const restart = new CamPath([
   [27.0, V(1.8, 2.3, 5.6), V(0, 1.7, 1.0), 46],
 ], { easeIn: false, easeOut: false, arc: true });
 
-// the sky falls (27-38 s): from the plaza looking south up the canyon at One Times Square, a slow push and tilt up
+// the sky falls (27-38 s): from the plaza looking south up the canyon at One Times Square, a slow push, tilting up to the sky
 export const sky = new CamPath([
   [27.0, new THREE.Vector3(-17, 1.7, 30), new THREE.Vector3(4, 30, 300), 50],
-  [32.5, new THREE.Vector3(-16.4, 1.8, 37), new THREE.Vector3(4, 48, 300), 50],
-  [38.0, new THREE.Vector3(-15.8, 1.9, 44), new THREE.Vector3(4, 62, 300), 50],
+  [32.5, new THREE.Vector3(-16.4, 1.8, 37), new THREE.Vector3(4, 72, 300), 50],
+  [38.0, new THREE.Vector3(-15.8, 1.9, 44), new THREE.Vector3(4, 122, 300), 50],
 ], { easeIn: false, easeOut: false, arc: true });

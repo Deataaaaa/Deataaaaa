@@ -187,6 +187,11 @@ part of the way; a gas has no bonds between molecules and stays at absolute zero
 | Air from 10 km up hits at up to 1,600 km/h | 443 m/s after 45 s | free fall from 10 km (all the air below falls with it at the same rate, so it falls through near-vacuum): v = √(2gh), t = √(2h/g). "Up to": it lands on the air already piled up near the ground |
 | The air's fall: 100 million megatons of heat | 4.3e23 J | potential energy of the atmosphere = surface pressure × scale height per m² = 101,325 Pa × 8.4 km = 8.5e8 J/m² × 5.1e14 m² = 4.3e23 J = 1.0e8 Mt TNT. It turns into heat in the fallen air, which ends up around 80 K (−190 °C): 82.7 kJ/kg ÷ (cv + R) |
 | Times Square: 330,000 people a day | Times Square Alliance | pedestrian counts, "more than 330,000 people pass through on a typical day" |
-| Earth turns white | qualitative | the snowed-out water vapour, frost on every surface and frozen sea surface (water re-warms only to about its freezing point) |
+| Earth turns white | within minutes | the snowed-out water vapour, frost on every surface and frozen sea surface (water re-warms only to about its freezing point), then the fallen air itself: 99 % of the atmosphere's mass lies below 30 km, which falls in √(2 × 30,000 / 9.81) = 78 s, so the air is down within ~2 minutes |
+| HUD in space: 21 s → 1 h, "time sped up" | log time-lapse | the space shot runs from 21 s after the restart to 1 hour (the whitening above happens in its first minutes) |
+| HUD: time slowed down 6× | 1 s shown in 6.4 s | the frozen second lasts from 10.6 s to 17.0 s on screen |
+| HUD: Times Square, 6:42 pm | blue hour | sunset in New York on 10 October ≈ 6:29 pm EDT (NOAA solar calculator); at 6:42 pm the sun is about 2-3° below the horizon |
+| The cloud deck (not a number on screen) | 2.3 km base, free fall | reaches the rooftops (~240 m) after √(2 × 2,080 / 9.81) = 20.6 s, i.e. at 37.6 s in the video, just as the white-out ends the shot |
+| Absolute zero is 184 degrees colder | 183.95 K | −89.2 − (−273.15) = 183.95 |
 | Snowball Earth, about 700 million years ago | 717-635 Ma | Sturtian (717-660 Ma) and Marinoan (~650-635 Ma) glaciations: ice reached the tropics (Hoffman et al., Science 1998; Rooney et al. 2015) |
 | Coldest temperature ever measured on Earth: −89.2 °C, Vostok, 1983 | 21 July 1983 | WMO Weather and Climate Extremes Archive, Vostok station, Antarctica |

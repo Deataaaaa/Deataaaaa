@@ -15,7 +15,8 @@ $ok = $false; $name = 'render'; $cover = $null
 try {
   Set-Location $repo
   Say '== 1/6 Latest version from GitHub'
-  if ((Run 'git' @('pull', '--ff-only')) -ne 0) { Say 'WARNING: could not update, rendering the version already on this PC' }
+  $null = Run 'git' @('fetch', 'origin', 'claude/whatif-reels')
+  if ((Run 'git' @('reset', '--hard', 'origin/claude/whatif-reels')) -ne 0) { Say 'WARNING: could not update, rendering the version already on this PC' }   # always the latest, whatever files are lying around
   Say ('version ' + ((& git log -1 --format='%h %s') | Select-Object -First 1))
   $job = Get-Content -Raw (Join-Path $pc 'job.json') | ConvertFrom-Json
   $ep = $job.ep; $name = $job.name; $cover = $job.cover; $workers = [int]$job.workers

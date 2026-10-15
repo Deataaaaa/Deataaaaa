@@ -132,6 +132,42 @@ export async function create() {
     spray.set(i, x, y, z, BV.x * v, 1 + fx() * 3, BV.z * v, c, c, c * 0.97, 0.8 + 0.6 * fx(), b, 1.4, fx());
   }
   spray.commit(); spray.u.uLoop.value = 1.4; spray.u.uSpread.value = 0.5; scene.add(spray.mesh);
+  // junk ripped off the bluff and the beach (planks, roof sheets, fences, bins, chairs, cars), tumbling seaward, each piece
+  // stretched along its own velocity over one frame (motion blur), never within 14 m of you
+  const jr = rng(77), JN = 170, junk = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ roughness: 0.8, metalness: 0.05 }), JN);
+  junk.frustumCulled = false; junk.castShadow = true; scene.add(junk);
+  const JK = [[3.2, 0.12, 0.3, ['#7a5c3e', '#5d4630', '#8b6b49']], [2.6, 0.08, 1.8, ['#9a4b34', '#6d6d6d', '#a8a49c']], [2.2, 1.0, 0.08, ['#ece8df', '#d9d2c4']],
+    [0.6, 0.9, 0.6, ['#2f5a3a', '#3b4a6b']], [1.2, 0.1, 1.2, ['#c8372d', '#2a6db0', '#e0b13a', '#e8e8e8']], [4.4, 1.45, 1.8, ['#d8d8d8', '#20242a', '#8a1d1d', '#30507e']]];
+  const jP = [];
+  for (let i = 0; i < JN; i++) {
+    const kd = JK[i % 23 === 0 ? 5 : Math.floor(jr() * 5)], h = HO.list[Math.floor(jr() * HO.list.length)];
+    let x, z, y;
+    for (let tries = 0; tries < 30; tries++) {
+      if (jr() < 0.6) { x = h.x + (jr() - 0.5) * 14; z = h.z + (jr() - 0.5) * 14; y = h.y + 2 + jr() * 8; } else { x = -70 + jr() * 45; z = KNEEL.z - 60 + jr() * 140; y = groundY(x, z) + 0.4; }
+      const dx = KNEEL.x - x, dz = KNEEL.z - z; if (Math.abs(dx * BV.z - dz * BV.x) > 14) break;
+    }
+    junk.setColorAt(i, new THREE.Color(kd[3][Math.floor(jr() * kd[3].length)]));
+    jP.push({ s: kd.slice(0, 3), p: V(x, y, z), b: T.ZERO + 0.15 + Math.pow(jr(), 1.3) * 19.5, v0: 12 + jr() * 15, a: (kd === JK[5] ? 18 : 40) + jr() * 45, vy: 4 + jr() * 9, ly: (jr() - 0.3) * 3,
+      r: [jr() * 6, jr() * 6, jr() * 6], w: [(jr() - 0.5) * 9, (jr() - 0.5) * 7, (jr() - 0.5) * 9] });
+  }
+  const _jm = new THREE.Matrix4(), _js = new THREE.Matrix4(), _jq = new THREE.Quaternion(), _je = new THREE.Euler(), _jv = new THREE.Vector3(), _jp = new THREE.Vector3(), _jz = new THREE.Vector3(0, 0, 0);
+  function junkUpdate(story, camPos) {
+    let any = false;
+    for (let i = 0; i < JN; i++) {
+      const o = jP[i], k = story - o.b, d = o.v0 * k + 0.5 * o.a * k * k;
+      _jp.copy(o.p).addScaledVector(BV, d); _jp.y += o.vy * k + 0.5 * o.ly * k * k;
+      if (k <= 0 || k > 4.5 || story >= T.BACK || _jp.distanceTo(camPos) < 10) { _jm.makeScale(0, 0, 0); junk.setMatrixAt(i, _jm); continue; }
+      any = true;
+      _jv.copy(BV).multiplyScalar(o.v0 + o.a * k); _jv.y += o.vy + o.ly * k;
+      const sp = _jv.length(), dir = _jv.divideScalar(sp), f = 1 + (sp / 30) / Math.max(...o.s);
+      _je.set(o.r[0] + o.w[0] * k, o.r[1] + o.w[1] * k, o.r[2] + o.w[2] * k); _jq.setFromEuler(_je);
+      _jm.compose(_jz, _jq, new THREE.Vector3(...o.s));
+      const e = _js.elements, g = f - 1;   // stretch along the velocity: I + (f - 1) d d^T
+      _js.set(1 + g * dir.x * dir.x, g * dir.x * dir.y, g * dir.x * dir.z, 0, g * dir.y * dir.x, 1 + g * dir.y * dir.y, g * dir.y * dir.z, 0, g * dir.z * dir.x, g * dir.z * dir.y, 1 + g * dir.z * dir.z, 0, 0, 0, 0, 1);
+      void e; _jm.premultiply(_js); _jm.setPosition(_jp); junk.setMatrixAt(i, _jm);
+    }
+    junk.visible = any; junk.instanceMatrix.needsUpdate = true;
+  }
   // dust clouds streaming past (lit cards), wrapped through a box round the kneeling spot, faded at the box's ends
   const DCN = 70, dust = new Billboards(DCN, { map: smokeT, tiles: [2, 2], additive: false, lit: true, nearK: 1, near: 2 });
   dust.u.uLitCol.value.set('#e6c49a'); dust.u.uShadeCol.value.set('#8a7058'); dust.u.uFogD.value = 0;
@@ -177,14 +213,17 @@ export async function create() {
     const want = cam.position.clone().addScaledVector(f, -0.1); want.y -= 0.09;
     me.root.position.add(want.sub(wp(B.Head))); me.root.updateMatrixWorld(true);
     const right = new THREE.Vector3().crossVectors(f, V(0, 1, 0)).normalize(), gy = groundY(LOG.x, LOG.z);
-    const raise = smooth(58.4, 59.2, t);
+    const raise = Math.max(smooth(58.4, 59.2, t), smooth(11.05, 11.35, t) * (1 - smooth(12.2, 12.7, t)));   // shielding: the gust, the wave
+    const grip = smooth(12.6, 13.1, t) * (1 - smooth(16.0, 16.6, t));                                     // hands on the log
     for (const [side, s] of [['Left', -1], ['Right', 1]]) {
       const sh = wp(B[side + 'Arm']);
       let hand = sh.clone().addScaledVector(V(0, 1, 0), -0.56).addScaledVector(f, 0.06).addScaledVector(right, s * 0.05), pole = sh.clone().addScaledVector(f, -0.4).addScaledVector(right, s * 0.2), F = V(0, -1, 0).addScaledVector(f, 0.2).normalize(), N = right.clone().multiplyScalar(-s), curl = 0.35;
-      if (t >= T.ZERO && t < T.BRIDGE) {                       // gripping the top of the log
-        hand = V(LOG.x + 0.12, gy + 0.86, LOG.z - 0.4 + s * 0.23); pole = hand.clone().add(V(0.35, -0.3, s * 0.35));
-        F = V(-0.8, -0.6, 0).normalize(); N = V(-0.3, -1, 0).normalize(); curl = 0.6;
-      } else if (raise > 0) {                                   // raised against the wave, palms out
+      if (grip > 0) {                                           // gripping the top of the log
+        const gh = V(LOG.x + 0.12, gy + 0.86, LOG.z - 0.4 + s * 0.23);
+        hand.lerp(gh, grip); pole.lerp(gh.clone().add(V(0.35, -0.3, s * 0.35)), grip);
+        F.lerp(V(-0.8, -0.6, 0).normalize(), grip).normalize(); N.lerp(V(-0.3, -1, 0).normalize(), grip).normalize(); curl += 0.25 * grip;
+      }
+      if (raise > 0) {                                   // raised against the wave, palms out
         const up = cam.position.clone().addScaledVector(f, 0.42).addScaledVector(right, s * 0.17); up.y -= 0.05;
         hand.lerp(up, raise); pole = sh.clone().addScaledVector(V(0, 1, 0), -0.35).addScaledVector(right, s * 0.3);
         F.lerp(V(0, 1, 0).addScaledVector(f, 0.3).normalize(), raise).normalize(); N.lerp(f.clone(), raise).normalize(); curl = 0.15;
@@ -227,7 +266,7 @@ export async function create() {
       S7.uSpume.value = smooth(T.ZERO, T.ZERO + 1.2, story) * (1 - smooth(T.BACK, T.BACK + 1, story));
       S7.uTwist.value = 0.42 * smooth(T.ZERO + 3, T.ZERO + 13, story); S7.uBend.value = 6 * smooth(T.ZERO + 2, T.ZERO + 12, story);
       S7.uBreak.value = story > T.ZERO + 15.5 ? story - (T.ZERO + 15.5) : -1;
-      HO.update(story, T.ZERO);
+      HO.update(story, T.ZERO); junkUpdate(story, cam.position);
       for (const l of BR.lines) { l.material.uniforms.uPx.value = pxScale(cam); }
       sand.update(story); debris.update(story); spray.update(story);
       const trail = t < T.HOOK ? 0.012 : 0.03; sand.u.uTrail.value = trail; debris.u.uTrail.value = trail * 1.2; spray.u.uTrail.value = trail;
@@ -237,13 +276,13 @@ export async function create() {
       S7.uFlow.value = smooth(T.BACK + 0.3, T.BACK + 1.5, story) * (1 - smooth(46, 48, story));
       // ---- fog, dust, light ----
       const dustK = story < T.ZERO ? 0 : wind ? smooth(T.ZERO, T.ZERO + 1.5, story) : 1 - after;
-      S7.uFogC.value.set('#d8b89a').lerp(new THREE.Color('#b59b7c'), dustK); S7.uFogD.value = (story > T.EARLIER ? 0.00011 : 0.00018) + 0.00022 * dustK;
+      S7.uFogC.value.set('#d8b89a').lerp(new THREE.Color('#b59b7c'), dustK); S7.uFogD.value = (story > T.EARLIER ? 0.00011 : 0.00018) + 0.00007 * dustK;
       scene.fog.color.copy(S7.uFogC.value); scene.fog.density = S7.uFogD.value;
       const dark = smooth(T.EARLIER + 0.2, T.EARLIER + 2.2, story);   // the wave swallows the low sun
       sun.intensity = 3.0 * (1 - 0.35 * dustK) * (1 - 0.85 * dark); hemi.intensity = 0.75 * (1 - 0.15 * dustK) * (1 - 0.3 * dark);
       S7.uFogC.value.lerp(new THREE.Color('#7d848c'), 0.7 * dark); scene.fog.color.copy(S7.uFogC.value);
       for (let i = 0; i < DCN; i++) {
-        const [ph, z0, y0, sz, v, sd] = dustP[i], L = 140, k = (((story - T.ZERO) * v / L + ph) % 1 + 1) % 1, a = Math.sin(Math.PI * k) * 0.55 * dustK;
+        const [ph, z0, y0, sz, v, sd] = dustP[i], L = 140, k = (((story - T.ZERO) * v / L + ph) % 1 + 1) % 1, a = Math.sin(Math.PI * k) * 0.36 * dustK;
         if (!wind && after >= 1) { dust.hide(i); continue; }
         const along = -80 + k * L;
         dust.set(i, KNEEL.x + BV.x * along, y0 + groundY(KNEEL.x, KNEEL.z), KNEEL.z + z0 + BV.z * along, sz, sz * 0.7, 1, 1, 1, a, sd * 6.28 + k, Math.floor(sd * 4));

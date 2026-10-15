@@ -329,8 +329,15 @@ export function makeHouses(seed = 4) {
       e.set(0, o.yaw, 0);
       if (k > 0) { const dd = 0.5 * 70 * k * k; p.addScaledVector(BV, dd); p.y += 14 * k + 3 * k * k; e.set(k * 2.1, o.yaw + k * 1.3, k * 1.7); if (k > 3.5) s = 0; }
       q.setFromEuler(e); m4.compose(p, q, new THREE.Vector3(o.d * 1.08 * s, 4.2 * s, o.w * 1.08 * s)); roofs.setMatrixAt(i, m4);
+      // two houses in three follow their roof: torn off the foundation, tipped downwind, then flung tumbling
+      const kw = story - (tr + 1.2 + o.tone * 2.5);
+      if (o.roofT < 0.67) {
+        const w = new THREE.Vector3(o.x, o.y + o.h / 2, o.z); let sw = 1; e.set(0, o.yaw, 0);
+        if (kw > 0) { w.addScaledVector(BV, 0.5 * 38 * kw * kw); w.y += 6 * kw + 2 * kw * kw; e.set(kw * 1.4, o.yaw + kw * 0.7, kw * 1.1); if (kw > 4) sw = 0; }
+        q.setFromEuler(e); m4.compose(w, q, new THREE.Vector3(o.d * sw, o.h * sw, o.w * sw)); walls.setMatrixAt(i, m4);
+      }
     });
-    roofs.instanceMatrix.needsUpdate = true;
+    roofs.instanceMatrix.needsUpdate = true; walls.instanceMatrix.needsUpdate = true;
   }
   update(0, 1e9);
   const g = new THREE.Group(); g.add(walls, roofs);

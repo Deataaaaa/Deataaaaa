@@ -85,7 +85,7 @@ kr = np.random.default_rng(66); tc = W0 + 0.3
 while tc < W1 - 0.2:                                                    # debris knocks and cracks
     if not (T['SPACE'] < tc < T['SEA']): m.add(tc, knock(kr), gain=kr.uniform(0.04, 0.12), pan=kr.uniform(-0.8, 0.8))
     tc += kr.uniform(0.05, 0.3)
-for tb in [T['BRIDGE'], T['SEA']]: m.add(tb, boom(rng, 2.5, 58, 26, 1.2, 0.6, 0.8), gain=0.5, rev=0.3)
+for tb in [T['SEA']]: m.add(tb, boom(rng, 2.5, 58, 26, 1.2, 0.6, 0.8), gain=0.5, rev=0.3)
 for tg_ in [18.5, 21.3, 24.0]: m.add(tg_, groan(rng, 3.0, 70), gain=0.13, pan=0.3, rev=0.5)    # the bridge groaning
 m.add(T['BREAK'], snap(rng, 1.2), gain=0.4, pan=0.3, rev=0.5)
 m.add(T['BREAK'] + 0.1, boom(rng, 4.0, 48, 20, 1.8, 0.5, 0.9), gain=0.55, pan=0.3, rev=0.6)

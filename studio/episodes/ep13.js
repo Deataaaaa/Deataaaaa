@@ -11,7 +11,7 @@ import { makeSpace6, geoDir } from '../engine/space6.js';
 import { makeEndTag } from '../engine/endtag.js';
 import { makeDuskSky } from '../engine/guarapari.js';
 import { TEX_PENDING, twoBoneIK, orientHand } from '../engine/elevator.js';
-import { S7, BV, groundY, makeTerrain7, makeOcean7, makeBridge, makeHouses, makeLog, makeRocks, makeBoat, makeFish, makeKite, makeTsunami } from '../engine/sf7.js';
+import { S7, BV, coastX, groundY, makeTerrain7, makeOcean7, makeBridge, makeHouses, makeLog, makeRocks, makeBoat, makeFish, makeKite, makeTsunami } from '../engine/sf7.js';
 import { fadeShadowBorders, Sparks, Billboards, Streaks, smokeAtlas, pxScale } from '../engine/fx.js';
 import { loadAvatar } from '../engine/rocketbox.js';
 import { resetPose, curlFingers, stand } from '../engine/poses.js';
@@ -168,6 +168,28 @@ export async function create() {
     }
     junk.visible = any; junk.instanceMatrix.needsUpdate = true;
   }
+  // far wreckage over the Presidio, crossing the bridge view: whole houses and trees torn out of the hills
+  const FWN = 80, fwH = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), HO.group.children[0].material, FWN),
+    fwT = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshStandardMaterial({ color: '#2f3d24', roughness: 0.95, flatShading: true }), FWN);
+  fwH.frustumCulled = fwT.frustumCulled = false; scene.add(fwH, fwT);
+  const fwP = [];
+  for (let i = 0; i < FWN; i++) {
+    let x = 0, z = 0;
+    for (let tries = 0; tries < 60; tries++) { const h = THREE.MathUtils.degToRad(6 + jr() * 26), d = 700 + jr() * 1500; x = KNEEL.x + d * Math.sin(h); z = KNEEL.z + d * Math.cos(h); if (x < coastX(z) - 40) break; }
+    fwH.setColorAt(i, new THREE.Color().setHSL(0.09, 0.2, 0.75 + 0.15 * jr()));
+    fwP.push({ house: jr() < 0.4, p: V(x, Math.max(0, groundY(x, z)) + 4, z), b: T.ZERO + 1.5 + jr() * 18.5, a: 22 + jr() * 22, vy: 5 + jr() * 9, sz: 0.8 + jr() * 0.5, r: [jr() * 6, jr() * 6, jr() * 6], w: [(jr() - 0.5) * 2.4, (jr() - 0.5) * 2, (jr() - 0.5) * 2.4] });
+  }
+  function farUpdate(story) {
+    for (let i = 0; i < FWN; i++) {
+      const o = fwP[i], k = story - o.b, on = k > 0 && k < 7 && story < T.BACK;
+      _jp.copy(o.p).addScaledVector(BV, 0.5 * o.a * k * k); _jp.y += o.vy * k + 1.2 * k * k;
+      _je.set(o.r[0] + o.w[0] * k, o.r[1] + o.w[1] * k, o.r[2] + o.w[2] * k); _jq.setFromEuler(_je);
+      const hs = on && o.house ? o.sz : 0, ts = on && !o.house ? o.sz : 0;
+      _jm.compose(_jp, _jq, V(13 * hs, 9 * hs, 12 * hs)); fwH.setMatrixAt(i, _jm);
+      _jm.compose(_jp, _jq, V(6 * ts, 5 * ts, 6 * ts)); fwT.setMatrixAt(i, _jm);
+    }
+    fwH.instanceMatrix.needsUpdate = fwT.instanceMatrix.needsUpdate = true; fwH.visible = fwT.visible = story >= T.ZERO && story < T.BACK;
+  }
   // dust clouds streaming past (lit cards), wrapped through a box round the kneeling spot, faded at the box's ends
   const DCN = 70, dust = new Billboards(DCN, { map: smokeT, tiles: [2, 2], additive: false, lit: true, nearK: 1, near: 2 });
   dust.u.uLitCol.value.set('#e6c49a'); dust.u.uShadeCol.value.set('#8a7058'); dust.u.uFogD.value = 0;
@@ -266,7 +288,8 @@ export async function create() {
       S7.uSpume.value = smooth(T.ZERO, T.ZERO + 1.2, story) * (1 - smooth(T.BACK, T.BACK + 1, story));
       S7.uTwist.value = 0.42 * smooth(T.ZERO + 3, T.ZERO + 13, story); S7.uBend.value = 6 * smooth(T.ZERO + 2, T.ZERO + 12, story);
       S7.uBreak.value = story > T.ZERO + 15.5 ? story - (T.ZERO + 15.5) : -1;
-      HO.update(story, T.ZERO); junkUpdate(story, cam.position);
+      HO.update(story, T.ZERO); junkUpdate(story, cam.position); farUpdate(story);
+      log.visible = story < T.ZERO;   // blown away while you look elsewhere
       for (const l of BR.lines) { l.material.uniforms.uPx.value = pxScale(cam); }
       sand.update(story); debris.update(story); spray.update(story);
       const trail = t < T.HOOK ? 0.012 : 0.03; sand.u.uTrail.value = trail; debris.u.uTrail.value = trail * 1.2; spray.u.uTrail.value = trail;

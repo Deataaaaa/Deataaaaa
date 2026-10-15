@@ -264,7 +264,7 @@ export class Billboards {
 // Streaks: fast particles drawn as trails from p(t - trail) to p(t) in screen space (motion-blur look)
 // ---------------------------------------------------------------------------------------------------------------
 export class Streaks {
-  constructor(n, { widthPx = 2.2, renderOrder = 7 } = {}) {
+  constructor(n, { widthPx = 2.2, renderOrder = 7, additive = true } = {}) {
     this.n = n;
     const base = new THREE.PlaneGeometry(1, 1);
     const g = new THREE.InstancedBufferGeometry();
@@ -275,12 +275,12 @@ export class Streaks {
     g.instanceCount = n; this.geo = g;
     this.u = {
       uTime: { value: 0 }, uTrail: { value: 0.12 }, uRes: { value: new THREE.Vector2(1080, 1920) }, uWidth: { value: widthPx },
-      uAcc: { value: new THREE.Vector3() }, uAccT0: { value: 1e9 }, uGain: { value: 1 }, uFogD: { value: 0 }, uNear: { value: 0.5 },
+      uAcc: { value: new THREE.Vector3() }, uAccT0: { value: 1e9 }, uGain: { value: 1 }, uFogD: { value: 0 }, uNear: { value: 0.5 }, uLoop: { value: 0 }, uSpread: { value: 1 },
     };
     this.mat = new THREE.ShaderMaterial({
-      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: this.u,
+      transparent: true, depthWrite: false, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending, uniforms: this.u,
       vertexShader: /* glsl */`
-        uniform float uTime, uTrail, uWidth, uAccT0, uGain, uFogD, uNear; uniform vec2 uRes; uniform vec3 uAcc;
+        uniform float uTime, uTrail, uWidth, uAccT0, uGain, uFogD, uNear, uLoop, uSpread; uniform vec2 uRes; uniform vec3 uAcc;
         attribute vec3 aP0, aVel, aCol; attribute vec4 aPrm;   // size scale, birth, life, seed
         varying vec3 vC; varying float vA; varying vec2 vQ;
         vec3 posAt(float tt){
@@ -290,10 +290,12 @@ export class Streaks {
         }
         void main(){
           float age = uTime - aPrm.y;
+          if (uLoop > 0.0 && age > 0.0) age = mod(age, uLoop);          // looping streaks: born again every uLoop seconds
           vA = 0.0; vC = vec3(0.0); vQ = vec2(0.0);
           if (age < 0.0 || age > aPrm.z){ gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
-          vec4 cA = projectionMatrix * viewMatrix * vec4(posAt(uTime), 1.0);
-          vec4 cB = projectionMatrix * viewMatrix * vec4(posAt(uTime - min(uTrail, age)), 1.0);
+          float tA = aPrm.y + age;
+          vec4 cA = projectionMatrix * viewMatrix * vec4(posAt(tA), 1.0);
+          vec4 cB = projectionMatrix * viewMatrix * vec4(posAt(tA - min(uTrail, age)), 1.0);
           if (cA.w < uNear || cB.w < uNear){ gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
           vec2 sA = cA.xy / cA.w * uRes * 0.5, sB = cB.xy / cB.w * uRes * 0.5;
           vec2 dir = sA - sB; float len = length(dir);
@@ -305,7 +307,7 @@ export class Streaks {
           gl_Position = vec4(s / (uRes * 0.5) * wz, z * wz, wz);
           float fade = smoothstep(0.0, 0.1, age) * (1.0 - smoothstep(0.7 * aPrm.z, aPrm.z, age));
           float spread = w * w / max(w * (len + 2.0 * w), 1e-3);        // longer trails spread the same light thinner
-          vA = fade * exp(-uFogD * uFogD * cA.w * cA.w) * clamp(spread * 4.0, 0.08, 1.0);
+          vA = fade * exp(-uFogD * uFogD * cA.w * cA.w) * mix(1.0, clamp(spread * 4.0, 0.08, 1.0), uSpread);   // uSpread 0: solid streaks (sand), 1: light spread thin
           vC = aCol * uGain; vQ = corner;
         }`,
       fragmentShader: /* glsl */`

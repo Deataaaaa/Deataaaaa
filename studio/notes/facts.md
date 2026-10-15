@@ -195,3 +195,20 @@ part of the way; a gas has no bonds between molecules and stays at absolute zero
 | Absolute zero is 184 degrees colder | 183.95 K | −89.2 − (−273.15) = 183.95 |
 | Snowball Earth, about 700 million years ago | 717-635 Ma | Sturtian (717-660 Ma) and Marinoan (~650-635 Ma) glaciations: ice reached the tropics (Hoffman et al., Science 1998; Rooney et al. 2015) |
 | Coldest temperature ever measured on Earth: −89.2 °C, Vostok, 1983 | 21 July 1983 | WMO Weather and Climate Extremes Archive, Vostok station, Antarctica |
+
+## EP13 (post 7) — What if the air stopped turning with Earth for 30 seconds?
+
+Premise: for 30 s the atmosphere stops sharing Earth's rotation (it stays still in space) while the ground keeps turning
+under it, so every place on Earth feels a wind equal to its own rotation speed, from the east. The wind blows toward the
+west, away from west-facing coasts like San Francisco's, then stops dead.
+
+| On screen | Value | Source / calculation |
+|---|---|---|
+| The air turns with Earth at 1,320 km/h (San Francisco) | 1,323 km/h | equatorial speed 40,075 km / 23.934 h = 1,674 km/h × cos(37.8°) |
+| Equator: 1,670 km/h | 1,674 km/h | as above |
+| Strongest gust ever measured: 408 km/h | 10 April 1996 | Barrow Island, Australia, Tropical Cyclone Olivia (WMO Weather and Climate Extremes Archive) |
+| In 1940, a 64 km/h wind tore a bridge apart | 7 November 1940 | Tacoma Narrows Bridge, Washington: collapsed in a wind of about 40 mph (64 km/h) |
+| This one is 20 times stronger | 20.6 | 1,323 / 64 |
+| Golden Gate towers: 227 m | 227 m (746 ft) above the water | Golden Gate Bridge Highway and Transportation District |
+| Tallest wave ever recorded: 524 m, Alaska, 1958 | 9 July 1958 | Lituya Bay megatsunami: run-up of 524 m (1,720 ft) after a rockslide (USGS) |
+| Baker Beach, 6:31 pm | golden hour | sunset in San Francisco mid-October ≈ 6:35 pm PDT (NOAA solar calculator) |

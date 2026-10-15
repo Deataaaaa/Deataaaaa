@@ -50,7 +50,7 @@ export const BLACKBODY_GLSL = `
 // ---------------------------------------------------------------------------------------------------------------
 // dusk sky: the sun low behind the town (west); over the sea the Belt of Venus (a pink band) above Earth's blue shadow
 // ---------------------------------------------------------------------------------------------------------------
-const SKY_GLSL = `
+export const SKY_GLSL = `
   uniform vec3 uSun, uZen, uHor, uBelt, uShade, uSunCol, uFlashCol; uniform float uSkyI, uFlash;
   vec3 duskSky(vec3 d){
     float el = d.y, cs = dot(d, uSun), anti = clamp(-dot(normalize(d.xz + 1e-5), normalize(uSun.xz)), 0.0, 1.0);
@@ -83,10 +83,10 @@ export function makeDuskSky(sunDir, o = {}) {
 // ---------------------------------------------------------------------------------------------------------------
 // the sea: Gerstner swell from the east-southeast, foam where it runs out of depth, sky reflection, Cherenkov glow
 // ---------------------------------------------------------------------------------------------------------------
-const WAVES = [   // [direction (deg, 0 = travelling toward -x), wavelength m, amplitude m, steepness]
+export const WAVES = [   // [direction (deg, 0 = travelling toward -x), wavelength m, amplitude m, steepness]
   [8, 38, 0.32, 0.55], [-14, 23, 0.2, 0.6], [25, 14, 0.1, 0.5], [-32, 9, 0.06, 0.45], [4, 5.5, 0.035, 0.4], [47, 3.4, 0.02, 0.35],
 ];
-const WAVE_GLSL = `
+export const WAVE_GLSL = `
   uniform float uTime;
   const int NW = ${WAVES.length};
   uniform vec4 uW[NW];   // dir.x, dir.z, k, amplitude ; steepness in uQ

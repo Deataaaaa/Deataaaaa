@@ -30,15 +30,16 @@ export function makeSpace6(tex) {
   // the Sun on 10 October at 18:15 in New York: over the central Pacific (6.8 S, 167.75 W), New York 7 degrees into the night
   const sun = geoDir(-6.8, -167.75);
   const U = { tDay: { value: tex.day }, tNight: { value: tex.night }, tC: { value: tex.clouds }, uSun: { value: sun.clone() },
-    uLights: { value: 0 }, uClouds: { value: 1 }, uCloudLow: { value: 0 }, uLandW: { value: 0 }, uSeaW: { value: 0 }, uAtm: { value: 1 }, uTime: { value: 0 } };
+    uLights: { value: 0 }, uClouds: { value: 1 }, uSmear: { value: 0 }, uDust: { value: 0 }, uCloudLow: { value: 0 }, uLandW: { value: 0 }, uSeaW: { value: 0 }, uAtm: { value: 1 }, uTime: { value: 0 } };
   const vs = `varying vec2 vUv; varying vec3 vN; varying vec3 vV; varying vec3 vP; void main(){ vUv = uv; vP = position; vN = normalize(mat3(modelMatrix) * normal); vec4 wp = modelMatrix * vec4(position, 1.0); vV = normalize(cameraPosition - wp.xyz); gl_Position = projectionMatrix * viewMatrix * wp; }`;
   const earthMat = new THREE.ShaderMaterial({
     uniforms: U, vertexShader: vs,
-    fragmentShader: `uniform sampler2D tDay, tNight, tC; uniform vec3 uSun; uniform float uLights, uClouds, uCloudLow, uLandW, uSeaW, uAtm, uTime; varying vec2 vUv; varying vec3 vN; varying vec3 vV; varying vec3 vP;
+    fragmentShader: `uniform sampler2D tDay, tNight, tC; uniform vec3 uSun; uniform float uSmear, uDust, uLights, uClouds, uCloudLow, uLandW, uSeaW, uAtm, uTime; varying vec2 vUv; varying vec3 vN; varying vec3 vV; varying vec3 vP;
       ${VNOISE}
       void main(){
         vec3 n = normalize(vN), v = normalize(vV); float d = dot(n, uSun);
         vec3 day = texture2D(tDay, vUv).rgb; vec3 night = texture2D(tNight, vUv).rgb; float cl = texture2D(tC, vUv).r;
+        if (uSmear > 0.0) { float acc = 0.0; for (int i = 0; i < 9; i++) acc += texture2D(tC, vUv + vec2((float(i) - 4.0) * 0.006 * uSmear, 0.0)).r; cl = mix(cl, acc / 9.0, uSmear); }   // the clouds smeared east-west by the wind
         float ocean = smoothstep(0.02, -0.05, day.r + day.g * 0.5 - day.b * 1.2), land = 1.0 - ocean;
         float lit = smoothstep(-0.1, 0.22, d), lat = abs(vP.y);
         // land: snowed-out moisture and frost, patchy first (relief from the map's brightness), then white
@@ -50,6 +51,7 @@ export function makeSpace6(tex) {
         float leads = 0.0;                                     // (the sea froze through at the restart: no open water left)
         vec3 snow = vec3(0.93, 0.95, 0.98) * (0.86 + 0.14 * fbmv(vP * 40.0)), ice = vec3(0.78, 0.84, 0.9) * (0.85 + 0.15 * fbmv(vP * 22.0 + 1.0));
         vec3 surf = mix(day, snow, landW * land);
+        surf = mix(surf, vec3(0.62, 0.5, 0.36), uDust * (0.35 + 0.4 * land));   // dust and sand torn off the land
         surf = mix(surf, mix(ice, day * 0.6, leads), seaW * ocean);
         // clouds: collapsing (thinner, lower, darker grey as they fall and snow out)
         float c = cl * cl * uClouds * (1.0 - 0.5 * uCloudLow);

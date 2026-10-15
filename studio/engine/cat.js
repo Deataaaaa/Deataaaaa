@@ -63,7 +63,7 @@ function headSDF(x, y, z) {
 // ---------------------------------------------------------------------------------------------------------------
 // surface nets: one vertex per cell crossing the surface (the mean of its edge crossings), one quad per crossed edge
 // ---------------------------------------------------------------------------------------------------------------
-function surfaceNets(sdf, lo, hi, h) {
+export function surfaceNets(sdf, lo, hi, h) {
   const nx = Math.ceil((hi[0] - lo[0]) / h) + 1, ny = Math.ceil((hi[1] - lo[1]) / h) + 1, nz = Math.ceil((hi[2] - lo[2]) / h) + 1;
   const F = new Float32Array(nx * ny * nz), id = (i, j, k) => i + nx * (j + ny * k);
   for (let k = 0; k < nz; k++) for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) F[id(i, j, k)] = sdf(lo[0] + i * h, lo[1] + j * h, lo[2] + k * h);
@@ -134,24 +134,26 @@ function furTex() {
 
 // one fur material for the base (layer 0) and the shells (instanced: layer = instance + 1). Per-vertex aWhite picks
 // black or white fur (white hairs mix in along the boundary); uv mode for the tail (its rest coordinates move).
-function furMaterial({ layers, len, scale = 9, tail = false, shells = true }) {
+export function furMaterial({ layers, len, scale = 9, tail = false, shells = true, dark = [0.018, 0.016, 0.016], light = [0.8, 0.79, 0.76] }) {
   const m = new THREE.MeshPhysicalMaterial({ color: '#ffffff', roughness: 0.62, sheen: 0.7, sheenRoughness: 0.45, sheenColor: new THREE.Color('#9a9a9a'),
     transparent: shells, depthWrite: !shells, side: THREE.FrontSide });
-  const U = { uFur: { value: furTex() }, uLen: { value: len }, uLayers: { value: layers }, uScale: { value: scale }, uGlowCol: { value: new THREE.Color(0, 0, 0) } };
+  const U = { uFur: { value: furTex() }, uLen: { value: len }, uLayers: { value: layers }, uScale: { value: scale }, uGlowCol: { value: new THREE.Color(0, 0, 0) },
+    uDark: { value: new THREE.Vector3(...dark) }, uLight: { value: new THREE.Vector3(...light) }, uBlow: { value: new THREE.Vector3() } };   // uBlow: wind on the fur (object space)
   m.userData.U = U;
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, U);
     sh.vertexShader = sh.vertexShader.replace('#include <common>', `#include <common>
       attribute float aWhite; attribute float aLen; varying float vWhite; varying vec3 vRest; varying vec3 vRestN; varying float vLayer; varying vec2 vTailUv;
-      uniform float uLen, uLayers;`)
+      uniform float uLen, uLayers; uniform vec3 uBlow;`)
       .replace('#include <begin_vertex>', `#include <begin_vertex>
       vWhite = aWhite; vRest = position; vRestN = normal;
       ${tail ? 'vTailUv = uv;' : 'vTailUv = vec2(0.0);'}
       ${shells ? 'vLayer = float(gl_InstanceID + 1) / uLayers;' : 'vLayer = 0.0;'}
       transformed += objectNormal * uLen * aLen * vLayer;
-      transformed.y -= uLen * aLen * 0.35 * vLayer * vLayer;   // the tips droop a little`);
+      transformed.y -= uLen * aLen * 0.35 * vLayer * vLayer;   // the tips droop a little
+      transformed += uBlow * uLen * aLen * vLayer * vLayer;`);
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
-      uniform sampler2D uFur; uniform float uScale, uLayers; uniform vec3 uGlowCol;
+      uniform sampler2D uFur; uniform float uScale, uLayers; uniform vec3 uGlowCol, uDark, uLight;
       varying float vWhite; varying vec3 vRest; varying vec3 vRestN; varying float vLayer; varying vec2 vTailUv;
       vec4 furSample(){
         ${tail ? 'return texture2D(uFur, vTailUv * vec2(uScale * 0.35, uScale * 0.06));' : `
@@ -162,7 +164,7 @@ function furMaterial({ layers, len, scale = 9, tail = false, shells = true }) {
       .replace('#include <map_fragment>', `#include <map_fragment>
       vec4 fs = furSample();
       float white = smoothstep(0.38, 0.62, vWhite + (fs.g - 0.5) * 0.34);
-      vec3 blackFur = vec3(0.018, 0.016, 0.016) * (0.8 + 0.5 * fs.g), whiteFur = vec3(0.8, 0.79, 0.76) * (0.9 + 0.15 * fs.g);
+      vec3 blackFur = uDark * (0.8 + 0.5 * fs.g), whiteFur = uLight * (0.9 + 0.15 * fs.g);
       vec3 furCol = mix(blackFur, whiteFur, white);
       float ao = mix(0.35, 1.0, vLayer) * mix(0.75, 1.0, fs.r);
       diffuseColor.rgb = furCol * ao;
@@ -177,11 +179,11 @@ function furMaterial({ layers, len, scale = 9, tail = false, shells = true }) {
   m.customProgramCacheKey = () => `catfur_${tail}_${shells}`;
   return m;
 }
-function furred(geo, { layers = 18, len = 0.008, scale = 9, tail = false }) {
+export function furred(geo, { layers = 18, len = 0.008, scale = 9, tail = false, dark, light }) {
   const g = new THREE.Group();
-  const base = new THREE.Mesh(geo, furMaterial({ layers, len, scale, tail, shells: false }));
+  const base = new THREE.Mesh(geo, furMaterial({ layers, len, scale, tail, shells: false, dark, light }));
   base.castShadow = true; base.receiveShadow = true;
-  const sh = new THREE.InstancedMesh(geo, furMaterial({ layers, len, scale, tail, shells: true }), layers);
+  const sh = new THREE.InstancedMesh(geo, furMaterial({ layers, len, scale, tail, shells: true, dark, light }), layers);
   sh.receiveShadow = true; sh.frustumCulled = false; sh.renderOrder = 2;
   g.add(base, sh);
   return { group: g, base, shells: sh };

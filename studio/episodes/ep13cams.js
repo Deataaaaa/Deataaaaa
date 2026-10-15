@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { groundY } from '../engine/sf7.js';
 
-export const T = { HOOK: 3.6, ZERO: 11.0, BRIDGE: 17.0, SPACE: 31.0, SEA: 37.0, BACK: 41.0, EARLIER: 45.2, WAVE: 55.5, HIT: 60.2, END: 62.0 };
+export const T = { HOOK: 3.6, ZERO: 11.0, BRIDGE: 17.0, SPACE: 31.0, SEA: 37.0, BACK: 41.0, EARLIER: 45.2, WAVE: 56.0, HIT: 60.2, END: 62.0 };
 export const DUR = 68.0;
 export const LOG = new THREE.Vector3(-9.6, 0, -30.2), CAPY = new THREE.Vector3(-3.5, 0, -29.0), KNEEL = new THREE.Vector3(LOG.x + 0.52, 0, LOG.z - 0.4);
 const K = KNEEL;
@@ -16,8 +16,8 @@ const SHOTS = [
   { t0: T.BRIDGE, t1: T.SPACE, sway: 0.3, buffet: 0.7, keys: [[17, K.x, 1.12, K.z, 30, 2.5, 46], [31, K.x, 1.12, K.z, 33, 3.5, 46]] },
   { t0: T.SEA, t1: T.BACK, sway: 0.4, buffet: 1, keys: [[37, K.x, 1.12, K.z, 76, -5, 62], [41, K.x, 1.12, K.z, 78, -4, 62]] },
   { t0: T.BACK, t1: T.EARLIER, sway: 0.15, keys: [[41, K.x, 1.12, K.z, 78, -4, 62], [41.3, K.x, 1.12, K.z, 78.5, -4, 62], [42.6, K.x, 1.66, K.z + 0.1, 82, -3, 62], [45.2, K.x, 1.66, K.z + 0.1, 86, -1.5, 62]] },
-  { t0: T.EARLIER, t1: T.WAVE, sway: 0.12, keys: [[45.2, -6.6, 1.66, -41.0, 31, 2, 55], [55.5, -6.6, 1.66, -41.0, 26, 8, 58]] },
-  { t0: T.WAVE, t1: DUR, sway: 0.25, rumble: 1, keys: [[55.5, K.x, 1.66, K.z + 0.1, 80, 6, 70], [58.0, K.x, 1.66, K.z + 0.1, 78, 22, 70], [60.2, K.x, 1.62, K.z + 0.1, 76, 48, 70], [68, K.x, 1.62, K.z + 0.1, 76, 48, 70]] },
+  { t0: T.EARLIER, t1: T.WAVE, sway: 0.12, rumble: [50.6, 56, 0.5], keys: [[45.2, -6.6, 1.66, -41.0, 31, 2, 55], [50.6, -6.6, 1.66, -41.0, 31.5, 5, 56.5], [56.0, -6.6, 1.66, -41.0, 30.5, 11, 58]] },
+  { t0: T.WAVE, t1: DUR, sway: 0.25, rumble: [56, 60, 1.6], keys: [[56.0, K.x, 1.66, K.z + 0.1, 80, 7, 70], [57.8, K.x, 1.66, K.z + 0.1, 79, 21, 70], [59.1, K.x, 1.64, K.z + 0.1, 77, 37, 72], [60.2, K.x, 1.62, K.z + 0.1, 76, 52, 74], [68, K.x, 1.62, K.z + 0.1, 76, 52, 74]] },
 ];
 function herm(keys, t, c) {
   const n = keys.length; if (t <= keys[0][0]) return keys[0][c]; if (t >= keys[n - 1][0]) return keys[n - 1][c];
@@ -39,7 +39,7 @@ export function povCam(cam, t) {
   pt += sw * (f(0.83, 0.2, 0.8) + f(1.91, 1.7, 0.4) + f(3.3, 0.9, 0.2));
   roll += sw * (f(0.53, 2.6, 0.7) + f(1.6, 0.3, 0.3));
   if (S.buffet) { const b = S.buffet; hd += b * (f(4.6, 0.3, 0.32) + f(7.3, 1.1, 0.16)); pt += b * (f(5.2, 2.2, 0.3) + f(8.1, 0.7, 0.15)); roll += b * f(3.9, 1.4, 0.5); }
-  if (S.rumble) { const r = Math.min(1, Math.max(0, (t - 56) / 4)); pt += r * (f(6.1, 0.2, 0.25) + f(9.3, 1.2, 0.12)); roll += r * f(4.4, 0.9, 0.35); }
+  if (S.rumble) { const [r0, r1, ra] = S.rumble, r = ra * Math.min(1, Math.max(0, (t - r0) / (r1 - r0))); pt += r * (f(6.1, 0.2, 0.25) + f(9.3, 1.2, 0.12)); hd += r * f(7.7, 2.3, 0.15); roll += r * f(4.4, 0.9, 0.35); }
   let y = groundY(x, z) + eh;
   if (S.walk) y += 0.022 * Math.abs(Math.sin(Math.PI * 1.8 * t)) - 0.011;   // footsteps
   cam.position.set(x, y, z); cam.fov = fov; cam.updateProjectionMatrix();

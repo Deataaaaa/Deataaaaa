@@ -34,9 +34,10 @@ const CAPTIONS = [
   [35.2, 40.0, 'The wind shoves the ocean away from the shore.', SH],
   [41.3, 44.6, 'Then the sea pulls back…', SH],
   [45.4, 49.2, '…and all of it comes back at once.', SH],
-  [49.3, 53.3, 'Taller than the Golden Gate’s towers.', SH],
-  [53.4, 58.1, 'Tallest wave ever recorded: 524 m, Alaska, 1958.', SH],
-  [58.2, 61.9, 'Still going to the beach?', SH],
+  [49.3, 52.4, 'Taller than the Golden Gate’s towers.', SH],
+  [52.5, 56.5, 'Tallest wave ever recorded: 524 m, Alaska, 1958.', SH],
+  [56.6, 58.9, 'This one is bigger.', SH],
+  [59.0, 61.9, 'Still going to the beach?', SH],
 ];
 const fmtT = (s) => { s = Math.max(0, s); const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r.toFixed(3).padStart(6, '0')}`; };
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -148,11 +149,23 @@ export async function create() {
   fall.commit(); scene.add(fall.points);
   // the tsunami and the spray off its lip
   const wave = makeTsunami(sky); scene.add(wave.mesh);
-  const WSN = 140, wspray = new Billboards(WSN, { map: smokeT, tiles: [2, 2], additive: false, lit: true, nearK: 1, near: 30 });
-  wspray.u.uLitCol.value.set('#fff2e6'); wspray.u.uShadeCol.value.set('#9fb0b8'); wspray.u.uFogD.value = 0;
-  const wsP = []; for (let i = 0; i < WSN; i++) wsP.push([-1800 + fx() * 3600, fx(), 0.6 + fx() * 0.8, fx()]);
-  scene.add(wspray.mesh);
-  const frontAt = (t) => 2650 - 181 * (t - 45.5), heightAt = (t) => 220 + 110 * smooth(45.5, 58, t);   // reaches you (x = 0) at 60.2 s
+  // the crest's mane (spray torn off backward), the churning toe, the bursts where it hits the towers, debris on the face
+  const frontAt = (t) => 263 + 182 * (60.2 - t), heightAt = (t) => 430 + 270 * smooth(45.5, 59.5, t);   // the lip is over you at 60.2 s
+  const toeX = (z, t) => wave.at(z, wave.TOE, 0, t, frontAt(t), heightAt(t)).x;
+  const TW = [[0, 1], [0, -1]].map(([, s]) => { const x = 1452.5 + s * 452.55, z = 2052.5 + s * 452.55; let th = 99; for (let tt = 44; tt < 62; tt += 0.005) if (toeX(z, tt) <= x) { th = tt; break; } return { x, z, t: th }; });
+  if (q.get('wavedbg')) console.log('tower hits ' + TW.map((w) => w.t.toFixed(2)).join(' '));
+  const mkB = (n, near, lit, shade) => { const b = new Billboards(n, { map: smokeT, tiles: [2, 2], additive: false, lit: true, nearK: 1, near }); b.u.uLitCol.value.set(lit); b.u.uShadeCol.value.set(shade); b.u.uFogD.value = 0; scene.add(b.mesh); return b; };
+  const MN = 120, mane = mkB(MN, 60, '#ffe6cc', '#a99c96'), BN = 110, bore = mkB(BN, 25, '#f2efe8', '#7f8a90'), BUN = 32, burst = mkB(BUN, 40, '#f2efe8', '#87929a');
+  const mnP = [], boP = [], buP = [];
+  for (let i = 0; i < MN; i++) mnP.push([-1600 + 5800 * (i + fx()) / MN, fx(), fx(), fx()]);
+  for (let i = 0; i < BN; i++) boP.push([-1600 + 5800 * (i + fx()) / BN, fx(), fx(), fx()]);
+  for (let i = 0; i < BUN; i++) buP.push([fx(), fx(), fx(), fx()]);
+  const WDN = 64, deb = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ roughness: 0.75, metalness: 0.15 }), WDN);
+  deb.frustumCulled = false; scene.add(deb);
+  const KINDS = [[12.2, 2.6, 2.44, ['#9e2f28', '#2a5a8c', '#c0782b', '#3b6a46', '#8c9196']], [4.5, 1.5, 1.8, ['#d6d6d6', '#1d1d1f', '#7a1e1e', '#2d4c78']], [6, 0.35, 0.9, ['#5b4532']], [8, 0.5, 6.5, ['#6a392c', '#474747']]];
+  const dbP = []; for (let i = 0; i < WDN; i++) { const kd = KINDS[Math.floor(fx() * 4)]; deb.setColorAt(i, new THREE.Color(kd[3][Math.floor(fx() * kd[3].length)]));
+    dbP.push({ s: kd.slice(0, 3), z: -260 + fx() * 980, b0: 0.04 + fx() * 0.5, v: 0.03 + fx() * 0.05, r: [fx() * 6, fx() * 6, fx() * 6], w: [fx() - 0.5, fx() - 0.5, fx() - 0.5] }); }
+  const _o = new THREE.Object3D();
   await Promise.all(TEX_PENDING);
 
   // ---- your arms: hands on the log (crouched), raised against the wave, or down out of sight ----
@@ -226,7 +239,9 @@ export async function create() {
       const dustK = story < T.ZERO ? 0 : wind ? smooth(T.ZERO, T.ZERO + 1.5, story) : 1 - after;
       S7.uFogC.value.set('#d8b89a').lerp(new THREE.Color('#b59b7c'), dustK); S7.uFogD.value = (story > T.EARLIER ? 0.00011 : 0.00018) + 0.00022 * dustK;
       scene.fog.color.copy(S7.uFogC.value); scene.fog.density = S7.uFogD.value;
-      sun.intensity = 3.0 * (1 - 0.35 * dustK); hemi.intensity = 0.75 * (1 - 0.15 * dustK);
+      const dark = smooth(T.EARLIER + 0.2, T.EARLIER + 2.2, story);   // the wave swallows the low sun
+      sun.intensity = 3.0 * (1 - 0.35 * dustK) * (1 - 0.85 * dark); hemi.intensity = 0.75 * (1 - 0.15 * dustK) * (1 - 0.3 * dark);
+      S7.uFogC.value.lerp(new THREE.Color('#7d848c'), 0.7 * dark); scene.fog.color.copy(S7.uFogC.value);
       for (let i = 0; i < DCN; i++) {
         const [ph, z0, y0, sz, v, sd] = dustP[i], L = 140, k = (((story - T.ZERO) * v / L + ph) % 1 + 1) % 1, a = Math.sin(Math.PI * k) * 0.55 * dustK;
         if (!wind && after >= 1) { dust.hide(i); continue; }
@@ -255,13 +270,27 @@ export async function create() {
       if (PS) { const ds = story - PS.s0; flyer.root.position.copy(PS.p0).addScaledVector(PS.v, ds); flyer.root.rotation.set(ds * PS.spin * 0.7, ds * PS.spin, ds * PS.spin * 0.4);
         flyer.update(story, { blow: PS.v.clone().normalize().multiplyScalar(-2.5) }); }
       // ---- the wave ----
-      const wOn = story > T.EARLIER - 0.5;
-      wave.mesh.visible = wspray.mesh.visible = wOn;
+      const wOn = story >= T.EARLIER;
+      wave.mesh.visible = mane.mesh.visible = bore.mesh.visible = burst.mesh.visible = wOn;
       wave.U.uFront.value = frontAt(story); wave.U.uH.value = heightAt(story);
-      for (let i = 0; i < WSN; i++) { const [z, a0, s0, sd] = wsP[i], Hh = heightAt(story), x = frontAt(story) - 0.3 * Hh + a0 * 0.1 * Hh, y = Hh * (0.95 + 0.1 * Math.sin(story * 0.7 + sd * 6));
-        if (!wOn) { wspray.hide(i); continue; }
-        wspray.set(i, x + 25 + 40 * ((story * 0.4 + sd) % 1), y + 8, z + 300 * Math.sin(sd * 9), 18 * s0, 11 * s0, 1, 1, 1, 0.3, sd * 6.28 + story * 0.2, Math.floor(sd * 4)); }
-      wspray.commit(); wspray.update(cam, R.SSAA, sunDir);
+      for (let i = 0; i < MN; i++) { const [z, ph, r1, sd] = mnP[i], k = (story * 0.22 + ph) % 1, p = wave.at(z, 0.05 - 0.55 * k, 0.99 + 0.1 * k);
+        if (!wOn) { mane.hide(i); continue; }
+        mane.set(i, p.x, p.y + 10, z, (200 + 220 * r1) * (0.7 + 0.6 * k), (80 + 70 * r1) * (0.8 + 0.5 * k), 1, 1, 1, 0.42 * Math.sin(Math.PI * k), sd * 6.28 + k * 0.6, Math.floor(sd * 4)); }
+      for (let i = 0; i < BN; i++) { const [z, ph, r1, sd] = boP[i], k = (story * 0.5 + ph) % 1, x = wave.at(z, wave.TOE, 0).x - 10 - 50 * k;
+        if (!wOn) { bore.hide(i); continue; }
+        const sz = (70 + 90 * r1) * (0.6 + 0.8 * k);
+        bore.set(i, x, Math.max(groundY(x, z), S7.uLevel.value) + 0.3 * sz + 40 * k * r1, z, sz, sz * 0.75, 1, 1, 1, 0.6 * Math.sin(Math.PI * k), sd * 6.28 + k * 0.8, Math.floor(sd * 4)); }
+      for (let i = 0; i < BUN; i++) { const w = TW[i % 2], [r1, r2, r3, sd] = buP[i], age = story - w.t - Math.floor(i / 2) * 0.06;
+        if (!wOn || age <= 0 || age > 3.4) { burst.hide(i); continue; }
+        const h = (120 + 260 * r1) * (1 - Math.exp(-age * 1.6)), sz = 40 + 60 * r1 + 150 * (1 - Math.exp(-age));
+        burst.set(i, wave.at(w.z, wave.TOE, 0).x - 8 - 30 * r2, h, w.z + (r3 - 0.5) * 90, sz, sz * 0.8, 1, 1, 1, 0.75 * smooth(0, 0.12, age) * (1 - smooth(1.6, 3.4, age)), sd * 6.28 + age * 0.5, Math.floor(sd * 4)); }
+      mane.commit(); mane.update(cam, R.SSAA, sunDir); bore.commit(); bore.update(cam, R.SSAA, sunDir); burst.commit(); burst.update(cam, R.SSAA, sunDir);
+      deb.visible = t >= T.WAVE && t < T.HIT;
+      if (deb.visible) { for (let i = 0; i < WDN; i++) { const d = dbP[i], b = Math.min(0.62, d.b0 + d.v * (story - T.WAVE)), p = wave.at(d.z, wave.faceA(b), b);
+        _o.position.set(p.x - 1.5, p.y, p.z); _o.rotation.set(d.r[0] + d.w[0] * story * 1.5, d.r[1] + d.w[1] * story, d.r[2] + d.w[2] * story * 1.5); _o.scale.set(...d.s); _o.updateMatrix(); deb.setMatrixAt(i, _o.matrix); }
+        deb.instanceMatrix.needsUpdate = true; }
+      if (t >= T.WAVE && t < T.HIT) { const k = story - T.WAVE, b = Math.min(0.6, 0.3 + 0.05 * k), p = wave.at(170, wave.faceA(b), b);
+        boatA.visible = true; boatA.position.set(p.x - 3, p.y, 170); boatA.rotation.set(0.3 + 0.5 * k, -0.8 + 0.2 * k, 1.2 + 0.3 * k); }
       // ---- you ----
       const kneeling = (t < T.HOOK) || (story >= T.ZERO && story < T.BACK + 1.5);
       me.root.visible = kneeling || t >= T.WAVE;

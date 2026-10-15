@@ -8,7 +8,7 @@ import numpy as np
 from synth import *
 
 DUR = 68.0
-T = dict(HOOK=3.6, ZERO=11.0, BRIDGE=17.0, BREAK=26.5, SPACE=31.0, SEA=37.0, BACK=41.0, EARLIER=45.2, WAVE=55.5, HIT=60.2, END=62.0)
+T = dict(HOOK=3.6, ZERO=11.0, BRIDGE=17.0, BREAK=26.5, SPACE=31.0, SEA=37.0, BACK=41.0, EARLIER=45.2, FAR=50.63, NEAR=55.32, WAVE=56.0, HIT=60.2, END=62.0)
 m = Mix(DUR, seed=13)
 rng = np.random.default_rng(1313)
 def midi(n): return 440.0 * 2 ** ((n - 69) / 12)
@@ -38,6 +38,12 @@ def snap(r, d=0.8):
 def downer(r, d=0.9, f0=1800, f1=90):
     n = int(d * SR); k = np.linspace(0, 1, n); fc = f0 * (f1 / f0) ** (k ** 0.7)
     x = sweep_filter(noise(d, r, 'pink'), list(zip(fc * 0.6, fc * 1.5)), 'bandpass'); return norm(norm(x) + 0.35 * np.sin(2 * np.pi * np.cumsum(fc * 0.25) / SR)) * (1 - k) ** 1.6
+
+def braam(r, d=2.8, f=55.0):
+    # trailer-style low brass: detuned saws, the filter opening then closing, saturated
+    x = sum(saw_voice(f * k, d, harmonics=24, detune_cents=c) for k, c in [(1, -6), (1, 7), (1.5, 0), (2, -4), (2, 5), (3, 2)])
+    k = np.linspace(0, 1, len(x)); fc = 180 + 1300 * np.sin(np.pi * np.minimum(1, k * 1.6)) ** 0.7 * (1 - k) ** 0.5
+    x = np.tanh(2.5 * norm(sweep_filter(x, fc))) * env_at(tt(d), [0, 0.06, d * 0.5, d], [0, 1, 0.7, 0]); return norm(x)
 
 motif = [72, 76, 79, 81, 79, 76, 74]
 # ---------- the countdown (from frame 1) ----------
@@ -103,20 +109,31 @@ gp = pad([110.0, 130.81, 164.81], dd, rng, cutoff=900, attack=1.5, release=0.5, 
 m.add(B0, gp, gain=0.06, rev=0.6)
 m.add(T['EARLIER'] - 1.3, riser(rng, 1.3, 300, 5000, 2.0), gain=0.14, rev=0.3)
 
-# ---------- the wave (45.2 -> 60.2) ----------
-E0, E1 = T['EARLIER'], T['HIT']; ed = E1 - E0
+# ---------- the wave (45.2 -> 60.2): it swallows the sun, then the towers, then you ----------
+E0, E1 = T['EARLIER'], T['HIT']; ed = E1 - E0; G = ed - 0.32          # the roar stops dead 0.3 s before the hit (the vacuum)
 m.add(E0, boom(rng, 4.0, 52, 20, 2.0, 0.5, 1.0), gain=0.85, rev=0.5)
-roar = lp(noise(ed, rng, 'brown'), 700) * env_at(tt(ed), [0, 2.0, ed - 3.0, ed - 0.02, ed], [0.1, 0.3, 0.75, 1.0, 0.0])
-roar2 = lp(noise(ed, np.random.default_rng(11), 'brown'), 700) * env_at(tt(ed), [0, 2.0, ed - 3.0, ed - 0.02, ed], [0.1, 0.3, 0.75, 1.0, 0.0])
-m.add(E0, (norm(roar), norm(roar2)), gain=0.6, rev=0.4)
-crash = bp(noise(ed, rng, 'pink'), 600, 5000) * env_at(tt(ed), [0, ed - 6, ed - 0.02, ed], [0, 0.3, 1.0, 0])
-m.add(E0, norm(crash), gain=0.14, rev=0.4)
-wdr = drone([58.27, 87.31, 116.54, 174.61], ed, rng, cutoff=700, lfo=0.07)
-m.add(E0, (wdr[0] * env_at(tt(ed), [0, 1, ed - 0.05, ed], [0, 0.8, 1, 0]), wdr[1] * env_at(tt(ed), [0, 1, ed - 0.05, ed], [0, 0.8, 1, 0])), gain=0.16, rev=0.4)
-m.add(T['WAVE'], boom(rng, 2.5, 56, 26, 1.2, 0.4, 0.8), gain=0.45, rev=0.4)
-m.add(53.0, snap(rng, 1.0), gain=0.15, pan=-0.3, rev=0.7)                # the bridge goes under
-m.add(E1 - 3.0, riser(rng, 3.0, 200, 8000, 2.4), gain=0.32, rev=0.3)
-m.add(E1, boom(np.random.default_rng(99), 1.8, 46, 20, 0.8, 1.0, 1.0), gain=1.0, rev=0.15)
+m.add(E0 + 0.25, downer(rng, 2.2, 700, 45), gain=0.3, rev=0.5)                # the light dies
+ev = env_at(tt(ed), [0, 2.0, G - 2.5, G - 0.05, G, ed], [0.12, 0.35, 0.8, 1.0, 0.0, 0.0])
+roar = lp(noise(ed, rng, 'brown'), 900) * ev
+roar2 = lp(noise(ed, np.random.default_rng(11), 'brown'), 900) * ev
+m.add(E0, (norm(roar), norm(roar2)), gain=0.75, rev=0.4)
+tg = tt(ed)                                                                    # the churn: a low growl pulsing, saturated for phones
+growl = np.tanh(3.0 * norm(lp(noise(ed, rng, 'brown'), 260))) * (0.55 + 0.45 * np.sin(2 * np.pi * 6.3 * tg) * np.sin(2 * np.pi * 0.37 * tg)) * ev
+m.add(E0, norm(growl), gain=0.35, rev=0.3)
+crash = bp(noise(ed, rng, 'pink'), 600, 5000) * env_at(tt(ed), [0, ed - 6, G - 0.05, G, ed], [0, 0.35, 1.0, 0, 0])
+m.add(E0, norm(crash), gain=0.18, rev=0.4)
+for i in range(40):                                                            # debris cracking inside the roar, denser as it nears
+    m.add(E0 + 3 + (ed - 3.8) * (i / 40) ** 0.7 + rng.uniform(-0.15, 0.15), crunch(rng, 0.5), gain=0.05 + 0.08 * i / 40, pan=rng.uniform(-0.7, 0.7), rev=0.5)
+wdr = drone([55.0, 82.41, 110.0, 164.81], ed, rng, cutoff=700, lfo=0.07)
+dv = env_at(tt(ed), [0, 1, G - 0.05, G, ed], [0, 0.8, 1, 0, 0])
+m.add(E0, (wdr[0] * dv, wdr[1] * dv), gain=0.2, rev=0.4)
+for th, g in [(T['FAR'], 0.6), (T['NEAR'], 1.0)]:                              # the towers go under
+    m.add(th, braam(rng, 2.8), gain=0.32 * g, rev=0.5)
+    m.add(th, boom(rng, 2.5, 50, 24, 1.4, 0.6, 0.9), gain=0.5 * g, rev=0.5)
+    m.add(th + 0.1, groan(rng, 2.2, 70), gain=0.18 * g, pan=-0.3, rev=0.6)
+m.add(T['WAVE'], boom(rng, 2.5, 56, 26, 1.2, 0.4, 0.8), gain=0.5, rev=0.4)
+m.add(E1 - 3.3, riser(rng, 3.0, 200, 8000, 2.4), gain=0.36, rev=0.3)          # ends into the vacuum
+m.add(E1, boom(np.random.default_rng(99), 2.2, 44, 18, 1.0, 1.0, 1.0), gain=1.0, rev=0.15)
 
 # ---------- end card (62 -> 68) ----------
 ep_ = pad([196.0, 293.66, 392.0, 440.0], DUR - T['END'] + 0.1, rng, cutoff=1500, attack=1.0, release=2.0, voices=2, harmonics=10)

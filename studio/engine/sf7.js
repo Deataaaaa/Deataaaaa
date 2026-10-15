@@ -385,64 +385,97 @@ export function makeKite() {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-// the tsunami: a wall of water along the coast (z), travelling toward -x, its face rising to the crest and a lip that
-// curls forward; backlit turquoise where it is thin, foam running down the face, whitewater at the lip and the base.
-// uFront: x of the face's base; uH: height; the trough in front sits at the drained sea level (uLevel)
+// the tsunami: a dark wall of water along the coast (z), travelling toward -x: a long back slope, a crest pitching forward
+// into a heavy lip, a concave face loaded with silt, a churning toe running ahead on the drained seabed. The low sun is
+// behind it, so the face is in shade (green-black, foam lace climbing it) and light only comes through the thin crest.
+// uFront: x of the crest; uH: height. `at`, `faceA`, `hAt` place things on the surface from JS (same maths as the shader).
 // ---------------------------------------------------------------------------------------------------------------
 export function makeTsunami(sky) {
-  // the profile (units of H): a = distance ahead of the crest (toward the shore), b = height; t = thinness
-  const CP = [[-6.0, 0.0], [-2.6, 0.32], [-1.0, 0.8], [0.0, 1.0], [0.34, 0.95], [0.5, 0.74], [0.36, 0.6], [0.16, 0.62], [0.06, 0.34], [0.1, 0.0]];
+  // the profile in units of H: [a = distance ahead of the crest (toward the shore), b = height, foam, thinness, face side]
+  const CP = [[-7.0, 0.0, 0, 0, 0], [-3.4, 0.28, 0, 0, 0], [-1.6, 0.66, 0.05, 0, 0], [-0.6, 0.93, 0.4, 0.15, 0], [-0.1, 1.0, 0.9, 0.45, 0],
+    [0.12, 1.0, 1, 0.8, 1], [0.3, 0.96, 1, 1, 1], [0.42, 0.86, 0.95, 1, 1], [0.44, 0.76, 0.8, 0.5, 1], [0.38, 0.7, 0.55, 0.25, 1],
+    [0.28, 0.66, 0.3, 0.1, 1], [0.2, 0.5, 0.14, 0.08, 1], [0.15, 0.3, 0.2, 0, 1], [0.16, 0.12, 0.55, 0, 1], [0.24, 0.0, 1, 0, 1]];
   const prof = [];
   for (let i = 0; i < CP.length - 1; i++) {
     const p0 = CP[Math.max(0, i - 1)], p1 = CP[i], p2 = CP[i + 1], p3 = CP[Math.min(CP.length - 1, i + 2)];
     for (let k = 0; k < 10; k++) { const t = k / 10, t2 = t * t, t3 = t2 * t;
       const f = (j) => 0.5 * ((2 * p1[j]) + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2 + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3);
-      prof.push([f(0), f(1), i + t]); }
+      prof.push([f(0), f(1), f(2), f(3), Math.min(1, Math.max(0, f(4)))]); }
   }
-  prof.push([...CP[CP.length - 1], CP.length - 1]);
-  const NU = 260, NV = prof.length, pos = new Float32Array(NU * NV * 3), prm = new Float32Array(NU * NV * 4), idx = [];
+  prof.push(CP[CP.length - 1]);
+  const Z0 = -7000, Z1 = 20000, NU = 620, NV = prof.length, pos = new Float32Array(NU * NV * 3), prm = new Float32Array(NU * NV * 4), q = new Float32Array(NU * NV * 3), idx = [];
   for (let i = 0; i < NU; i++) for (let j = 0; j < NV; j++) {
-    const u = i / (NU - 1), z = -5000 + 12000 * Math.pow(u, 1.0), [a, b, c] = prof[j], k = (i * NV + j);
+    const z = Z0 + (Z1 - Z0) * i / (NU - 1), [a, b, fo, th, fa] = prof[j], k = (i * NV + j);
     const jn = Math.min(NV - 1, j + 1), jp = Math.max(0, j - 1), ta = prof[jn][0] - prof[jp][0], tb = prof[jn][1] - prof[jp][1], tl = Math.hypot(ta, tb) || 1;
-    pos.set([a, b, z], k * 3); prm.set([-tb / tl, ta / tl, c / (CP.length - 1), 0], k * 4);   // 2D normal (in a, b), position along the profile
+    pos.set([a, b, z], k * 3); prm.set([-tb / tl, ta / tl, j / (NV - 1), 0], k * 4); q.set([fo, th, fa], k * 3);
   }
   for (let i = 0; i < NU - 1; i++) for (let j = 0; j < NV - 1; j++) { const a = i * NV + j, b = a + 1, c = a + NV, d = c + 1; idx.push(a, b, c, b, d, c); }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aP', new THREE.BufferAttribute(prm, 4)); g.setIndex(idx);
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aP', new THREE.BufferAttribute(prm, 4));
+  g.setAttribute('aQ', new THREE.BufferAttribute(q, 3)); g.setIndex(idx);
   const U = { ...sky.material.uniforms, uTime: S7.uTime, uLevel: S7.uLevel, uFront: { value: 6000 }, uH: { value: 100 }, uFogC: S7.uFogC, uFogD: S7.uFogD };
+  const SHAPE = `
+    float wobW(float z, float t){ return (1.0 + 0.07 * sin(z * 0.0017 + 1.3) + 0.04 * sin(z * 0.0049 + t * 0.25)) * mix(0.3, 1.0, smoothstep(-7000.0, -3500.0, z) * smoothstep(20000.0, 14000.0, z)); }
+    float curlW(float z, float t){ return 0.88 + 0.12 * sin(z * 0.0031 + t * 0.4) + 0.05 * sin(z * 0.011 + 2.0); }`;
   const mat = new THREE.ShaderMaterial({
     uniforms: U, side: THREE.DoubleSide,
-    vertexShader: `uniform float uFront, uH, uLevel, uTime; attribute vec4 aP; varying vec3 vW; varying vec3 vN; varying float vT; varying float vZ; varying float vB;
+    vertexShader: `${NOISE_GLSL}${SHAPE}
+      uniform float uFront, uH, uLevel, uTime; attribute vec4 aP; attribute vec3 aQ; varying vec3 vW; varying vec3 vN; varying float vZ; varying float vBH; varying vec3 vQ;
       void main(){
-        float z = position.z, wob = 1.0 + 0.08 * sin(z * 0.0021 + 1.3) + 0.05 * sin(z * 0.0057 + uTime * 0.3);
-        float ends = smoothstep(-5000.0, -2500.0, z) * smoothstep(7000.0, 4000.0, z);
-        float H = uH * wob * mix(0.25, 1.0, ends), curl = 0.85 + 0.15 * sin(z * 0.004 + uTime * 0.5);
-        float a = position.x * (position.x > 0.0 ? curl : 1.0), b = position.y;
-        float base = mix(0.0, uLevel, smoothstep(-0.2, 0.3, a) * step(0.8, aP.z));      // the front stands on the drained seabed
-        vec3 w = vec3(uFront - a * H, b * H + base * (1.0 - b), z);
-        vW = w; vN = normalize(vec3(-aP.x, aP.y, 0.0)); vT = aP.z; vZ = z; vB = b;
+        float z = position.z, H = uH * wobW(z, uTime);
+        float a = position.x * (position.x > 0.0 ? curlW(z, uTime) : 1.0), b = position.y;
+        b += aQ.x * aQ.z * 0.035 * (bfbm(vec2(z * 0.0035, uTime * 0.12)) - 0.47) * 2.0 * smoothstep(0.6, 0.9, b);   // a lumpy, breaking crest line
+        vec3 w = vec3(uFront - a * H, b * H + uLevel * aQ.z * (1.0 - b), z);
+        vW = w; vN = normalize(vec3(-aP.x, aP.y, 0.0)); vZ = z; vBH = b * H; vQ = aQ;
         gl_Position = projectionMatrix * viewMatrix * vec4(w, 1.0);
       }`,
     fragmentShader: `${NOISE_GLSL}${SKY_GLSL}
-      uniform float uTime, uFogD; uniform vec3 uFogC; varying vec3 vW; varying vec3 vN; varying float vT; varying float vZ; varying float vB;
+      uniform float uTime, uFogD, uH; uniform vec3 uFogC; varying vec3 vW; varying vec3 vN; varying float vZ; varying float vBH; varying vec3 vQ;
+      // thin ridge lines (half-width w in noise units) forming foam cells; fades to its mean cover once cells get under a few px
+      float lacy(vec2 p, float fw, float w){
+        float n = bnoise(p) * 0.6 + bnoise(p * 2.13 + 3.7) * 0.4, r = abs(2.0 * n - 1.0), e = fwidth(r) + 0.004;
+        return mix(1.0 - smoothstep(w - e, w + e, r), 2.6 * w, smoothstep(0.15, 0.45, fw * 2.13));
+      }
       void main(){
+        float foamW = clamp(vQ.x, 0.0, 1.0), thin = clamp(vQ.y, 0.0, 1.0), hb = vBH / uH;
         vec3 V = normalize(cameraPosition - vW), N = normalize(gl_FrontFacing ? vN : -vN);
-        float fres = 0.03 + 0.97 * pow(1.0 - abs(dot(N, V)), 5.0);
+        float fz = fwidth(vZ) + 0.01, fh = fwidth(vBH) + 0.01;
+        vec2 q1 = vec2(vZ * 0.011, vBH * 0.005 - uTime * 0.22);                 // big bands, climbing the face
+        float n1 = bfbmAA(q1, max(fz * 0.011, fh * 0.005));
+        vec2 q2 = vec2(vZ * 0.045, vBH * 0.014 - uTime * 0.7);
+        float f2 = max(fz * 0.045, fh * 0.014), n2 = bfbmAA(q2 + 7.3, f2);
+        vec2 q3 = vec2(vZ * 0.1, vBH * 0.06 - uTime * 1.5);                     // churn inside the whitewater
+        float n3 = bfbmAA(q3 + 2.1, max(fz * 0.1, fh * 0.06));
+        N = normalize(N + vec3(0.0, (n1 - 0.5) * 0.6, (n2 - 0.5) * 0.7));
+        float fres = 0.02 + 0.98 * pow(1.0 - abs(dot(N, V)), 5.0);
         vec3 R = reflect(-V, N); R.y = abs(R.y);
-        vec3 body = vec3(0.015, 0.075, 0.085) * uSkyI;
-        float thin = smoothstep(0.3, 0.45, vT) * (1.0 - smoothstep(0.62, 0.75, vT));      // the crest and the lip: thin, lit through
-        float back = pow(max(dot(-V, uSun), 0.0), 2.0);
-        vec3 glow = vec3(0.08, 0.55, 0.5) * thin * (0.35 + 1.4 * back) * uSkyI;
-        vec3 col = mix(body + glow, duskSky(R), fres * 0.8);
-        float fwz = fwidth(vZ) * 0.02 + 0.002;
-        float run = bfbmAA(vec2(vZ * 0.09, vB * 3.5 + uTime * 0.35), fwz * 4.5);   // vertical streaks running down the face               // foam streaks running down the face
-        float face = smoothstep(0.55, 0.9, vT);
-        float foam = face * smoothstep(0.52, 0.7, run) * 0.7 + smoothstep(0.42, 0.5, vT) * smoothstep(0.62, 0.55, vT) * smoothstep(0.35, 0.6, run)
-          + smoothstep(0.93, 1.0, vT) * 0.9 + smoothstep(0.1, 0.0, vB) * smoothstep(0.8, 0.9, vT);
-        col = mix(col, vec3(0.86, 0.88, 0.86) * uSkyI * (0.8 + 0.4 * back), clamp(foam, 0.0, 1.0));
-        float dist = length(vW - cameraPosition), fog = 1.0 - exp(-uFogD * uFogD * dist * dist);
+        float back = pow(clamp(0.5 + 0.5 * dot(-V, uSun), 0.0, 1.0), 3.0);
+        vec3 deep = vec3(0.008, 0.026, 0.03), silt = vec3(0.045, 0.036, 0.022);
+        vec3 body = mix(silt, deep, smoothstep(0.04, 0.45, hb)) * (0.55 + 0.9 * n1) * uSkyI;
+        vec3 glow = vec3(0.02, 0.17, 0.12) * thin * (0.2 + 1.8 * back) * (0.6 + 0.8 * n2) * uSkyI;
+        vec3 col = mix(body + glow, duskSky(R) * 0.55, fres * 0.6);
+        // foam on the face: thin lace at two scales (patchy), sparse white sheets streaking up; whitewater at the crest and toe
+        vec2 qa = vec2(vZ * 0.09, vBH * 0.03 - uTime * 1.2), qb = qa * 2.3 + 5.1;
+        float fa = max(fz * 0.09, fh * 0.03);
+        float lace = max(lacy(qa, fa, 0.035), 0.7 * lacy(qb, fa * 2.3, 0.03)) * smoothstep(0.3, 0.7, n2);
+        float sw = fz * 0.35, sk = bnoise(vec2(vZ * 0.35, vBH * 0.004 - uTime * 0.12));
+        float streak = mix(smoothstep(0.8, 0.9, sk), 0.07, smoothstep(0.2, 0.5, sw)) * 0.6 * smoothstep(0.35, 0.65, n1);
+        float cover = smoothstep(0.45, 0.8, foamW * (0.5 + 0.8 * n1) + 0.3 * (n2 - 0.5));
+        float foam = clamp(max(max(lace, streak) * (0.55 + 0.45 * foamW), cover), 0.0, 1.0);
+        vec3 fcol = mix(vec3(0.5, 0.55, 0.58), vec3(1.0, 0.86, 0.68) * 1.25, back * (0.3 + 0.7 * thin)) * uSkyI;
+        fcol *= mix(0.8 + 0.3 * n2, 0.5 + 0.75 * n3, cover);                    // whitewater has shadowed crevices
+        col = mix(col, fcol, foam * 0.9);
+        col = mix(col, uFogC * 0.7, 0.22 * smoothstep(0.5, 0.95, hb));         // spray haze toward the top
+        float dist = length(vW - cameraPosition), fog = 1.0 - exp(-0.4 * uFogD * uFogD * dist * dist);
         gl_FragColor = vec4(mix(col, uFogC, fog), 1.0);
       }`,
   });
   const m = new THREE.Mesh(g, mat); m.frustumCulled = false;
-  return { mesh: m, U };
+  // JS twins of the shape: local height, a of the face at height b (lip underside -> toe), a point on the surface
+  const sm = (e0, e1, x) => { const k = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return k * k * (3 - 2 * k); };
+  const hAt = (z, t = S7.uTime.value, H0 = U.uH.value) => H0 * (1 + 0.07 * Math.sin(z * 0.0017 + 1.3) + 0.04 * Math.sin(z * 0.0049 + t * 0.25)) * (0.3 + 0.7 * sm(-7000, -3500, z) * sm(20000, 14000, z));
+  const curlAt = (z, t = S7.uTime.value) => 0.88 + 0.12 * Math.sin(z * 0.0031 + t * 0.4) + 0.05 * Math.sin(z * 0.011 + 2.0);
+  const face = prof.slice(100);                                                  // from (0.28, 0.66) down to the toe
+  const faceA = (b) => { if (b >= face[0][1]) return face[0][0]; for (let i = 1; i < face.length; i++) if (face[i][1] <= b) { const p = face[i - 1], c = face[i], k = (b - c[1]) / (p[1] - c[1]); return c[0] + (p[0] - c[0]) * k; } return face[face.length - 1][0]; };
+  const at = (z, a, b, t = S7.uTime.value, F = U.uFront.value, H0 = U.uH.value) => { const H = hAt(z, t, H0), aa = a > 0 ? a * curlAt(z, t) : a; return new THREE.Vector3(F - aa * H, b * H + (a > 0 ? S7.uLevel.value * (1 - b) : 0), z); };
+  return { mesh: m, U, hAt, curlAt, faceA, at, TOE: 0.24, LIP: [0.44, 0.76] };
 }

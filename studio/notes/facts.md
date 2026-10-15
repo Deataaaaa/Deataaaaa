@@ -210,6 +210,6 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
 | In 1940, a 64 km/h wind tore a bridge apart | 7 November 1940 | Tacoma Narrows Bridge, Washington: collapsed in a wind of about 40 mph (64 km/h) |
 | This one is 20 times stronger | 20.6 | 1,323 / 64 |
 | Golden Gate towers: 227 m | 227 m (746 ft) above the water | Golden Gate Bridge Highway and Transportation District |
-| Tallest wave ever recorded: 524 m, Alaska, 1958 | 9 July 1958 | Lituya Bay megatsunami: run-up of 524 m (1,720 ft) after a rockslide (USGS) |
+| Tallest wave ever: 524 m, Alaska, 1958 | 9 July 1958 | Lituya Bay megatsunami: run-up of 524 m (1,720 ft) after a rockslide (USGS) |
 | "This one is bigger." | scene | The wave on screen is 440 m tall when it appears and about 770 m when it reaches you (`heightAt` × the along-shore wobble in `engine/sf7.js`): over 524 m from 56 s on, when the caption shows. Fiction, no number on screen |
 | Baker Beach, 6:31 pm | golden hour | sunset in San Francisco mid-October ≈ 6:35 pm PDT (NOAA solar calculator) |

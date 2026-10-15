@@ -33,11 +33,11 @@ const CAPTIONS = [
   [31.1, 35.1, 'Every coast on Earth is blasted at once.', SH],
   [35.2, 40.0, 'The wind shoves the ocean away from the shore.', SH],
   [41.3, 44.6, 'Then the sea pulls back…', SH],
-  [45.4, 49.2, '…and all of it comes back at once.', SH],
-  [49.3, 52.4, 'Taller than the Golden Gate’s towers.', SH],
-  [52.5, 56.5, 'Tallest wave ever recorded: 524 m, Alaska, 1958.', SH],
-  [56.6, 58.9, 'This one is bigger.', SH],
-  [59.0, 61.9, 'Still going to the beach?', SH],
+  [45.3, 48.7, '…and all of it comes back at once.', SH],
+  [48.8, 52.4, 'Taller than the Golden Gate’s towers.', SH],
+  [52.5, 56.3, 'Tallest wave ever: 524 m, Alaska, 1958.', SH],
+  [56.4, 59.1, 'This one is bigger.', SH],
+  [59.2, 61.95, 'Still going to the beach?', SH],
 ];
 const fmtT = (s) => { s = Math.max(0, s); const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r.toFixed(3).padStart(6, '0')}`; };
 const V = (x, y, z) => new THREE.Vector3(x, y, z);

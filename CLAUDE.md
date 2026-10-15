@@ -86,6 +86,10 @@ often while at work, so every deliverable has to be ready to post straight from 
     about two seconds: he looks at you, blinks, ducks back down. `engine/endtag.js` `makeEndTag({ text })`, then
     `tag.update(t, endFullyIn, endA)` every frame (look-dev: `episodes/endtagview.js`).
 
+21. **Spend as few tokens as possible** (owner, 15 Oct 2026, low on usage). Short replies, no narration, no
+    re-reading big files, few low-res stills (contact sheets, not single frames), checks by script output. Final renders
+    run on the owner's PC (RENDER.bat), never here.
+
 ## Delivery checklist
 - `studio/encode.sh <frames> <wav> videos/postN_<slug>`: HQ + `_phone.mp4` (< 30 MB, the chat's send limit).
   (`day1_*` files = the Earth video, outside the series.)

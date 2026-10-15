@@ -10,7 +10,7 @@ export const DUR = 68.0;
 export const LOG = new THREE.Vector3(-9.6, 0, -30.2), CAPY = new THREE.Vector3(-3.5, 0, -29.0), KNEEL = new THREE.Vector3(LOG.x + 0.52, 0, LOG.z - 0.4);
 const K = KNEEL;
 const SHOTS = [
-  { t0: 0, t1: T.HOOK, sway: 0.25, keys: [[0, K.x, 1.12, K.z, 70, -5, 62], [T.HOOK, K.x, 1.12, K.z, 71.5, -4.5, 62]] },
+  { t0: 0, t1: T.HOOK, sway: 0.25, keys: [[0, K.x, 1.12, K.z, 30, 3, 46], [T.HOOK, K.x, 1.12, K.z, 31, 3.2, 46]] },
   { t0: T.HOOK, t1: T.ZERO, sway: 0.18, walk: 1, keys: [[3.6, -6.6, 1.66, -41.0, 33, 2, 55], [6.0, -6.6, 1.66, -38.2, 33, 1.5, 55], [8.2, -6.55, 1.66, -35.6, 25, -9, 55], [11.0, -6.5, 1.66, -32.4, -2, -3, 55]] },
   { t0: T.ZERO, t1: T.BRIDGE, sway: 0.45, buffet: 1, keys: [[11, K.x, 1.12, K.z, -90, -6, 70], [17, K.x, 1.12, K.z, -87, -3, 70]] },
   { t0: T.BRIDGE, t1: T.SPACE, sway: 0.3, buffet: 0.7, keys: [[17, K.x, 1.12, K.z, 30, 2.5, 46], [31, K.x, 1.12, K.z, 33, 3.5, 46]] },

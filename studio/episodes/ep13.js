@@ -76,13 +76,12 @@ export async function create() {
   const fishAt = [[8, -31], [10.5, -27.5], [12, -33.5], [14.5, -29], [9.5, -35], [16, -26]];
   const kite = makeKite(); scene.add(kite);
   // ---- the capybara (rule 19's WTF) and Apple on a rock in the swash (calm part only) ----
-  const capy = makeCapybara(); capy.root.position.set(CAPY.x, groundY(CAPY.x, CAPY.z), CAPY.z); capy.root.rotation.y = 2.836; scene.add(capy.root);
   // the same capybara (orange and all) flying past in the storm, small and quick, five times: 0:01 (far, in the slow-motion
   // hook), 0:13, 0:21 (in front of the bridge), 0:28 and 0:38 (behind the one still sitting there). Each pass starts and
   // ends outside the frame and never comes closer than ~15 m.
   const flyer = makeCapybara(); flyer.root.visible = false; scene.add(flyer.root);
   const tmpC = new THREE.PerspectiveCamera(55, W / H, 0.05, 30000);
-  const PASSES = [[0.4, 3.4, 17.448, [55, 20, 12], 70, 2.6], [12.9, 14.0, 12.9, [34, -14, 9], 26, 5.5], [21.2, 22.0, 21.2, [36, 9.5, 4.5], 24, 6.0],
+  const PASSES = [[0.4, 3.4, 24.048, [55, 15, 6], 70, 2.6], [12.9, 14.0, 12.9, [34, -14, 9], 26, 5.5], [21.2, 22.0, 21.2, [36, 9.5, 4.5], 24, 6.0],
     [28.4, 29.3, 28.4, [55, 14, 11], 30, 5.0], [38.2, 39.6, 38.2, [40, 14, 7], 26, 5.5]].map(([t0, t1, s0, [f, rt, u], v, spin]) => {
     povCam(tmpC, t0); const fwd = new THREE.Vector3(); tmpC.getWorldDirection(fwd);
     const right = new THREE.Vector3().crossVectors(fwd, V(0, 1, 0)).normalize(), up = new THREE.Vector3().crossVectors(right, fwd).normalize();
@@ -192,7 +191,7 @@ export async function create() {
   }
 
   function frame(t) {
-    const story = t < T.HOOK ? 17.4 + t * 0.12 : t;              // the hook: slow motion in the blast
+    const story = t < T.HOOK ? 24.0 + t * 0.12 : t;              // the hook: slow motion, the bridge twisting in the blast
     const U = R.grade.uniforms;
     U.uTime.value = t; U.uFade.value = 0; U.uFadeWhite.value = 0; U.uScan.value = 0; U.uTint.value.set(1, 1, 1); U.uShake.value.set(0, 0);
     U.uSat.value = 1.05; U.uContrast.value = 1.05; U.uVignette.value = 0.32; U.uAberr.value = 0.0006; U.uGrain.value = 0;
@@ -251,7 +250,6 @@ export async function create() {
       fish.forEach((f, i) => { const [x, z] = fishAt[i], gy = groundY(x, z), show = S7.uLevel.value < gy - 0.05 && story < T.HIT;
         f.visible = show; const ud = f.userData, fl = Math.max(0, Math.sin(story * ud.f + ud.ph)) ** 3;
         f.position.set(x, gy + 0.04 + 0.12 * fl, z); f.rotation.set(0, ud.yaw, Math.PI / 2 - 0.4 * fl); });
-      capy.update(story, { blinkAt: [5.1, 9.2, 39.0, 43.5, 57.2], look: cam.position, lookK: smooth(57.6, 58.8, story), blow: wind ? V(BV.x, 0.15, BV.z).multiplyScalar(2.6) : V(0, 0, 0) });
       apple.update(t, { look: cam.position, blinkAt: [6.4], earAt: [7.6], pr: R.SSAA });
       const PS = PASSES.find((p) => t >= p.t0 && t < p.t1); flyer.root.visible = !!PS;
       if (PS) { const ds = story - PS.s0; flyer.root.position.copy(PS.p0).addScaledVector(PS.v, ds); flyer.root.rotation.set(ds * PS.spin * 0.7, ds * PS.spin, ds * PS.spin * 0.4);

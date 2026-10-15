@@ -170,7 +170,7 @@ export async function create() {
   }
   // far wreckage over the Presidio, crossing the bridge view: whole houses and trees torn out of the hills
   const FWN = 80, fwH = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), HO.group.children[0].material, FWN),
-    fwT = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshStandardMaterial({ color: '#2f3d24', roughness: 0.95, flatShading: true }), FWN);
+    fwT = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshStandardMaterial({ color: '#4d5c33', roughness: 0.95, flatShading: true }), FWN);
   fwH.frustumCulled = fwT.frustumCulled = false; scene.add(fwH, fwT);
   const fwP = [];
   for (let i = 0; i < FWN; i++) {
@@ -186,7 +186,7 @@ export async function create() {
       _je.set(o.r[0] + o.w[0] * k, o.r[1] + o.w[1] * k, o.r[2] + o.w[2] * k); _jq.setFromEuler(_je);
       const hs = on && o.house ? o.sz : 0, ts = on && !o.house ? o.sz : 0;
       _jm.compose(_jp, _jq, V(13 * hs, 9 * hs, 12 * hs)); fwH.setMatrixAt(i, _jm);
-      _jm.compose(_jp, _jq, V(6 * ts, 5 * ts, 6 * ts)); fwT.setMatrixAt(i, _jm);
+      _jm.compose(_jp, _jq, V(7 * ts, 4 * ts, 5 * ts)); fwT.setMatrixAt(i, _jm);
     }
     fwH.instanceMatrix.needsUpdate = fwT.instanceMatrix.needsUpdate = true; fwH.visible = fwT.visible = story >= T.ZERO && story < T.BACK;
   }

@@ -77,6 +77,17 @@ export async function create() {
   const kite = makeKite(); scene.add(kite);
   // ---- the capybara (rule 19's WTF) and Apple on a rock in the swash (calm part only) ----
   const capy = makeCapybara(); capy.root.position.set(CAPY.x, groundY(CAPY.x, CAPY.z), CAPY.z); capy.root.rotation.y = 2.836; scene.add(capy.root);
+  // the same capybara (orange and all) flying past in the storm, small and quick, five times: 0:01 (far, in the slow-motion
+  // hook), 0:13, 0:21 (in front of the bridge), 0:28 and 0:38 (behind the one still sitting there). Each pass starts and
+  // ends outside the frame and never comes closer than ~15 m.
+  const flyer = makeCapybara(); flyer.root.visible = false; scene.add(flyer.root);
+  const tmpC = new THREE.PerspectiveCamera(55, W / H, 0.05, 30000);
+  const PASSES = [[0.4, 3.4, 17.448, [55, 20, 12], 70, 2.6], [12.9, 14.0, 12.9, [34, -14, 9], 26, 5.5], [21.2, 22.0, 21.2, [36, 9.5, 4.5], 24, 6.0],
+    [28.4, 29.3, 28.4, [55, 14, 11], 30, 5.0], [38.2, 39.6, 38.2, [40, 14, 7], 26, 5.5]].map(([t0, t1, s0, [f, rt, u], v, spin]) => {
+    povCam(tmpC, t0); const fwd = new THREE.Vector3(); tmpC.getWorldDirection(fwd);
+    const right = new THREE.Vector3().crossVectors(fwd, V(0, 1, 0)).normalize(), up = new THREE.Vector3().crossVectors(right, fwd).normalize();
+    return { t0, t1, s0, p0: tmpC.position.clone().addScaledVector(fwd, f).addScaledVector(right, rt).addScaledVector(up, u), v: BV.clone().multiplyScalar(v).add(V(0, -1.2, 0)), spin };
+  });
   const apple = makeCat(); apple.root.position.set(1.0, groundY(1.0, -26.0) - 0.28 + 1.1 * 0.72, -26.0); apple.root.rotation.y = -2.2; scene.add(apple.root);
   // ---- you (first person): a new person (rule 16), head hidden, arms by IK; people far along the beach ----
   const me = await loadAvatar('Male_Adult_03', { env }); scene.add(me.root);
@@ -242,6 +253,9 @@ export async function create() {
         f.position.set(x, gy + 0.04 + 0.12 * fl, z); f.rotation.set(0, ud.yaw, Math.PI / 2 - 0.4 * fl); });
       capy.update(story, { blinkAt: [5.1, 9.2, 39.0, 43.5, 57.2], look: cam.position, lookK: smooth(57.6, 58.8, story), blow: wind ? V(BV.x, 0.15, BV.z).multiplyScalar(2.6) : V(0, 0, 0) });
       apple.update(t, { look: cam.position, blinkAt: [6.4], earAt: [7.6], pr: R.SSAA });
+      const PS = PASSES.find((p) => t >= p.t0 && t < p.t1); flyer.root.visible = !!PS;
+      if (PS) { const ds = story - PS.s0; flyer.root.position.copy(PS.p0).addScaledVector(PS.v, ds); flyer.root.rotation.set(ds * PS.spin * 0.7, ds * PS.spin, ds * PS.spin * 0.4);
+        flyer.update(story, { blow: PS.v.clone().normalize().multiplyScalar(-2.5) }); }
       // ---- the wave ----
       const wOn = story > T.EARLIER - 0.5;
       wave.mesh.visible = wspray.mesh.visible = wOn;

@@ -214,7 +214,7 @@ export async function create() {
     me.root.position.add(want.sub(wp(B.Head))); me.root.updateMatrixWorld(true);
     const right = new THREE.Vector3().crossVectors(f, V(0, 1, 0)).normalize(), gy = groundY(LOG.x, LOG.z);
     const raise = Math.max(smooth(58.4, 59.2, t), smooth(11.05, 11.35, t) * (1 - smooth(12.2, 12.7, t)));   // shielding: the gust, the wave
-    const grip = smooth(12.6, 13.1, t) * (1 - smooth(16.0, 16.6, t));                                     // hands on the log
+    const grip = 0;   // (looking away from the log: hands stay down, out of sight)                                     // hands on the log
     for (const [side, s] of [['Left', -1], ['Right', 1]]) {
       const sh = wp(B[side + 'Arm']);
       let hand = sh.clone().addScaledVector(V(0, 1, 0), -0.56).addScaledVector(f, 0.06).addScaledVector(right, s * 0.05), pole = sh.clone().addScaledVector(f, -0.4).addScaledVector(right, s * 0.2), F = V(0, -1, 0).addScaledVector(f, 0.2).normalize(), N = right.clone().multiplyScalar(-s), curl = 0.35;
@@ -276,13 +276,13 @@ export async function create() {
       S7.uFlow.value = smooth(T.BACK + 0.3, T.BACK + 1.5, story) * (1 - smooth(46, 48, story));
       // ---- fog, dust, light ----
       const dustK = story < T.ZERO ? 0 : wind ? smooth(T.ZERO, T.ZERO + 1.5, story) : 1 - after;
-      S7.uFogC.value.set('#d8b89a').lerp(new THREE.Color('#b59b7c'), dustK); S7.uFogD.value = (story > T.EARLIER ? 0.00011 : 0.00018) + 0.00007 * dustK;
+      S7.uFogC.value.set('#d8b89a').lerp(new THREE.Color('#b59b7c'), dustK); S7.uFogD.value = (story > T.EARLIER ? 0.00011 : wind ? 0.0001 : 0.00018) + 0.00005 * dustK;
       scene.fog.color.copy(S7.uFogC.value); scene.fog.density = S7.uFogD.value;
       const dark = smooth(T.EARLIER + 0.2, T.EARLIER + 2.2, story);   // the wave swallows the low sun
       sun.intensity = 3.0 * (1 - 0.35 * dustK) * (1 - 0.85 * dark); hemi.intensity = 0.75 * (1 - 0.15 * dustK) * (1 - 0.3 * dark);
       S7.uFogC.value.lerp(new THREE.Color('#7d848c'), 0.7 * dark); scene.fog.color.copy(S7.uFogC.value);
       for (let i = 0; i < DCN; i++) {
-        const [ph, z0, y0, sz, v, sd] = dustP[i], L = 140, k = (((story - T.ZERO) * v / L + ph) % 1 + 1) % 1, a = Math.sin(Math.PI * k) * 0.36 * dustK;
+        const [ph, z0, y0, sz, v, sd] = dustP[i], L = 140, k = (((story - T.ZERO) * v / L + ph) % 1 + 1) % 1, a = Math.sin(Math.PI * k) * 0.2 * dustK;
         if (!wind && after >= 1) { dust.hide(i); continue; }
         const along = -80 + k * L;
         dust.set(i, KNEEL.x + BV.x * along, y0 + groundY(KNEEL.x, KNEEL.z), KNEEL.z + z0 + BV.z * along, sz, sz * 0.7, 1, 1, 1, a, sd * 6.28 + k, Math.floor(sd * 4));
@@ -337,7 +337,7 @@ export async function create() {
       setShadow(V(cam.position.x, 0, cam.position.z).addScaledVector(V(Math.sin(0.6), 0, Math.cos(0.6)), 8), 40);
       const exp0 = 0.78;
       R.renderer.toneMappingExposure = exp0; R.bloom.strength = 0.42; R.bloom.radius = 0.6; R.bloom.threshold = 0.95 / exp0;
-      U.uSat.value = 1.05 - 0.12 * dustK; U.uTint.value.set(1 + 0.03 * dustK, 1, 1 - 0.05 * dustK);
+      U.uSat.value = 1.05 - 0.06 * dustK; U.uTint.value.set(1 + 0.015 * dustK, 1, 1 - 0.025 * dustK);
       if (t >= T.HIT) U.uFade.value = 1;
     }
     R.renderPass.scene = rscene; R.renderPass.camera = rcam;

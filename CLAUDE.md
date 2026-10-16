@@ -277,5 +277,9 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
 - Very bright lights on glossy wet surfaces push specular peaks past half-float range (Inf, then NaN that UnrealBloom smears
   into a black rectangle): ep14 caps every built-in material's output (`ShaderChunk.opaque_fragment`, min 20000) and raises the
   wet ground's minimum roughness while the fireball's light is on. A camera inside an additive halo sphere washes the frame.
+- Voiceover (from post 8): `studio/tools/vo.py <lines.json> <voice.onnx> <out.wav>` synthesises each line with Piper (offline neural
+  TTS, `pip install piper-tts`; voices from huggingface.co/rhasspy/piper-voices), fits it in its caption window, deepens it 5 %;
+  the WAV is committed (`studio/audio/vo/`) so the PC needs no TTS; the episode's audio script ducks the music under it.
+  Voice: en_US-norman-medium (public-domain LibriVox data). Never ryan (CC BY-NC-SA: non-commercial).
 - Parallel render workers used to pick a random port and could collide (EADDRINUSE killed one silently): `render.mjs`
   now listens on a free port. Billboard smoke seen from above reads as white blobs: fade it out when the camera rises.

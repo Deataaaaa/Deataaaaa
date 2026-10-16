@@ -285,7 +285,7 @@ export async function create() {
     U.uSat.value = 1.08; U.uContrast.value = 1.06; U.uVignette.value = 0.34; U.uAberr.value = 0.0012; U.uGrain.value = 0;
     U.uWarp.value = 0; U.uHeatA.value = 0; U.uBarrel.value = 0;
     // the physical clock: the hook flashes forward to ~4-6 ms; the rewind returns to the instant it appeared
-    const phys = t < T.HOOK ? 1.6e-3 * (1 + 0.24 * t) : t >= T.REWIND ? 1e-15 : clock(t);   // (the nanoseconds' ball size follows its own curve: eventState)
+    const phys = t < T.HOOK ? 0.8e-3 * (1 + 0.15 * t) : t >= T.REWIND ? 1e-15 : clock(t);   // (the nanoseconds' ball size follows its own curve: eventState)
     const story = t < T.HOOK ? T.APPEAR : t >= T.REWIND ? T.APPEAR : Math.min(t, T.APPEAR);
     TQ.uScrT.value = story; TQ.uTime.value = t;
     let rscene = scene, rc = cam;
@@ -356,7 +356,7 @@ export async function create() {
       // the plush: on the rooftop shot it tumbles past the lens out of the blast, intact (31.0-32.6 s)
       const pk = (t - 32.0) / 1.6; plush.root.visible = t >= T.MILLI && pk > 0 && pk < 1;
       if (plush.root.visible) { const c0 = cam.position, f = V(0, 0, -1).applyQuaternion(cam.quaternion), r = V(1, 0, 0).applyQuaternion(cam.quaternion), up = V(0, 1, 0).applyQuaternion(cam.quaternion);
-        plush.root.position.copy(c0).addScaledVector(f, 2.2 - 0.6 * pk).addScaledVector(r, -1.6 + 3.4 * pk).addScaledVector(up, -0.5 + 0.9 * pk - 0.6 * pk * pk); plush.root.rotation.set(pk * 4.2, pk * 2.4, pk * 1.6); }
+        plush.root.position.copy(c0).addScaledVector(f, 2.2 - 0.6 * pk).addScaledVector(r, -1.6 + 3.4 * pk).addScaledVector(up, -0.5 + 0.9 * pk - 0.6 * pk * pk); plush.root.lookAt(c0); plush.root.rotateY(0.5 * Math.sin(pk * 5)); plush.root.rotateZ(pk * 2.2); plush.root.rotateX(0.3 * Math.sin(pk * 7)); }
       plushL.visible = plush.root.visible; if (plushL.visible) plushL.position.copy(plush.root.position).lerp(cam.position, 0.45);
       // grade and exposure: night, then the light of the ball (exposure falls as it grows so nothing burns out)
       const Rnow = FB.U.uR.value, burn = phys > 0 && t < T.REWIND && FB.mesh.visible ? smooth(0.05, 1.7, Rnow) : 0, big = t >= T.MILLI || t < T.HOOK ? 1 : 0;

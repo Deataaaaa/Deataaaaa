@@ -37,11 +37,11 @@ export const bead = new CamPath([
 // the atoms (12.4-18.4 s, a separate scene in angstroms, engine/micro.js): close on an air molecule falling onto the
 // crystal, the contact at 14.4 s, then pulling back as the chain spreads over the surface
 export const atomsCam = new CamPath([
-  [12.4, V(2.2, 5.6, 7.0), V(0.4, 7.4, 0.2), 34],
-  [13.6, V(1.7, 3.8, 5.6), V(0.4, 4.4, 0.2), 32],
-  [14.4, V(1.4, 2.2, 5.0), V(0.4, 1.3, 0.2), 32],
-  [16.4, V(4.5, 6.5, 14), V(0, 0.4, 0), 40],
-  [18.4, V(9, 15, 30), V(0, 0, 0), 46],
+  [12.4, V(2.0, 4.2, 6.6), V(0.4, 3.6, 0.2), 36],
+  [13.6, V(1.8, 3.6, 6.0), V(0.4, 2.4, 0.2), 34],
+  [14.4, V(1.7, 3.2, 5.7), V(0.4, 1.5, 0.2), 33],
+  [16.4, V(3.2, 4.8, 10.5), V(0.2, 0.7, 0), 38],
+  [18.4, V(6.5, 10.5, 22), V(0, 0, 0), 44],
 ], { easeIn: false, easeOut: false, arc: true });
 // the plasma ball (18.4-23 s): back at street scale, a slow arc round to your side as it swells
 export const nano = new CamPath([

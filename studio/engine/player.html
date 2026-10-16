@@ -38,10 +38,11 @@
   #end .t { width: 860px; text-align: center; font-size: 92px; line-height: 1.02; }
   #end .n .q { display: block; font: italic 400 58px 'Instrument Serif', serif; letter-spacing: 0; text-transform: none; color: var(--ink); line-height: 1.1; }
   /* rule 23: Inter with tabular figures, sized by --k (1 = big at the start, hudK() in core.js shrinks it before the event) */
-  .cine #hud { --k: 1; }
+  .cine #hud { --k: 1; text-shadow: 0 1px 2px rgba(0,0,0,.7), 0 0 10px rgba(0,0,0,.55), 0 1px 26px rgba(0,0,0,.45); }   /* small text stays legible on bright scenes */
   .cine #hud .lab { font: 600 calc(18px * (0.55 + 0.45 * var(--k))) 'Inter', sans-serif; letter-spacing: .14em; }
   .cine #hud .val { font: 500 calc(64px * var(--k)) 'Inter', sans-serif; letter-spacing: -.01em; margin-top: calc(4px * var(--k)); font-variant-numeric: tabular-nums; }
   .cine #hud .sub, .cine #hud .sub2 { font: 500 calc(16px * (0.55 + 0.45 * var(--k))) 'Inter', sans-serif; letter-spacing: .1em; margin-top: calc(8px * var(--k)); }
+  .cine #hud .lab, .cine #hud .sub { color: rgba(246,242,234,.88); }
   .cine #cap { font-size: 54px; }
   #end .n { margin-top: 46px; width: 760px; text-align: center; font: 400 19px 'JetBrains Mono', monospace; letter-spacing: .2em; color: rgba(246,242,234,.55); line-height: 1.7; text-transform: uppercase; }
 </style>

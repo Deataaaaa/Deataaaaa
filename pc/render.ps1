@@ -181,7 +181,8 @@ try {
   else { Done 'OK' ($name + '_phone.mp4  ' + (Size (Get-Item -LiteralPath $phone).Length) + $lufs) }
   $fl = @($script:LastOut | Where-Object { $_ -match 'FLICKER CHECK' }) | Select-Object -First 1
   Stage '   ' 'Flicker check'
-  if (-not $fl) { Done 'SKIP' 'no result' } elseif ($fl -match 'OK') { Done 'OK' 'no flicker' } else { Done 'WARN' (($fl -replace '^.*FLICKER CHECK:\s*', '') + ': send me the log'); $warn += 'flicker' }
+  $secs = @(Get-Content -LiteralPath (Join-Path $repo ('videos\' + $name + '_flicker.txt')) -ErrorAction SilentlyContinue | Where-Object { $_ -match '<--' } | ForEach-Object { Log $_; ($_.Trim() -split '\s+')[0] + ' s' })
+  if (-not $fl) { Done 'SKIP' 'no result' } elseif ($fl -match 'OK') { Done 'OK' 'no flicker' } else { Done 'WARN' ('at ' + ($secs -join ', ') + ': send me the log'); $warn += 'flicker' }
 
   # 8. contact sheet (1 frame per second, for the review), then the frames go (about 1 GB)
   Stage '8/8' 'Contact sheet'

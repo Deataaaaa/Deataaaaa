@@ -213,3 +213,19 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
 | Tallest wave ever: 524 m, Alaska, 1958 | 9 July 1958 | Lituya Bay megatsunami: run-up of 524 m (1,720 ft) after a rockslide (USGS) |
 | "This one is bigger." | scene | The wave on screen is 440 m tall when it appears and about 770 m when it reaches you (`heightAt` × the along-shore wobble in `engine/sf7.js`): over 524 m from 56 s on, when the caption shows. Fiction, no number on screen |
 | Baker Beach, 6:31 pm | golden hour | sunset in San Francisco mid-October ≈ 6:35 pm PDT (NOAA solar calculator) |
+
+## EP14 (post 8) — What if 1 gram of antimatter appeared in front of you?
+
+| On screen | Value | Source / calculation |
+|---|---|---|
+| Up to 3,000 people cross at once | ~3,000 per green light | Commonly cited for Shibuya Scramble Crossing (Japan National Tourism Organization, city guides): "up to 3,000 people at a time" |
+| 1 gram of antimatter (+ 1 g of air) → 1.8 × 10¹⁴ J | 1.798 × 10¹⁴ J | E = mc² with m = 2 g (the antimatter and the same mass of matter it annihilates): 0.002 × (2.998e8)² |
+| 43 kilotons of TNT | 42.97 kt | 1.798e14 J / 4.184e12 J per kiloton |
+| 3 times Hiroshima / "Hiroshima, 1945: 15 kilotons" | 15 kt | Little Boy yield ~15 kt (US DOE / Los Alamos); 43 / 15 = 2.9 |
+| From 4 km away, at Tokyo Tower | 4.07 km | Shibuya Crossing (35.6595 N, 139.7005 E) to Tokyo Tower (35.6586 N, 139.7454 E): Δlon 0.0449° × 90.6 km/° = 4.07 km |
+| Zoomed in a billion times | ~10⁹ | Street frame ~1 m tall → atomic frame ~1 nm tall |
+| Air molecule meets anti-aluminium | – | The bead: 1 g of anti-aluminium (density 2.70 g/cm³ → 0.37 cm³, a 4.5 mm radius sphere); air = N₂ (bond 1.10 Å) and O₂ (1.21 Å); Al fcc lattice a = 4.05 Å |
+| One gram: a paperclip's weight | ~1 g | A standard small paperclip weighs about 1 g |
+| All the antimatter ever made: < 10 ng | < 10 nanograms | CERN: the total antimatter produced in its history is less than 10 nanograms (CERN, "Angels and Demons" FAQ) |
+| Cost of 1 gram: $62.5 trillion (NASA estimate, 1999) | $62.5 × 10¹² | NASA (1999): producing 1 g of antihydrogen would cost about $62.5 trillion |
+| Time since it appeared (femto/pico/nano/micro/milliseconds, s) | – | Story clock; fireball radius from Sedov-Taylor R = 1.03 (E t²/ρ)^(1/5) in the millisecond shot (40 m at ~0.7 ms, 170 m at 30 ms); the nanosecond ball size is art-directed (radiation-dominated phase) |

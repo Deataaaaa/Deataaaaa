@@ -251,8 +251,8 @@ export async function create() {
     const kn = clamp((t - T.MACRO) / (T.MILLI - T.MACRO)), nanoR = t < T.MACRO ? 0.004 : 0.06 + 1.64 * Math.pow(kn, 1.4);
     const Rs = on ? (t >= T.APPEAR && t < T.MILLI ? nanoR * 1.03 : shockR(ph)) : 0, Rf = Math.max(0.0046, Rs * (ph < 1e-3 ? 0.97 : 0.97 - 0.32 * smooth(1e-3, 2e-2, ph)));
     bead.group.visible = on && Rf < 0.0052; bead.group.rotation.set(t * 0.4, t * 0.7, 0);
-    FB.mesh.visible = on && Rf > 0.0046; FB.U.uR.value = Rf; FB.U.uTime.value = t * 0.25; FB.U.uHeat.value = 1.0 - 0.18 * smooth(1e-4, 3e-2, ph);
-    FB.U.uRough.value = 0.05 + 0.1 * smooth(1e-10, 1e-6, ph); FB.U.uSmoke.value = 0; FB.U.uSquash.value = 1; FB.U.uViolet.value = 1 - smooth(1e-6, 3e-4, ph); FB.U.uSoot.value = smooth(3e-4, 1e-2, ph); FB.U.uGain.value = t >= T.MILLI || t < T.HOOK ? 0.5 : 0.85;
+    FB.mesh.visible = on && Rf > 0.0046; FB.U.uR.value = Rf; FB.U.uTime.value = t * 0.25; FB.U.uHeat.value = t >= T.MILLI || t < T.HOOK ? 0.86 - 0.22 * smooth(1e-4, 2e-2, ph) : 1.0;
+    FB.U.uRough.value = 0.05 + 0.04 * smooth(1e-10, 1e-6, ph); FB.U.uSmoke.value = 0; FB.U.uSquash.value = 1; FB.U.uViolet.value = 1 - smooth(1e-6, 3e-4, ph); FB.U.uSoot.value = 0.8 * smooth(1e-4, 6e-3, ph); FB.U.uGain.value = t >= T.MILLI || t < T.HOOK ? 0.5 : 0.85;
     FB.mesh.position.copy(BEAD).setY(Math.max(BEAD.y, Rf * 0.25 + BEAD.y * (1 - smooth(0.5, 3, Rf))));
     HL.mesh.visible = false; HL.mesh.position.copy(FB.mesh.position); HL.U.uR.value = Math.max(0.012, Rf * (2.6 - 1.2 * smooth(1e-6, 1e-3, ph))); HL.U.uI.value = 0.3 * (1 - smooth(3e-3, 2e-2, ph));
     SK.mesh.visible = on && ph > 2e-6; SK.mesh.position.copy(BEAD).setY(0); SK.U.uR.value = Rs * 1.05; SK.U.uA.value = 0.55 * smooth(2e-6, 2e-5, ph); SK.U.uTime.value = t;
@@ -292,7 +292,7 @@ export async function create() {
       // ---------------- the atoms: the first femtoseconds at the bead's surface ----------------
       rscene = MIC.scene; rc = MIC.cam;
       atomsCam.apply(MIC.cam, t); MIC.update(t);
-      R.renderer.toneMappingExposure = 0.7; R.bloom.strength = 0.5; R.bloom.radius = 0.5; R.bloom.threshold = 0.95 / 0.7;
+      R.renderer.toneMappingExposure = 0.55; R.bloom.strength = 0.55; R.bloom.radius = 0.5; R.bloom.threshold = 0.95 / 0.55;
       U.uSat.value = 1.12; U.uVignette.value = 0.42;
       U.uFadeWhite.value = 0.8 * Math.exp(-(t - T.MICRO) * 6) + smooth(17.85, 18.4, t);
       const hit = t - T.HIT; if (hit > 0 && hit < 0.8) { const k = Math.exp(-hit * 5) * Math.sin(hit * 50); U.uShake.value.set(0.003 * k, 0.002 * k); }
@@ -318,11 +318,11 @@ export async function create() {
       TK.mesh.visible = tower.root.visible = towerLights.visible = cityGround.visible = cityLights.points.visible = true; SBY.group.visible = false; cityLights.update(t, cam, R.SSAA);
       TQ.uPower.value = 1; SB.U.uShock.value = 1e9;
       const p = phys, Rmax = 315, Rb = Math.min(Rmax, shockR(p) * 0.65 + 40), rise = Math.max(0, p - 1.5) * 75, cy = Rb * 0.9 + rise;
-      FB.mesh.visible = true; HL.mesh.visible = false; SK.mesh.visible = p < 12; bead.group.visible = false;
-      FB.mesh.position.set(BEAD.x, cy, BEAD.z); FB.U.uR.value = Rb; FB.U.uTime.value = t * 0.3; FB.U.uRough.value = 0.16 + 0.08 * smooth(2, 20, p);
-      FB.U.uHeat.value = 0.92 - 0.55 * smooth(0.3, 25, p); FB.U.uSmoke.value = smooth(4, 40, p); FB.U.uSquash.value = 1 - 0.3 * smooth(5, 40, p);
+      FB.mesh.visible = true; HL.mesh.visible = false; SK.mesh.visible = p < 3; bead.group.visible = false;
+      FB.mesh.position.set(BEAD.x, cy, BEAD.z); FB.U.uR.value = Rb; FB.U.uTime.value = t * 0.3; FB.U.uRough.value = 0.09 + 0.08 * smooth(2, 20, p);
+      FB.U.uHeat.value = 0.78 - 0.45 * smooth(0.3, 12, p); FB.U.uSmoke.value = smooth(4, 40, p); FB.U.uGain.value = 0.6; FB.U.uSoot.value = 0.7; FB.U.uViolet.value = 0; FB.U.uSquash.value = 1 - 0.3 * smooth(5, 40, p);
       const Rsk = p < 1 ? shockR(p) : 685 + 340 * (p - 1);
-      SK.mesh.position.set(BEAD.x, 0, BEAD.z); SK.U.uR.value = Rsk; SK.U.uA.value = 0.5 * (1 - smooth(6, 12, p));
+      SK.mesh.position.set(BEAD.x, 0, BEAD.z); SK.U.uR.value = Rsk; SK.U.uA.value = 0.35 * (1 - smooth(0.5, 3, p));
       fbL.visible = true; fbL.castShadow = false; fbL.position.copy(FB.mesh.position); fbL.color.set('#ffb36e'); fbL.intensity = 4e8 * (1 - 0.7 * smooth(1, 30, p)); fbL.distance = 0;
       // the stem and the cap
       for (let i = 0; i < MN + CN; i++) { const [a, b, c, sd] = mushP[i];

@@ -94,8 +94,8 @@ export function makeShock() {
     fragmentShader: `${SIMPLEX}
       uniform float uA, uTime; uniform vec3 uCol; varying vec3 vN; varying vec3 vW;
       void main(){ vec3 V = normalize(cameraPosition - vW); float mu = abs(dot(normalize(vN), V));
-        float rim = pow(1.0 - mu, 6.0), mott = 0.6 + 0.4 * fbm3(vN * 6.0 + uTime * 0.1, 3);
-        float a = uA * (0.06 * mott + 0.9 * rim) * smoothstep(-2.0, 2.0, vW.y);
+        float rim = pow(1.0 - mu, 3.0), mott = 0.6 + 0.4 * fbm3(vN * 6.0 + uTime * 0.1, 3);
+        float a = uA * (0.08 * mott + 0.5 * rim) * smoothstep(-2.0, 2.0, vW.y);
         gl_FragColor = vec4(uCol, clamp(a, 0.0, 1.0));
         #include <tonemapping_fragment>
         #include <colorspace_fragment>

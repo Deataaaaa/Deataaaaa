@@ -212,3 +212,44 @@ export function stand(av, o) {
   const low = lowestY(av);
   av.root.position.y += (ground + 0.004) - low; av.root.updateMatrixWorld(true);
 }
+
+// a walking stride, rebuilt from rest each frame (a pure function of the phase): o.pos = the body's ground point now,
+// o.yaw, o.phase in cycles (one cycle = two steps; the caller advances it as distance / (2 * stride)), o.stride (m per step).
+// Feet: planted for the first half of their cycle (sliding back under the body), swung forward with a lift for the
+// second half; hips bob, the pelvis twists against the shoulders, the arms swing opposite to the legs
+export function walk(av, o) {
+  const B = av.bones, s = o.stride ?? 0.68, ph = o.phase, TAU = Math.PI * 2;
+  resetPose(av);
+  av.root.position.copy(o.pos); av.root.position.y += -0.018 + 0.018 * Math.cos(2 * TAU * ph) * -1 * 0.6; av.root.rotation.set(0, o.yaw || 0, 0); av.root.updateMatrixWorld(true);
+  const { fwd, left, up } = bodyFrame(av);
+  rotW(B.Hips, up, 0.07 * Math.sin(TAU * ph)); rotW(B.Spine1, up, -0.05 * Math.sin(TAU * ph)); rotW(B.Spine2, up, -0.05 * Math.sin(TAU * ph));
+  rotW(B.Spine, left, 0.04);                                                     // a slight forward lean
+  const P = o.pos.clone(), gy = o.pos.y;
+  for (const [side, sd, off] of [['Left', 1, 0], ['Right', -1, 0.5]]) {
+    const u = ((ph + off) % 1 + 1) % 1;
+    let along, lift = 0;
+    if (u < 0.5) along = s / 2 - s * (u / 0.5);                                    // stance: planted, the body passes over it
+    else { const w = (u - 0.5) / 0.5, e = w * w * (3 - 2 * w); along = -s / 2 + s * e; lift = 0.09 * Math.sin(Math.PI * w); }
+    const foot = P.clone().addScaledVector(left, sd * 0.1).addScaledVector(fwd, along); foot.y = gy + 0.085 + lift;
+    const pole = wp(B[side + 'UpLeg']).addScaledVector(fwd, 1.0).addScaledVector(up, -0.4);
+    twoBoneIK(av, side + 'UpLeg', side + 'Leg', side + 'Foot', foot, pole);
+    if (B[side + 'ToeBase']) { const toe = foot.clone().addScaledVector(fwd, 0.15); toe.y = gy + 0.02 + lift * (u < 0.5 ? 0 : 0.6); aimBone(B[side + 'Foot'], wp(B[side + 'ToeBase']), toe); }
+  }
+  for (const [side, sd, off] of [['Left', 1, 0.5], ['Right', -1, 0]]) {
+    const sh = wp(B[side + 'Arm']), sw = Math.sin(TAU * (ph + off));
+    const fn = side === 'Left' ? o.armL : o.armR;
+    const def = { hand: sh.clone().addScaledVector(up, -0.55).addScaledVector(left, sd * 0.1).addScaledVector(fwd, 0.05 + 0.17 * sw), pole: sh.clone().addScaledVector(up, -0.3).addScaledVector(fwd, -0.6).addScaledVector(left, sd * 0.25) };
+    const a = fn ? fn(sh, fwd, left, up) : def;
+    twoBoneIK(av, side + 'Arm', side + 'ForeArm', side + 'Hand', a.hand, a.pole);
+    if (a.F && a.N) orientHand(av, side, a.F, a.N);
+    curlFingers(av, side, a.curl ?? 0.4, 0.15);
+  }
+  if (o.look) lookAt(av, o.look, o.lookK ?? 0.6);
+}
+// a posable copy of an avatar (skeleton clone sharing meshes and textures) with its own bone map
+export function cloneAvatar(av, skClone) {
+  const root = skClone(av.root), byName = {};
+  root.traverse((o) => { if (o.isBone) byName[o.name] = o; });
+  const bones = {}; for (const [k, b] of Object.entries(av.bones)) bones[k] = byName[b.name];
+  return { root, bones, rest: av.rest };
+}

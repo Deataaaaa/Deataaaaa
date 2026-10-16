@@ -1,2 +1,3 @@
 Anton, Archivo Black and Inter are under the SIL Open Font License 1.1 (Google Fonts); free to bundle and redistribute.
 Used for the invented adverts on the Times Square screens (post 6).
+Noto Sans JP (subset of the sign words, weight 800) is under the SIL Open Font License 1.1 (Google Fonts); used for the neon signs in Shibuya (post 8).

@@ -14,7 +14,7 @@ const RAMP = /* glsl */`
   vec3 tramp(float k){                                   // temperature ramp, 0 = cold smoke, 1 = hottest (violet-white)
     vec3 c = mix(vec3(0.03, 0.02, 0.02), vec3(0.45, 0.06, 0.02), smoothstep(0.05, 0.25, k));
     c = mix(c, vec3(1.0, 0.36, 0.06), smoothstep(0.2, 0.42, k));
-    c = mix(c, vec3(1.0, 0.78, 0.4), smoothstep(0.38, 0.6, k));
+    c = mix(c, vec3(1.0, 0.68, 0.22), smoothstep(0.38, 0.6, k));
     c = mix(c, vec3(1.0, 0.97, 0.93), smoothstep(0.55, 0.78, k));
     return mix(c, vec3(0.86, 0.84, 1.0), smoothstep(0.78, 1.0, k)); }`;
 

@@ -251,8 +251,8 @@ export async function create() {
     const kn = clamp((t - T.MACRO) / (T.MILLI - T.MACRO)), nanoR = t < T.MACRO ? 0.004 : 0.06 + 1.64 * Math.pow(kn, 1.4);
     const Rs = on ? (t >= T.APPEAR && t < T.MILLI ? nanoR * 1.03 : shockR(ph)) : 0, Rf = Math.max(0.0046, Rs * (ph < 1e-3 ? 0.97 : 0.97 - 0.32 * smooth(1e-3, 2e-2, ph)));
     bead.group.visible = on && Rf < 0.0052; bead.group.rotation.set(t * 0.4, t * 0.7, 0);
-    FB.mesh.visible = on && Rf > 0.0046; FB.U.uR.value = Rf; FB.U.uTime.value = t * 0.25; FB.U.uHeat.value = t >= T.MILLI || t < T.HOOK ? 0.86 - 0.22 * smooth(1e-4, 2e-2, ph) : 1.0;
-    FB.U.uRough.value = 0.05 + 0.04 * smooth(1e-10, 1e-6, ph); FB.U.uSmoke.value = 0; FB.U.uSquash.value = 1; FB.U.uViolet.value = 1 - smooth(1e-6, 3e-4, ph); FB.U.uSoot.value = 0.8 * smooth(1e-4, 6e-3, ph); FB.U.uGain.value = t >= T.MILLI || t < T.HOOK ? 0.5 : 0.85;
+    FB.mesh.visible = on && Rf > 0.0046; FB.U.uR.value = Rf; FB.U.uTime.value = t * 0.25; FB.U.uHeat.value = t >= T.MILLI || t < T.HOOK ? 0.74 - 0.2 * smooth(1e-4, 2e-2, ph) : 1.0;
+    FB.U.uRough.value = 0.05 + 0.04 * smooth(1e-10, 1e-6, ph); FB.U.uSmoke.value = 0; FB.U.uSquash.value = 1; FB.U.uViolet.value = 1 - smooth(1e-6, 3e-4, ph); FB.U.uSoot.value = 0.55 * smooth(1e-4, 6e-3, ph); FB.U.uGain.value = t >= T.MILLI || t < T.HOOK ? 0.5 : 0.85;
     FB.mesh.position.copy(BEAD).setY(Math.max(BEAD.y, Rf * 0.25 + BEAD.y * (1 - smooth(0.5, 3, Rf))));
     HL.mesh.visible = false; HL.mesh.position.copy(FB.mesh.position); HL.U.uR.value = Math.max(0.012, Rf * (2.6 - 1.2 * smooth(1e-6, 1e-3, ph))); HL.U.uI.value = 0.3 * (1 - smooth(3e-3, 2e-2, ph));
     SK.mesh.visible = on && ph > 2e-6; SK.mesh.position.copy(BEAD).setY(0); SK.U.uR.value = Rs * 1.05; SK.U.uA.value = 0.55 * smooth(2e-6, 2e-5, ph); SK.U.uTime.value = t;

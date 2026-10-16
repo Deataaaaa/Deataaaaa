@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { CamPath } from '../engine/core.js';
 
-export const T = { HOOK: 3.6, APPEAR: 11.0, MILLI: 22.0, CITY: 33.0, SPACE: 43.0, REWIND: 51.0, END: 62.0 };
+export const T = { HOOK: 3.6, APPEAR: 11.0, MICRO: 12.4, HIT: 14.4, MACRO: 18.4, MILLI: 23.0, CITY: 34.0, SPACE: 44.0, REWIND: 50.0, END: 62.0 };
 export const DUR = 68.0;
 export const DIR = new THREE.Vector3(-13, 0, -11).normalize();              // your way: the diagonal to the north-west corner
 export const HERO = new THREE.Vector3(3.8, 0, 3.2);                          // where you are when it appears
@@ -29,34 +29,45 @@ export const glide = new CamPath([
   [11.0, HERO.clone().addScaledVector(DIR, 4.6).setY(1.5).addScaledVector(side, 0.35), HERO.clone().setY(1.45), 38],
 ], { easeIn: false, easeOut: true, arc: true });
 
-// the first nanoseconds (11-22 s): time all but stopped. A macro look at the bead (you behind it, frozen mid-step),
-// pulling back as the plasma grows, then a slow arc round to your side
-export const nano = new CamPath([
+// the bead (11-12.4 s): time all but stopped; a macro look at it, you behind it frozen mid-step, pushing in
+export const bead = new CamPath([
   [11.0, ring(0.0, 0.42, 1.36), BEAD.clone(), 30],
-  [13.6, ring(0.22, 1.3, 1.42), BEAD.clone().lerp(HERO.clone().setY(1.4), 0.25), 34],
-  [17.5, ring(0.95, 2.6, 1.5), BEAD.clone().lerp(HERO.clone().setY(1.35), 0.4), 38],
-  [22.0, ring(1.75, 3.6, 1.65), BEAD.clone().lerp(HERO.clone().setY(1.3), 0.45), 42],
+  [12.4, ring(0.05, 0.3, 1.35), BEAD.clone(), 26],
+], { easeIn: false, easeOut: false, arc: true });
+// the atoms (12.4-18.4 s, a separate scene in angstroms, engine/micro.js): close on an air molecule falling onto the
+// crystal, the contact at 14.4 s, then pulling back as the chain spreads over the surface
+export const atomsCam = new CamPath([
+  [12.4, V(2.4, 3.0, 9.0), V(0.3, 2.4, 0.2), 36],
+  [14.4, V(1.4, 2.0, 5.4), V(0.3, 1.1, 0.2), 32],
+  [16.4, V(4.5, 6.5, 14), V(0, 0.4, 0), 40],
+  [18.4, V(9, 15, 30), V(0, 0, 0), 46],
+], { easeIn: false, easeOut: false, arc: true });
+// the plasma ball (18.4-23 s): back at street scale, a slow arc round to your side as it swells
+export const nano = new CamPath([
+  [18.4, ring(0.45, 1.6, 1.42), BEAD.clone().lerp(HERO.clone().setY(1.4), 0.3), 34],
+  [20.7, ring(0.95, 2.6, 1.5), BEAD.clone().lerp(HERO.clone().setY(1.35), 0.4), 38],
+  [23.0, ring(1.5, 3.7, 1.65), BEAD.clone().lerp(HERO.clone().setY(1.3), 0.45), 42],
 ], { easeIn: false, easeOut: false, arc: true });
 
-// the milliseconds (22-33 s): from 45 m over the north avenue, 114 m away, looking down the canyon at the crossing as the
-// fireball swells and the shock runs out through the buildings; the shock reaches us at ~31.8 s
+// the milliseconds (23-34 s): from 45 m over the north avenue, 114 m away, looking down the canyon at the crossing as the
+// fireball swells and the shock runs out through the buildings; the shock reaches us at ~33.1 s
 export const milli = new CamPath([
-  [22.0, V(1.5, 44, -112), V(1.8, 3, 2), 46],
-  [27.5, V(1.6, 45, -114), V(1.8, 12, 2), 50],
-  [33.0, V(1.7, 46, -116), V(1.8, 34, 2), 56],
+  [23.0, V(1.5, 44, -112), V(1.8, 3, 2), 46],
+  [28.5, V(1.6, 45, -114), V(1.8, 12, 2), 50],
+  [34.0, V(1.7, 46, -116), V(1.8, 34, 2), 56],
 ], { easeIn: false, easeOut: false, arc: true });
 
-// the city (33-43 s): from beside Tokyo Tower's top deck, looking west 4 km across the city at the fireball rising
+// the city (34-44 s): from beside Tokyo Tower's top deck, looking west 4 km across the city at the fireball rising
 // into a mushroom cloud; the view tilts up with it
 export const city = new CamPath([
-  [33.0, V(TOWER.x + 90, 240, TOWER.z + 20), V(0, 260, -60), 40],
-  [38.0, V(TOWER.x + 91, 241, TOWER.z + 20), V(0, 1300, -60), 41],
-  [43.0, V(TOWER.x + 92, 242, TOWER.z + 20), V(0, 2700, -60), 42],
+  [34.0, V(TOWER.x + 90, 240, TOWER.z + 20), V(0, 260, -60), 40],
+  [39.0, V(TOWER.x + 91, 241, TOWER.z + 20), V(0, 1300, -60), 41],
+  [44.0, V(TOWER.x + 92, 242, TOWER.z + 20), V(0, 2700, -60), 42],
 ], { easeIn: false, easeOut: false, arc: true });
 
-// the rewind (51-62 s): back to the instant it appeared, everyone frozen: down from above to the bead and your face
+// the rewind (50-62 s): back to the instant it appeared, everyone frozen: down from above to the bead and your face
 export const rewind = new CamPath([
-  [51.0, V(-24, 26, -22), V(2.5, 1, 2.2), 44],
-  [55.5, V(-4.2, 4.0, -4.0), BEAD.clone().lerp(HERO.clone().setY(1.5), 0.5), 40],
+  [50.0, V(-24, 26, -22), V(2.5, 1, 2.2), 44],
+  [54.5, V(-4.2, 4.0, -4.0), BEAD.clone().lerp(HERO.clone().setY(1.5), 0.5), 40],
   [62.0, ring(0.12, 0.9, 1.4), BEAD.clone().lerp(HERO.clone().setY(1.5), 0.3), 32],
 ], { easeIn: false, easeOut: true, arc: true });

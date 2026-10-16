@@ -8,7 +8,7 @@ import numpy as np
 from synth import *
 
 DUR = 68.0
-T = dict(HOOK=3.6, APPEAR=11.0, MILLI=22.0, CITY=33.0, SHOCK=40.7, SPACE=43.0, REWIND=51.0, END=62.0)
+T = dict(HOOK=3.6, APPEAR=11.0, MICRO=12.4, HIT=14.4, MACRO=18.4, MILLI=23.0, CITY=34.0, SHOCK=41.7, SPACE=44.0, REWIND=50.0, END=62.0)
 m = Mix(DUR, seed=14)
 rng = np.random.default_rng(1313)
 def midi(n): return 440.0 * 2 ** ((n - 69) / 12)
@@ -94,6 +94,14 @@ pd = pad([110.0, 164.81, 220.0, 261.63], nd, rng, cutoff=900, attack=2.0, releas
 m.add(N0, pd, gain=0.07, rev=0.6)
 for k in range(8): m.add(N0 + 1.2 + k * 1.2, heartbeat(rng), gain=0.16, rev=0.2)
 m.add(N1 - 1.6, riser(rng, 1.6, 300, 9000, 2.4), gain=0.3, rev=0.3)
+m.add(T['MICRO'] - 0.3, whoosh(rng, 0.6, 300, 4000, 0.6), gain=0.3, rev=0.4)              # the zoom into the atoms
+m.add(T['HIT'], boom(rng, 2.0, 90, 40, 1.0, 1.0, 0.6), gain=0.6, rev=0.5)                   # the first annihilation
+m.add(T['HIT'], metal_hit(rng, 2600, 1.2), gain=0.12, rev=0.6)
+for i in range(46):                                                                       # the chain: zaps ever closer together
+    tz = T['HIT'] + 0.7 + (i / 45) ** 0.62 * (T['MACRO'] - T['HIT'] - 0.9)
+    d = 0.07; tq = tt(d); z = np.sin(2 * np.pi * (3000 - 18000 * tq) * tq) * np.exp(-tq * 50)
+    m.add(tz, norm(z), gain=0.03 + 0.04 * i / 45, pan=rng.uniform(-0.8, 0.8), rev=0.5)
+m.add(T['MACRO'], boom(rng, 3.0, 60, 26, 1.6, 0.8, 0.9), gain=0.75, rev=0.5)
 
 # ---------- the milliseconds (22 -> 33): the roar of the fireball, glass, the shock reaches us at 31.8 ----------
 M0, M1 = T['MILLI'], T['CITY']; md = M1 - M0
@@ -107,8 +115,8 @@ m.add(M0, norm(growl), gain=0.28, rev=0.3)
 for i in range(70):   # glass: bright shatters, denser toward the shock's arrival
     tc = M0 + 4.0 + (md - 4.6) * (i / 70) ** 0.6 + rng.uniform(-0.1, 0.1)
     m.add(tc, metal_hit(rng, rng.uniform(1800, 4200), 0.5), gain=0.025 + 0.03 * i / 70, pan=rng.uniform(-0.8, 0.8), rev=0.5)
-m.add(32.05, boom(rng, 2.5, 60, 24, 1.0, 1.0, 1.0), gain=0.9, rev=0.3)
-m.add(32.05, crunch(rng, 1.2), gain=0.4, rev=0.3)
+m.add(33.05, boom(rng, 2.5, 60, 24, 1.0, 1.0, 1.0), gain=0.9, rev=0.3)
+m.add(33.05, crunch(rng, 1.2), gain=0.4, rev=0.3)
 m.add(M1 - 1.2, riser(rng, 1.2, 300, 8000, 2.0), gain=0.25, rev=0.3)
 
 # ---------- the city (33 -> 43): far rumble, the cloud's roll, the shock arrives at 40.7 ----------

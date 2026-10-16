@@ -107,7 +107,7 @@ export function makeShock() {
 
 // the physical clock: video time -> seconds since the bead appeared, log-linear inside each phase
 export function physClock(T) {
-  const seg = [[T.APPEAR, 1e-15], [T.APPEAR + 1.2, 1e-13], [T.MILLI, 3e-7], [T.CITY, 0.03], [T.SPACE, 60], [T.REWIND, 600]];
+  const seg = [[T.APPEAR, 1e-15], [T.MICRO, 3e-15], [T.MACRO, 1e-13], [T.MILLI, 3e-7], [T.CITY, 0.03], [T.SPACE, 60], [T.REWIND, 600]];
   return (t) => {
     if (t <= T.APPEAR) return 0;
     for (let i = 0; i < seg.length - 1; i++) { const [a, pa] = seg[i], [b, pb] = seg[i + 1]; if (t <= b) { const k = (t - a) / (b - a); return Math.pow(10, Math.log10(pa) + k * (Math.log10(pb) - Math.log10(pa))); } }

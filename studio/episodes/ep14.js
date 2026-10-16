@@ -23,25 +23,26 @@ import { clone as skClone } from 'three/addons/utils/SkeletonUtils.js';
 import { makeCat } from '../engine/cat.js';
 import { makePlush } from '../engine/plush.js';
 import { makeCar } from '../engine/town5.js';
-import { T, DUR, DIR, HERO, BEAD, TOWER, hook, glide, nano, milli, city, rewind } from './ep14cams.js';
+import { makeMicro } from '../engine/micro.js';
+import { T, DUR, DIR, HERO, BEAD, TOWER, hook, glide, bead as beadCam, atomsCam, nano, milli, city, rewind } from './ep14cams.js';
 
 const TITLE = 'What if <span class="k">1 gram of antimatter</span> appeared in front of you?';
 const CAPTIONS = [
   [3.75, 7.0, 'Shibuya Crossing, Tokyo, 9 pm.'],
   [7.1, 10.8, 'Up to 3,000 people cross at once.'],
-  [11.1, 14.6, '1 gram of antimatter appears.'],
-  [14.7, 18.4, 'It touches the air. Time slows down.', { shade: 1 }],
-  [18.5, 21.9, 'Matter + antimatter = pure energy.', { shade: 1 }],
-  [22.2, 25.6, '1.8 × 10¹⁴ joules in a blink.', { shade: 1 }],
-  [25.7, 29.4, '43 kilotons of TNT.', { shade: 1 }],
-  [29.5, 32.8, '3 times Hiroshima.', { shade: 1 }],
-  [33.2, 36.8, 'From 4 km away, at Tokyo Tower.'],
-  [36.9, 42.7, 'The fireball climbs over the city.'],
-  [43.2, 46.6, 'Seen from space.'],
-  [46.7, 50.6, 'One gram. A paperclip’s weight.'],
-  [51.2, 54.9, 'All the antimatter ever made:'],
-  [55.0, 58.6, 'less than 10 billionths of a gram.'],
-  [58.7, 61.95, 'Still want to see it up close?'],
+  [11.1, 14.1, '1 gram of antimatter appears.'],
+  [14.2, 17.4, 'An air molecule touches it.', { shade: 1 }],
+  [17.5, 21.5, 'Both atoms vanish into pure energy.', { shade: 1 }],
+  [23.2, 26.6, '1.8 × 10¹⁴ joules in a blink.', { shade: 1 }],
+  [26.7, 30.4, '43 kilotons of TNT.', { shade: 1 }],
+  [30.5, 33.8, '3 times Hiroshima.', { shade: 1 }],
+  [34.2, 37.8, 'From 4 km away, at Tokyo Tower.'],
+  [37.9, 43.7, 'The fireball climbs over the city.'],
+  [44.2, 47.1, 'Seen from space.'],
+  [47.2, 50.3, 'One gram. A paperclip’s weight.'],
+  [50.5, 54.3, 'All the antimatter ever made:'],
+  [54.4, 58.3, 'less than 10 billionths of a gram.'],
+  [58.4, 61.95, 'Still want to see it up close?'],
 ];
 const fmtT = (s) => { s = Math.max(0, s); const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r.toFixed(3).padStart(6, '0')}`; };
 const RHO_E = 1.2 / (1.03 ** 5 * 1.8e14);
@@ -87,7 +88,7 @@ export async function create() {
   const SBY = makeShibuya(ads, signs); scene.add(SBY.group);
   const ST = makeStreetStuff(); scene.add(ST.group);
   // light on the crossing from the big screens (coloured spots aimed out at the street) and the nearest lamp posts
-  const scrL = SBY.lights.map((l) => { const c = new THREE.Color().setHSL(l.seed, 0.8, 0.55), p = new THREE.SpotLight(c, 2200, 150, 1.05, 1.0, 2);
+  const scrL = SBY.lights.map((l) => { const c = new THREE.Color().setHSL(l.seed, 0.8, 0.55), p = new THREE.SpotLight(c, 1400, 150, 1.05, 1.0, 2);
     p.position.set(l.x, l.y, l.z); p.target.position.set(l.x + l.nx * 30, 0, l.z + l.nz * 30); scene.add(p, p.target); return p; });
   const lampL = ST.lamps.filter((p) => Math.hypot(p.x, p.z) < 50).slice(0, 8).map((p) => { const l = new THREE.PointLight('#ffd9a8', 260, 45, 2); l.position.copy(p).add(V(0, -0.4, 0)); scene.add(l); return l; });
   // Tokyo for the far shot: the city field and the tower (only drawn from 33 to 43 s)
@@ -172,6 +173,7 @@ export async function create() {
   const fbL = new THREE.PointLight('#d8d0ff', 0, 0, 2); fbL.position.copy(BEAD); fbL.castShadow = true; fbL.shadow.mapSize.set(1024, 1024); fbL.shadow.bias = -0.002; fbL.shadow.camera.near = 0.05; fbL.shadow.camera.far = 600; scene.add(fbL);
   const flare = new Flare(); scene.add(flare.group);
   const clock = physClock(T);
+  const MIC = makeMicro({ t0: T.MICRO, tHit: T.HIT, t1: T.MACRO, neon: NEONC });
   // ---- effects ----
   const fxr = rng(41), smokeT = smokeAtlas(5);
   // glass from the facades round the crossing, blown out when the shock reaches them (time unit: milliseconds)
@@ -190,9 +192,11 @@ export async function create() {
   const dustP = []; for (let i = 0; i < DN; i++) dustP.push([fxr() * Math.PI * 2, fxr(), fxr(), fxr()]);
   scene.add(dust.mesh);
   // the mushroom cloud for the far shot: the stem and the rolling cap (lit cards, fire-lit from below)
-  const MN = 260, mush = new Billboards(MN, { map: smokeT, tiles: [2, 2], additive: false, lit: true, nearK: 0, near: 50 });
-  mush.u.uLitCol.value.set('#ffae66'); mush.u.uShadeCol.value.set('#4a2e24'); mush.u.uFogD.value = 0;
-  const mushP = []; for (let i = 0; i < MN; i++) mushP.push([fxr(), fxr(), fxr(), fxr()]);
+  const MN = 110, mush = new Billboards(MN, { map: smokeT, tiles: [2, 2], additive: false, lit: true, nearK: 0, near: 50 });
+  mush.u.uLitCol.value.set('#d9a070'); mush.u.uShadeCol.value.set('#3a2a24');
+  const CN = 170, cap = new Billboards(CN, { map: smokeT, tiles: [2, 2], additive: false, lit: true, nearK: 0, near: 50 });   // the cap, lit from the fireball inside it
+  cap.u.uLitCol.value.set('#ff9450'); cap.u.uShadeCol.value.set('#2b2326'); cap.u.uFogD.value = 0; scene.add(cap.mesh); mush.u.uFogD.value = 0;
+  const mushP = []; for (let i = 0; i < MN + CN; i++) mushP.push([fxr(), fxr(), fxr(), fxr()]);
   scene.add(mush.mesh);
   // dust motes hanging in the air round the bead (time is all but stopped), lit by the neon, then by the plasma
   const MON = 1400, motes = new Sparks(MON, { minPx: 1.6, maxPx: 6, near: 0.3, additive: true });
@@ -222,6 +226,7 @@ export async function create() {
   function hudAt(t, phys) {
     if (t < T.APPEAR) return { a: 1, lab: '1 gram of antimatter appears in', val: fmtT(T.APPEAR - t), sub: 'Shibuya Crossing, Tokyo · 9:12 pm', sub2: 'Up to 3,000 people per green light' };
     if (t < T.REWIND) {
+      if (t >= T.MICRO && t < T.MACRO) return { a: 1, lab: 'Time since it appeared', val: fmtPhys(phys), sub: 'Zoomed in a billion times', sub2: 'Air molecule meets anti-aluminium' };
       const sub = t < T.CITY ? 'Slow motion' : 'Time sped up';
       const sub2 = t < T.MILLI ? '1 g + 1 g of air → 1.8 × 10¹⁴ J' : t < T.CITY ? '= 43 kilotons of TNT' : 'Hiroshima, 1945: 15 kilotons';
       return { a: 1, lab: 'Time since it appeared', val: fmtPhys(phys), sub, sub2 };
@@ -234,16 +239,16 @@ export async function create() {
   // the event's state at physical time ph (s): fireball, halo, shock, light, signs, screens, glass, dust, cars, people
   function eventState(ph, t) {
     const on = ph > 0;
-    const kn = clamp((t - (T.APPEAR + 0.8)) / (T.MILLI - T.APPEAR - 0.8)), nanoR = 0.0045 + 1.7 * Math.pow(kn, 1.8);
+    const kn = clamp((t - T.MACRO) / (T.MILLI - T.MACRO)), nanoR = t < T.MACRO ? 0.004 : 0.06 + 1.64 * Math.pow(kn, 1.4);
     const Rs = on ? (t >= T.APPEAR && t < T.MILLI ? nanoR * 1.03 : shockR(ph)) : 0, Rf = Math.max(0.0046, Rs * (ph < 1e-3 ? 0.97 : 0.97 - 0.32 * smooth(1e-3, 2e-2, ph)));
     bead.group.visible = on && Rf < 0.0052; bead.group.rotation.set(t * 0.4, t * 0.7, 0);
     FB.mesh.visible = on && Rf > 0.0046; FB.U.uR.value = Rf; FB.U.uTime.value = t * 0.25; FB.U.uHeat.value = 1.0 - 0.18 * smooth(1e-4, 3e-2, ph);
     FB.U.uRough.value = 0.05 + 0.1 * smooth(1e-10, 1e-6, ph); FB.U.uSmoke.value = 0; FB.U.uSquash.value = 1; FB.U.uViolet.value = 1 - smooth(1e-6, 3e-4, ph); FB.U.uSoot.value = smooth(3e-4, 1e-2, ph);
     FB.mesh.position.copy(BEAD).setY(Math.max(BEAD.y, Rf * 0.25 + BEAD.y * (1 - smooth(0.5, 3, Rf))));
-    HL.mesh.visible = on && ph < 2e-2; HL.mesh.position.copy(FB.mesh.position); HL.U.uR.value = Math.max(0.012, Rf * (2.6 - 1.2 * smooth(1e-6, 1e-3, ph))); HL.U.uI.value = 0.3 * (1 - smooth(3e-3, 2e-2, ph));
+    HL.mesh.visible = false; HL.mesh.position.copy(FB.mesh.position); HL.U.uR.value = Math.max(0.012, Rf * (2.6 - 1.2 * smooth(1e-6, 1e-3, ph))); HL.U.uI.value = 0.3 * (1 - smooth(3e-3, 2e-2, ph));
     SK.mesh.visible = on && ph > 2e-6; SK.mesh.position.copy(BEAD).setY(0); SK.U.uR.value = Rs * 1.05; SK.U.uA.value = 0.55 * smooth(2e-6, 2e-5, ph); SK.U.uTime.value = t;
     // the light: grows with the ball; the shadows it throws are the picture in the first nanoseconds
-    fbL.visible = on && Rf > 0.0047; fbL.position.copy(FB.mesh.position); SB.U.uMinRough.value = fbL.visible ? 0.22 : 0; fbL.intensity = on ? THREE.MathUtils.lerp(10 * Math.pow(Math.max(Rf, 0.005) / 0.005, 0.7), 600 * Rf * Rf, smooth(1, 5, Rf)) : 0;
+    fbL.visible = on && Rf > 0.0047; fbL.position.copy(FB.mesh.position); SB.U.uMinRough.value = fbL.visible ? 0.22 : 0; fbL.intensity = on ? THREE.MathUtils.lerp(10 * Math.pow(Math.max(Rf, 0.005) / 0.005, 0.7), 150 * Rf * Rf, smooth(1, 5, Rf)) : 0;
     SB.U.uShock.value = on ? Rs : -1;
     TQ.uPower.value = on ? 1 - smooth(38, 50, Rs) : 1;
     glass.update(ph * 1000, cam, R.SSAA); glass.points.visible = Rs > 15;
@@ -261,7 +266,7 @@ export async function create() {
       if (age > 0) { tmp.set(c.p0.x - BEAD.x, 0, c.p0.z - BEAD.z).normalize(); const s = 0.5 * 0.02 * age * age * Math.min(1, 40 / d); c.group.position.addScaledVector(tmp, s); c.group.position.y += s * 0.25; c.group.rotation.z = Math.min(1.2, s * 0.08); } }
     you.root.visible = !(on && Rf > 2.2);
     motes.update(0, cam, R.SSAA); motes.points.visible = t >= T.APPEAR && t < T.MILLI || t >= T.REWIND; motes.u.uGain.value = 1 + 2.5 * smooth(0.05, 1.0, Rf);
-    ion.update(on && t < T.MILLI ? Rf * 2.3 : -10, cam, R.SSAA); ion.points.visible = on && t >= T.APPEAR && t < T.MILLI;
+    ion.update(on && t >= T.MACRO && t < T.MILLI ? Rf * 2.3 : -10, cam, R.SSAA); ion.points.visible = on && t >= T.MACRO && t < T.MILLI;
   }
 
   function frame(t) {
@@ -273,7 +278,15 @@ export async function create() {
     const story = t < T.HOOK ? T.APPEAR : t >= T.REWIND ? T.APPEAR : Math.min(t, T.APPEAR);
     TQ.uScrT.value = story; TQ.uTime.value = t;
     let rscene = scene, rc = cam;
-    if (t >= T.SPACE && t < T.REWIND) {
+    if (t >= T.MICRO && t < T.MACRO) {
+      // ---------------- the atoms: the first femtoseconds at the bead's surface ----------------
+      rscene = MIC.scene; rc = MIC.cam;
+      atomsCam.apply(MIC.cam, t); MIC.update(t);
+      R.renderer.toneMappingExposure = 0.95; R.bloom.strength = 0.6; R.bloom.radius = 0.55; R.bloom.threshold = 0.95 / 0.95;
+      U.uSat.value = 1.12; U.uVignette.value = 0.42;
+      U.uFadeWhite.value = 0.8 * Math.exp(-(t - T.MICRO) * 6) + smooth(17.85, 18.4, t);
+      const hit = t - T.HIT; if (hit > 0 && hit < 0.8) { const k = Math.exp(-hit * 5) * Math.sin(hit * 50); U.uShake.value.set(0.003 * k, 0.002 * k); }
+    } else if (t >= T.SPACE && t < T.REWIND) {
       // ---------------- space: night over Japan, the flash at Tokyo ----------------
       rscene = SPc.scene; rc = camS;
       const u = clamp((t - T.SPACE) / (T.REWIND - T.SPACE)), S = SPc.U;
@@ -299,46 +312,47 @@ export async function create() {
       SK.mesh.position.set(BEAD.x, 0, BEAD.z); SK.U.uR.value = Rsk; SK.U.uA.value = 0.5 * (1 - smooth(6, 12, p));
       fbL.visible = true; fbL.castShadow = false; fbL.position.copy(FB.mesh.position); fbL.color.set('#ffb36e'); fbL.intensity = 4e8 * (1 - 0.7 * smooth(1, 30, p)); fbL.distance = 0;
       // the stem and the cap
-      for (let i = 0; i < MN; i++) { const [a, b, c, sd] = mushP[i];
-        if (i < 110) { const h = b * cy, rr = 80 + 140 * (1 - b) + 60 * c, an = a * 6.283 + t * 0.05; const sz = 180 + 220 * c;
+      for (let i = 0; i < MN + CN; i++) { const [a, b, c, sd] = mushP[i];
+        if (i < MN) { const h = b * cy, rr = 80 + 140 * (1 - b) + 60 * c, an = a * 6.283 + t * 0.05; const sz = 180 + 220 * c;
           mush.set(i, BEAD.x + Math.cos(an) * rr, h, BEAD.z + Math.sin(an) * rr, sz, sz, 1, 1, 1, 0.85 * smooth(1.5, 5, p) * smooth(0, 0.1, b), sd * 6.28 + t * 0.03, Math.floor(sd * 4)); }
         else { const an = a * 6.283 + t * 0.04, rr = Rb * (1.0 + 0.8 * c) * (1 + 1.5 * smooth(3, 40, p)), yy = cy + Rb * (b - 0.35) * (1 + 0.8 * smooth(3, 40, p)), sz = Rb * (0.75 + 0.6 * c) * (1 + 0.6 * smooth(3, 40, p));
-          mush.set(i, BEAD.x + Math.cos(an) * rr, yy, BEAD.z + Math.sin(an) * rr, sz, sz * 0.8, 1, 1, 1, 0.9 * smooth(3, 10, p), sd * 6.28 + t * 0.05, Math.floor(sd * 4)); } }
-      mush.commit(); mush.update(cam, R.SSAA, V(0, 1, 0));
+          cap.set(i - MN, BEAD.x + Math.cos(an) * rr, yy, BEAD.z + Math.sin(an) * rr, sz, sz * 0.8, 1, 1, 1, 0.92 * smooth(2.5, 9, p), sd * 6.28 + t * 0.05, Math.floor(sd * 4)); } }
+      mush.commit(); mush.update(cam, R.SSAA, V(0, 1, 0)); cap.commit(); cap.update(cam, R.SSAA, V(0, -1, 0)); cap.mesh.visible = true;
       mush.mesh.visible = true; dust.mesh.visible = false; glass.points.visible = false;
       for (const w of walkers) w.av.root.visible = false; for (const e of extras) e.visible = false; for (const c of cars) c.group.visible = false; you.root.visible = false;
       const e = 0.62; R.renderer.toneMappingExposure = e; R.bloom.strength = 0.55; R.bloom.radius = 0.7; R.bloom.threshold = 0.95 / e;
       scene.fog.density = 0.00012; scene.fog.color.set('#241a2c');
       flare.update(cam, FB.mesh.position, 0.5 * (1 - smooth(0.5, 6, p)), 0.6);
       // the shock arrives at the tower (~40.7 s): a jolt
-      const hit = t - 40.7; if (hit > 0 && hit < 0.9) { const k = Math.exp(-hit * 4) * Math.sin(hit * 40); U.uShake.value.set(0.004 * k, 0.003 * k); }
+      const hit = t - 41.7; if (hit > 0 && hit < 0.9) { const k = Math.exp(-hit * 4) * Math.sin(hit * 40); U.uShake.value.set(0.004 * k, 0.003 * k); }
       U.uFadeWhite.value = 0.6 * Math.exp(-(t - T.CITY) * 4);
     } else {
       // ---------------- Shibuya: the glide, the nanoseconds, the milliseconds, the hook, the rewind ----------------
-      TK.mesh.visible = tower.root.visible = towerLights.visible = cityGround.visible = false; SBY.group.visible = true; mush.mesh.visible = false; dust.mesh.visible = true;
+      TK.mesh.visible = tower.root.visible = towerLights.visible = cityGround.visible = false; SBY.group.visible = true; mush.mesh.visible = cap.mesh.visible = false; dust.mesh.visible = true;
       fbL.color.set('#d8d0ff'); fbL.castShadow = true; scene.fog.color.set('#15141c');
-      if (t < T.HOOK) hook.apply(cam, t); else if (t < T.APPEAR) glide.apply(cam, t); else if (t < T.MILLI) nano.apply(cam, t); else if (t < T.CITY) milli.apply(cam, t); else rewind.apply(cam, t);
+      if (t < T.HOOK) hook.apply(cam, t); else if (t < T.APPEAR) glide.apply(cam, t); else if (t < T.MICRO) beadCam.apply(cam, t); else if (t < T.MILLI) nano.apply(cam, t); else if (t < T.CITY) milli.apply(cam, t); else rewind.apply(cam, t);
       if (q.get('dcam')) { const c = q.get('dcam').split(',').map(Number); cam.position.set(c[0], c[1], c[2]); cam.lookAt(c[3], c[4], c[5]); cam.fov = c[6] || 40; cam.updateProjectionMatrix(); cam.updateMatrixWorld(); }
       poseAll(story);
       apple.update(t, { look: cam.position, blinkAt: [6.8], earAt: [7.9], pr: R.SSAA }); apple.root.visible = t >= T.HOOK && t < T.APPEAR;
       setShadow(V(HERO.x, 0, HERO.z), 30);
       eventState(phys, t);
       // the plush: on the rooftop shot it tumbles past the lens out of the blast, intact (31.0-32.6 s)
-      const pk = (t - 31.0) / 1.6; plush.root.visible = t >= T.MILLI && pk > 0 && pk < 1;
+      const pk = (t - 32.0) / 1.6; plush.root.visible = t >= T.MILLI && pk > 0 && pk < 1;
       if (plush.root.visible) { const c0 = cam.position, f = V(0, 0, -1).applyQuaternion(cam.quaternion), r = V(1, 0, 0).applyQuaternion(cam.quaternion), up = V(0, 1, 0).applyQuaternion(cam.quaternion);
         plush.root.position.copy(c0).addScaledVector(f, 2.2 - 0.6 * pk).addScaledVector(r, -1.6 + 3.4 * pk).addScaledVector(up, -0.5 + 0.9 * pk - 0.6 * pk * pk); plush.root.rotation.set(pk * 4.2, pk * 2.4, pk * 1.6); }
       // grade and exposure: night, then the light of the ball (exposure falls as it grows so nothing burns out)
-      const L = phys > 0 ? Math.log10(Math.max(phys, 1e-13)) : -14, burn = smooth(-13, -6.5, L), big = smooth(-6.5, -2, L);
-      const e = phys > 0 && t < T.REWIND ? 0.85 - 0.4 * burn - 0.25 * big : 0.85;
-      R.renderer.toneMappingExposure = e; R.bloom.strength = 0.55 + 0.25 * burn; R.bloom.radius = 0.65; R.bloom.threshold = 0.95 / e;
-      hemi.intensity = 0.55; key.intensity = 0.35; for (const l of scrL) l.intensity = 2200 * TQ.uPower.value; for (const l of lampL) l.intensity = 260 * (1 - smooth(25, 40, SB.U.uShock.value));
+      const Rnow = FB.U.uR.value, burn = phys > 0 && t < T.REWIND && FB.mesh.visible ? smooth(0.05, 1.7, Rnow) : 0, big = t >= T.MILLI || t < T.HOOK ? 1 : 0;
+      const e = big ? 0.42 : 0.82 - 0.3 * burn;
+      R.renderer.toneMappingExposure = e; R.bloom.strength = big ? 0.3 : 0.42; R.bloom.radius = 0.5; R.bloom.threshold = 0.95 / e;
+      hemi.intensity = 0.55; key.intensity = 0.35; for (const l of scrL) l.intensity = 1400 * TQ.uPower.value; for (const l of lampL) l.intensity = 260 * (1 - smooth(25, 40, SB.U.uShock.value));
       ST.lampM.emissiveIntensity = 4 * (1 - smooth(25, 40, SB.U.uShock.value));
       scene.fog.density = 0.0016;
       U.uTint.value.set(1 + 0.04 * burn, 1, 1 + 0.06 * burn - 0.08 * big);
       flare.update(cam, FB.mesh.position, t >= T.REWIND ? 0.03 : phys > 0 ? 0.12 + 0.6 * burn : 0, 0.4 + 0.6 * big);
       // the shock reaches the rooftop camera (~31.8 s): a jolt, then white into the cut
-      if (t >= T.MILLI && t < T.CITY) { const hit = t - 32.05; if (hit > 0) { const k = Math.exp(-hit * 3) * Math.sin(hit * 46); U.uShake.value.set(0.006 * k, 0.004 * k); } U.uFadeWhite.value = smooth(32.45, 33.0, t); }
-      if (t >= T.APPEAR && t < T.MILLI) U.uFadeWhite.value = 0.8 * Math.exp(-(t - T.APPEAR) * 8) + smooth(21.5, 22.0, t) * 0.9;
+      if (t >= T.MILLI && t < T.CITY) { const hit = t - 33.05; if (hit > 0) { const k = Math.exp(-hit * 3) * Math.sin(hit * 46); U.uShake.value.set(0.006 * k, 0.004 * k); } U.uFadeWhite.value = smooth(33.45, 34.0, t); }
+      if (t >= T.APPEAR && t < T.MICRO) U.uFadeWhite.value = 0.8 * Math.exp(-(t - T.APPEAR) * 8) + smooth(12.15, 12.4, t) * 0.9;
+      if (t >= T.MACRO && t < T.MILLI) U.uFadeWhite.value = 0.9 * Math.exp(-(t - T.MACRO) * 5) + smooth(22.5, 23.0, t) * 0.9;
       if (t >= T.REWIND) U.uFadeWhite.value = 0.9 * Math.exp(-(t - T.REWIND) * 3);
     }
     skyM.position.copy(cam.position);

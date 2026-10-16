@@ -56,9 +56,9 @@ export function makeShibuyaGround() {
       float worn = gfbm(p * 1.3, fw * 1.3);
       paint *= road * smoothstep(0.18, 0.42, worn);
       // wet: a damp film everywhere, puddles in the low spots (large soft shapes)
-      float pud = smoothstep(0.52, 0.6, gfbm(p * 0.11 + 3.1, fw * 0.11)) ;
+      float pud = smoothstep(0.56, 0.64, gfbm(p * 0.11 + 3.1, fw * 0.11));
       float grit = gfbm(p * 6.0, fw * 6.0);
-      vec3 asph = vec3(0.05, 0.05, 0.055) * (0.75 + 0.5 * grit);
+      vec3 asph = vec3(0.056, 0.053, 0.05) * (0.75 + 0.5 * grit);
       // sidewalks: 0.6 m pavers, pale grey with a warm cast
       vec2 tp = p / 0.6; float gx = sqF(tp.x + 0.25, fw / 0.6), gz = sqF(tp.y + 0.25, fw / 0.6);
       float joint = 1.0 - (1.0 - smoothstep(0.0, 0.1, abs(fract(tp.x) - 0.5) - 0.42 + fw)) * 0.0;
@@ -68,7 +68,7 @@ export function makeShibuyaGround() {
       col = mix(col, vec3(0.78, 0.78, 0.76), paint * 0.92);
       float wet = mix(0.35, 1.0, pud);
       diffuseColor.rgb = col * (1.0 - 0.45 * wet * (1.0 - paint * 0.5));
-      float gRough = mix(mix(0.62, 0.7, grit), 0.05, pud);
+      float gRough = mix(mix(0.62, 0.7, grit), 0.1, pud);
       gRough = mix(gRough, mix(0.45, 0.12, pud), paint);
       gRough = mix(gRough, mix(0.5, 0.1, pud), 1.0 - road);
     `).replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = max(gRough, uMinRough);');

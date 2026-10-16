@@ -107,8 +107,8 @@ m.add(M0, norm(growl), gain=0.28, rev=0.3)
 for i in range(70):   # glass: bright shatters, denser toward the shock's arrival
     tc = M0 + 4.0 + (md - 4.6) * (i / 70) ** 0.6 + rng.uniform(-0.1, 0.1)
     m.add(tc, metal_hit(rng, rng.uniform(1800, 4200), 0.5), gain=0.025 + 0.03 * i / 70, pan=rng.uniform(-0.8, 0.8), rev=0.5)
-m.add(31.8, boom(rng, 2.5, 60, 24, 1.0, 1.0, 1.0), gain=0.9, rev=0.3)
-m.add(31.8, crunch(rng, 1.2), gain=0.4, rev=0.3)
+m.add(32.05, boom(rng, 2.5, 60, 24, 1.0, 1.0, 1.0), gain=0.9, rev=0.3)
+m.add(32.05, crunch(rng, 1.2), gain=0.4, rev=0.3)
 m.add(M1 - 1.2, riser(rng, 1.2, 300, 8000, 2.0), gain=0.25, rev=0.3)
 
 # ---------- the city (33 -> 43): far rumble, the cloud's roll, the shock arrives at 40.7 ----------

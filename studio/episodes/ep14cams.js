@@ -16,8 +16,8 @@ const ring = (ang, r, y) => BEAD.clone().addScaledVector(DIR, Math.cos(ang) * r)
 
 // the hook (0-3.6 s): flash-forward, 140 m down the south avenue: the fireball fills the canyon, the signs die toward us
 export const hook = new CamPath([
-  [0, V(6, 9, 150), V(-2, 34, 0), 48],
-  [3.6, V(5, 9.4, 146), V(-2, 36, 0), 47],
+  [0, V(4, 14, 300), V(-1, 40, 0), 46],
+  [3.6, V(3.5, 14.5, 294), V(-1, 42, 0), 45],
 ], { easeIn: false, easeOut: false, arc: true });
 
 // the glide (3.6-11 s): a drone high over the north-west corner looking down the scramble at the crowd, sinking to
@@ -38,20 +38,20 @@ export const nano = new CamPath([
   [22.0, ring(1.75, 3.6, 1.65), BEAD.clone().lerp(HERO.clone().setY(1.3), 0.45), 42],
 ], { easeIn: false, easeOut: false, arc: true });
 
-// the milliseconds (22-33 s): from a rooftop 110 m away on the north-west corner, looking down at the crossing as the
+// the milliseconds (22-33 s): from 45 m over the north avenue, 114 m away, looking down the canyon at the crossing as the
 // fireball swells and the shock runs out through the buildings; the shock reaches us at ~31.8 s
 export const milli = new CamPath([
-  [22.0, V(-58, 56, -60), V(2, 4, 2), 52],
-  [27.5, V(-61, 58, -63), V(2, 14, 2), 54],
-  [33.0, V(-64, 60, -66), V(2, 40, 2), 58],
+  [22.0, V(1.5, 44, -112), V(1.8, 3, 2), 46],
+  [27.5, V(1.6, 45, -114), V(1.8, 12, 2), 50],
+  [33.0, V(1.7, 46, -116), V(1.8, 34, 2), 56],
 ], { easeIn: false, easeOut: false, arc: true });
 
 // the city (33-43 s): from beside Tokyo Tower's top deck, looking west 4 km across the city at the fireball rising
 // into a mushroom cloud; the view tilts up with it
 export const city = new CamPath([
-  [33.0, V(TOWER.x + 90, 240, TOWER.z + 14), V(0, 260, -60), 40],
-  [38.0, V(TOWER.x + 91, 241, TOWER.z + 14), V(0, 1300, -60), 41],
-  [43.0, V(TOWER.x + 92, 242, TOWER.z + 14), V(0, 2700, -60), 42],
+  [33.0, V(TOWER.x + 90, 240, TOWER.z + 20), V(0, 260, -60), 40],
+  [38.0, V(TOWER.x + 91, 241, TOWER.z + 20), V(0, 1300, -60), 41],
+  [43.0, V(TOWER.x + 92, 242, TOWER.z + 20), V(0, 2700, -60), 42],
 ], { easeIn: false, easeOut: false, arc: true });
 
 // the rewind (51-62 s): back to the instant it appeared, everyone frozen: down from above to the bead and your face

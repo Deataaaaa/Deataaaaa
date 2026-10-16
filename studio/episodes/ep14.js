@@ -61,7 +61,7 @@ export async function create() {
   const SKYC = { zen: '#05060b', hor: '#1d1a24', belt: '#25202c', shade: '#0b0c14', sunCol: '#3a2a30' };
   const skyM = makeDuskSky(sunDir, SKYC); skyM.material.uniforms.uDisk.value = 0; scene.add(skyM);
   const pm = new THREE.PMREMGenerator(R.renderer);
-  const envScene = new THREE.Scene(); { const s2 = makeDuskSky(sunDir, SKYC); s2.material.uniforms.uDisk.value = 0; envScene.add(s2); }
+  const envScene = new THREE.Scene(); envScene.background = new THREE.Color('#06070b');
   // the neon and the screens as the wet street sees them: coloured panels all round, low on the horizon
   const NEONC = ['#ff3b8d', '#2ef0ff', '#ffe23d', '#ff4a3a', '#b46bff', '#ffffff', '#ff9d2e', '#3d7bff', '#ff3b8d', '#5dff6a', '#2ef0ff', '#ffb0d0'];
   for (let i = 0; i < 24; i++) {
@@ -93,7 +93,7 @@ export async function create() {
   const tower = makeTower(); tower.root.position.copy(TOWER); tower.root.scale.setScalar(333 / 330); scene.add(tower.root); tower.root.visible = false;
   if (tower.mat) { tower.mat.color.set('#e2541f'); }
   const towerLights = new THREE.Group(); { const lm = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffb070').multiplyScalar(3) });
-    for (let i = 0; i < 40; i++) { const h = 10 + i * 7.5, w = 57 * Math.exp(-h / 90) + 5.5; for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.9, 6, 4), lm); b.position.set(TOWER.x + sx * w, h, TOWER.z + sz * w); towerLights.add(b); } } }
+    for (let i = 0; i < 40; i++) { const h = 10 + i * 7.5, w = 57 * Math.exp(-h / 90) + 5.5; for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.35, 6, 4), lm); b.position.set(TOWER.x + sx * w, h, TOWER.z + sz * w); towerLights.add(b); } } }
   scene.add(towerLights); towerLights.visible = false;
 
   const cam = new THREE.PerspectiveCamera(42, W / H, 0.03, 20000);
@@ -220,10 +220,11 @@ export async function create() {
   // the event's state at physical time ph (s): fireball, halo, shock, light, signs, screens, glass, dust, cars, people
   function eventState(ph, t) {
     const on = ph > 0;
-    const Rs = on ? shockR(ph) : 0, Rf = Math.max(0.0046, Rs * (ph < 1e-3 ? 0.97 : 0.97 - 0.32 * smooth(1e-3, 2e-2, ph)));
+    const kn = clamp((t - (T.APPEAR + 0.8)) / (T.MILLI - T.APPEAR - 0.8)), nanoR = 0.0045 + 1.7 * Math.pow(kn, 1.8);
+    const Rs = on ? (t >= T.APPEAR && t < T.MILLI ? nanoR * 1.03 : shockR(ph)) : 0, Rf = Math.max(0.0046, Rs * (ph < 1e-3 ? 0.97 : 0.97 - 0.32 * smooth(1e-3, 2e-2, ph)));
     bead.group.visible = on && Rf < 0.0052; bead.group.rotation.set(t * 0.4, t * 0.7, 0);
     FB.mesh.visible = on && Rf > 0.0046; FB.U.uR.value = Rf; FB.U.uTime.value = t * 0.25; FB.U.uHeat.value = 1.0 - 0.18 * smooth(1e-4, 3e-2, ph);
-    FB.U.uRough.value = 0.05 + 0.1 * smooth(1e-10, 1e-6, ph); FB.U.uSmoke.value = 0; FB.U.uSquash.value = 1;
+    FB.U.uRough.value = 0.05 + 0.1 * smooth(1e-10, 1e-6, ph); FB.U.uSmoke.value = 0; FB.U.uSquash.value = 1; FB.U.uViolet.value = 1 - smooth(1e-6, 3e-4, ph); FB.U.uSoot.value = smooth(3e-4, 1e-2, ph);
     FB.mesh.position.copy(BEAD).setY(Math.max(BEAD.y, Rf * 0.25 + BEAD.y * (1 - smooth(0.5, 3, Rf))));
     HL.mesh.visible = on && ph < 2e-2; HL.mesh.position.copy(FB.mesh.position); HL.U.uR.value = Math.max(0.012, Rf * (2.6 - 1.2 * smooth(1e-6, 1e-3, ph))); HL.U.uI.value = 0.9 * (1 - smooth(3e-3, 2e-2, ph));
     SK.mesh.visible = on && ph > 2e-6; SK.mesh.position.copy(BEAD).setY(0); SK.U.uR.value = Rs * 1.05; SK.U.uA.value = 0.55 * smooth(2e-6, 2e-5, ph); SK.U.uTime.value = t;
@@ -252,7 +253,7 @@ export async function create() {
     U.uTime.value = t; U.uFade.value = 0; U.uFadeWhite.value = 0; U.uScan.value = 0; U.uTint.value.set(1, 1, 1); U.uShake.value.set(0, 0);
     U.uSat.value = 1.08; U.uContrast.value = 1.06; U.uVignette.value = 0.34; U.uAberr.value = 0.0006; U.uGrain.value = 0;
     // the physical clock: the hook flashes forward to ~4-6 ms; the rewind returns to the instant it appeared
-    const phys = t < T.HOOK ? 4e-3 * (1 + 0.14 * t) : t >= T.REWIND ? 1e-15 : clock(t);
+    const phys = t < T.HOOK ? 4e-3 * (1 + 0.14 * t) : t >= T.REWIND ? 1e-15 : clock(t);   // (the nanoseconds' ball size follows its own curve: eventState)
     const story = t < T.HOOK ? T.APPEAR : t >= T.REWIND ? T.APPEAR : Math.min(t, T.APPEAR);
     TQ.uScrT.value = story; TQ.uTime.value = t;
     let rscene = scene, rc = cam;
@@ -312,7 +313,7 @@ export async function create() {
         plush.root.position.copy(c0).addScaledVector(f, 2.2 - 0.6 * pk).addScaledVector(r, -1.6 + 3.4 * pk).addScaledVector(up, -0.5 + 0.9 * pk - 0.6 * pk * pk); plush.root.rotation.set(pk * 4.2, pk * 2.4, pk * 1.6); }
       // grade and exposure: night, then the light of the ball (exposure falls as it grows so nothing burns out)
       const L = phys > 0 ? Math.log10(Math.max(phys, 1e-13)) : -14, burn = smooth(-13, -6.5, L), big = smooth(-6.5, -2, L);
-      const e = phys > 0 ? 0.85 - 0.45 * burn - 0.12 * big : 0.85;
+      const e = phys > 0 && t < T.REWIND ? 0.85 - 0.4 * burn - 0.25 * big : 0.85;
       R.renderer.toneMappingExposure = e; R.bloom.strength = 0.55 + 0.25 * burn; R.bloom.radius = 0.65; R.bloom.threshold = 0.95 / e;
       hemi.intensity = 0.55; key.intensity = 0.35; for (const l of scrL) l.intensity = 2200 * TQ.uPower.value; for (const l of lampL) l.intensity = 260 * (1 - smooth(25, 40, SB.U.uShock.value));
       ST.lampM.emissiveIntensity = 4 * (1 - smooth(25, 40, SB.U.uShock.value));
@@ -320,7 +321,7 @@ export async function create() {
       U.uTint.value.set(1 + 0.04 * burn, 1, 1 + 0.06 * burn - 0.08 * big);
       flare.update(cam, FB.mesh.position, t >= T.REWIND ? 0.05 : phys > 0 ? 0.25 + 0.75 * burn : 0, 0.5 + 0.6 * big);
       // the shock reaches the rooftop camera (~31.8 s): a jolt, then white into the cut
-      if (t >= T.MILLI && t < T.CITY) { const hit = t - 31.8; if (hit > 0) { const k = Math.exp(-hit * 3) * Math.sin(hit * 46); U.uShake.value.set(0.006 * k, 0.004 * k); } U.uFadeWhite.value = smooth(32.3, 33.0, t); }
+      if (t >= T.MILLI && t < T.CITY) { const hit = t - 32.05; if (hit > 0) { const k = Math.exp(-hit * 3) * Math.sin(hit * 46); U.uShake.value.set(0.006 * k, 0.004 * k); } U.uFadeWhite.value = smooth(32.45, 33.0, t); }
       if (t >= T.APPEAR && t < T.MILLI) U.uFadeWhite.value = 0.8 * Math.exp(-(t - T.APPEAR) * 8) + smooth(21.5, 22.0, t) * 0.9;
       if (t >= T.REWIND) U.uFadeWhite.value = 0.9 * Math.exp(-(t - T.REWIND) * 3);
     }

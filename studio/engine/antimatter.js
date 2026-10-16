@@ -27,7 +27,7 @@ export function makeBead() {
 // the plasma ball: uHeat 1 = hottest; uR = radius (m); uRough = turbulence of the surface; uSmoke = how much of it is
 // already cool smoke (the far shot)
 export function makeFireball({ detail = 6 } = {}) {
-  const U = { uTime: { value: 0 }, uHeat: { value: 1 }, uR: { value: 0.01 }, uRough: { value: 0.12 }, uGain: { value: 1 }, uSmoke: { value: 0 }, uSquash: { value: 1 } };
+  const U = { uTime: { value: 0 }, uHeat: { value: 1 }, uR: { value: 0.01 }, uRough: { value: 0.12 }, uGain: { value: 1 }, uSmoke: { value: 0 }, uSquash: { value: 1 }, uViolet: { value: 0 }, uSoot: { value: 0 } };
   const mat = new THREE.ShaderMaterial({
     uniforms: U, transparent: false,
     vertexShader: `${SIMPLEX}
@@ -43,15 +43,19 @@ export function makeFireball({ detail = 6 } = {}) {
       }`,
     fragmentShader: `${SIMPLEX}${RAMP}
       uniform float uTime, uHeat, uGain, uSmoke; varying vec3 vN; varying vec3 vO; varying vec3 vW; varying float vT;
+      uniform float uViolet, uSoot;
       void main(){
         vec3 V = normalize(cameraPosition - vW), N = normalize(vN);
         float mu = clamp(dot(N, V), 0.0, 1.0);
-        float cells = fbm3(vO * 5.0 + vec3(0.0, -uTime * 0.6, uTime * 0.2), 4);
-        // hotter at the centre of the disc (looking deep into the ball), cooler at the limb; darker cells
-        float k = uHeat * (0.62 + 0.38 * mu) * (0.85 + 0.35 * cells + 0.2 * vT);
-        vec3 c = tramp(clamp(k, 0.0, 1.0)) * (0.35 + 2.2 * pow(clamp(k, 0.0, 1.0), 1.5));
-        vec3 smoke = mix(vec3(0.05, 0.04, 0.035), vec3(0.32, 0.18, 0.1), clamp(cells * 0.5 + 0.5, 0.0, 1.0) * (1.0 - mu * 0.5));
-        c = mix(c, smoke + tramp(0.35) * 0.6 * pow(1.0 - mu, 2.0) * 0.0, uSmoke * smoothstep(0.1, 0.6, 1.0 - k + 0.3 * cells));
+        float n1 = fbm3(vO * 3.0 + vec3(0.0, -uTime * 0.5, 0.0), 5);
+        float rid = 1.0 - abs(fbm3(vO * 7.5 + vec3(uTime * 0.3, 0.0, -uTime * 0.2), 4));
+        float k = uHeat * (0.5 + 0.5 * pow(mu, 0.6)) * (0.72 + 0.45 * n1 + 0.22 * rid + 0.1 * vT);
+        vec3 c = tramp(clamp(k, 0.0, 1.0)) * (0.12 + 4.2 * pow(clamp(k, 0.0, 1.2), 2.4));
+        c = mix(c, c * vec3(0.72, 0.7, 1.3) + vec3(0.02, 0.0, 0.06) * k, uViolet);
+        float smk = smoothstep(0.05, -0.45, n1) * pow(1.0 - mu, 0.7) * uSoot;           // soot patches drifting over the limb
+        c *= 1.0 - 0.88 * smk;
+        vec3 smoke = mix(vec3(0.05, 0.04, 0.035), vec3(0.3, 0.17, 0.09), clamp(n1 * 0.5 + 0.5, 0.0, 1.0) * (1.0 - mu * 0.5));
+        c = mix(c, smoke, uSmoke * smoothstep(0.1, 0.6, 1.0 - k + 0.3 * n1));
         gl_FragColor = vec4(c * uGain, 1.0);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>

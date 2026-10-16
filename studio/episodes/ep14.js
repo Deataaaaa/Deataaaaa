@@ -24,7 +24,7 @@ import { makeCat } from '../engine/cat.js';
 import { makePlush } from '../engine/plush.js';
 import { makeCar } from '../engine/town5.js';
 import { makeMicro } from '../engine/micro.js';
-import { T, DUR, DIR, HERO, BEAD, TOWER, hook, glide, bead as beadCam, atomsCam, nano, milli, city, rewind } from './ep14cams.js';
+import { T, DUR, DIR, HERO, BEAD, TOWER, glide, bead as beadCam, atomsCam, nano, milli, city, rewind } from './ep14cams.js';
 
 const TITLE = 'What if <span class="k">1 gram of antimatter</span> appeared in front of you?';
 const CAPTIONS = [
@@ -120,10 +120,11 @@ export async function create() {
 
   // ---- you: walking the diagonal toward the north-west corner (frozen mid-stride when it appears) ----
   const you = await loadAvatar('Female_Adult_09', { env, facial: true }); scene.add(you.root);
-  // ---- Apple, on the middle vending machine of the north-east corner (calm part only) ----
-  const apple = makeCat(); { const v = ST.vend[1]; apple.root.position.set(v.x, v.top, v.z + 0.05); apple.root.rotation.y = Math.PI - 0.6; } scene.add(apple.root);
+  // ---- Apple, on the vending machine of the south-east corner, in the drone's view from 8 to 10.6 s (23-38 px; calm part only) ----
+  const apple = makeCat(); { const v = ST.vend[5]; apple.root.position.set(v.x, v.top, v.z + 0.05); apple.root.rotation.y = Math.PI - 0.6; } scene.add(apple.root);
   // ---- the WTF: a furry monster plush keychain that rides out the blast and tumbles past the rooftop camera ----
-  const plush = makePlush(); plush.root.scale.setScalar(1.15); scene.add(plush.root);
+  const plush = makePlush(); plush.root.scale.setScalar(2.2); scene.add(plush.root);
+  const plushL = new THREE.PointLight('#ffc48a', 6, 3, 2); scene.add(plushL);
   // ---- the crowd: walkers on the five crossings (their own skeletons), people waiting on the corners (posed copies) ----
   const crowdN = ['Male_Adult_01', 'Female_Adult_17', 'Business_Male_02', 'Female_Party_02', 'Male_Adult_11', 'Business_Male_04', 'Sports_Male_04',
     'Female_Adult_08', 'Male_Adult_08', 'Female_Adult_04', 'Male_Adult_06', 'Female_Adult_03', 'Male_Adult_12', 'Female_Adult_06', 'Sports_Male_01', 'Sports_Male_02'];
@@ -284,7 +285,7 @@ export async function create() {
     U.uSat.value = 1.08; U.uContrast.value = 1.06; U.uVignette.value = 0.34; U.uAberr.value = 0.0012; U.uGrain.value = 0;
     U.uWarp.value = 0; U.uHeatA.value = 0; U.uBarrel.value = 0;
     // the physical clock: the hook flashes forward to ~4-6 ms; the rewind returns to the instant it appeared
-    const phys = t < T.HOOK ? 4e-3 * (1 + 0.14 * t) : t >= T.REWIND ? 1e-15 : clock(t);   // (the nanoseconds' ball size follows its own curve: eventState)
+    const phys = t < T.HOOK ? 1.6e-3 * (1 + 0.24 * t) : t >= T.REWIND ? 1e-15 : clock(t);   // (the nanoseconds' ball size follows its own curve: eventState)
     const story = t < T.HOOK ? T.APPEAR : t >= T.REWIND ? T.APPEAR : Math.min(t, T.APPEAR);
     TQ.uScrT.value = story; TQ.uTime.value = t;
     let rscene = scene, rc = cam;
@@ -346,7 +347,7 @@ export async function create() {
       // ---------------- Shibuya: the glide, the nanoseconds, the milliseconds, the hook, the rewind ----------------
       TK.mesh.visible = tower.root.visible = towerLights.visible = cityGround.visible = cityLights.points.visible = false; SBY.group.visible = true; mush.mesh.visible = cap.mesh.visible = false; dust.mesh.visible = true;
       fbL.color.set('#d8d0ff'); fbL.castShadow = true; scene.fog.color.set('#15141c');
-      if (t < T.HOOK) hook.apply(cam, t); else if (t < T.APPEAR) glide.apply(cam, t); else if (t < T.MICRO) beadCam.apply(cam, t); else if (t < T.MILLI) nano.apply(cam, t); else if (t < T.CITY) milli.apply(cam, t); else rewind.apply(cam, t);
+      if (t < T.HOOK) milli.apply(cam, 29.6 + t * 0.12); else if (t < T.APPEAR) glide.apply(cam, t); else if (t < T.MICRO) beadCam.apply(cam, t); else if (t < T.MILLI) nano.apply(cam, t); else if (t < T.CITY) milli.apply(cam, t); else rewind.apply(cam, t);
       if (q.get('dcam')) { const c = q.get('dcam').split(',').map(Number); cam.position.set(c[0], c[1], c[2]); cam.lookAt(c[3], c[4], c[5]); cam.fov = c[6] || 40; cam.updateProjectionMatrix(); cam.updateMatrixWorld(); }
       poseAll(story);
       apple.update(t, { look: cam.position, blinkAt: [6.8], earAt: [7.9], pr: R.SSAA }); apple.root.visible = t >= T.HOOK && t < T.APPEAR;
@@ -356,6 +357,7 @@ export async function create() {
       const pk = (t - 32.0) / 1.6; plush.root.visible = t >= T.MILLI && pk > 0 && pk < 1;
       if (plush.root.visible) { const c0 = cam.position, f = V(0, 0, -1).applyQuaternion(cam.quaternion), r = V(1, 0, 0).applyQuaternion(cam.quaternion), up = V(0, 1, 0).applyQuaternion(cam.quaternion);
         plush.root.position.copy(c0).addScaledVector(f, 2.2 - 0.6 * pk).addScaledVector(r, -1.6 + 3.4 * pk).addScaledVector(up, -0.5 + 0.9 * pk - 0.6 * pk * pk); plush.root.rotation.set(pk * 4.2, pk * 2.4, pk * 1.6); }
+      plushL.visible = plush.root.visible; if (plushL.visible) plushL.position.copy(plush.root.position).lerp(cam.position, 0.45);
       // grade and exposure: night, then the light of the ball (exposure falls as it grows so nothing burns out)
       const Rnow = FB.U.uR.value, burn = phys > 0 && t < T.REWIND && FB.mesh.visible ? smooth(0.05, 1.7, Rnow) : 0, big = t >= T.MILLI || t < T.HOOK ? 1 : 0;
       const e = big ? 0.42 : 0.82 - 0.3 * burn;

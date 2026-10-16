@@ -242,13 +242,13 @@ export function makeStreetStuff() {
       for (let k = 0; k <= 11; k++) { const b = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.85, 0.05), railM); b.position.set(x0 + s * dx * k * 2, 0.42, z0 + s * dz * k * 2); group.add(b); }
     }
   }
-  // vending machines: a row of three on the north-east corner (Apple sits on the middle one), two on the south-west
+  // vending machines: a row of three on the north-east corner, two on the south-west, one on the south-east (Apple sits on it)
   const vend = [];
   const vendFront = (hue) => { const c = document.createElement('canvas'); c.width = 128; c.height = 256; const g = c.getContext('2d');
     g.fillStyle = `hsl(${hue},70%,45%)`; g.fillRect(0, 0, 128, 256); g.fillStyle = '#e8f4ff'; g.fillRect(10, 18, 108, 120);
     for (let i = 0; i < 4; i++) for (let j = 0; j < 6; j++) { g.fillStyle = `hsl(${(hue + 40 * j + 90 * i) % 360},75%,55%)`; g.fillRect(16 + j * 17, 24 + i * 29, 12, 22); }
     g.fillStyle = '#111'; g.fillRect(20, 190, 88, 30); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
-  for (const [x, z, yaw, hue] of [[20.5, -18.6, Math.PI, 210], [21.6, -18.6, Math.PI, 0], [22.7, -18.6, Math.PI, 120], [-20.4, 18.8, 0, 30], [-21.5, 18.8, 0, 200]]) {
+  for (const [x, z, yaw, hue] of [[20.5, -18.6, Math.PI, 210], [21.6, -18.6, Math.PI, 0], [22.7, -18.6, Math.PI, 120], [-20.4, 18.8, 0, 30], [-21.5, 18.8, 0, 200], [16.5, 19.4, Math.PI, 330]]) {
     const body = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.85, 0.75), new THREE.MeshStandardMaterial({ color: '#d8dadd', roughness: 0.4, metalness: 0.3 })); body.position.set(x, 0.925, z); body.rotation.y = yaw; group.add(body);
     const f = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 1.75), new THREE.MeshStandardMaterial({ map: vendFront(hue), emissive: '#ffffff', emissiveMap: vendFront(hue), emissiveIntensity: 1.2, roughness: 0.3 }));
     f.position.set(x - Math.sin(yaw) * -0.38 * 0 + 0, 0.95, z + (yaw === 0 ? 0.38 : -0.38)); f.rotation.y = yaw; group.add(f); vend.push({ x, z, top: 1.85, yaw });

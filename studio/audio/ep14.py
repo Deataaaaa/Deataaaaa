@@ -151,6 +151,20 @@ for j, nn in enumerate(motif[:5]): m.add(T['END'] + 0.4 + j * 0.75, bell(midi(nn
 m.add(63.42, woodblock(rng, 1250), gain=0.05, rev=0.25)
 m.add(63.62, woodblock(rng, 1480), gain=0.04, rev=0.25)
 
+# ---------- the voiceover (audio/vo/ep14_vo.wav, made by tools/vo.py): the music ducks under it ----------
+import os, wave
+vp = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'vo', 'ep14_vo.wav')
+if os.path.exists(vp):
+    with wave.open(vp, 'rb') as w: vsr = w.getframerate(); vo = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float64) / 32768
+    vo = signal.resample_poly(vo, SR, vsr)[: m.n]
+    vo = hp(vo, 90) + 0.35 * bp(vo, 2200, 5200)                                   # clean low end, a little presence
+    env = np.sqrt(signal.sosfilt(signal.butter(1, 12, 'lowpass', fs=SR, output='sos'), vo * vo) + 1e-12)
+    vo = vo * np.where(env > 0.06, (0.06 / env) ** 0.45, 1.0)                     # even out the level
+    duck = signal.sosfilt(signal.butter(1, 3, 'lowpass', fs=SR, output='sos'), np.clip(env / 0.03, 0, 1))
+    duck = 1.0 - 0.5 * np.clip(duck, 0, 1)                                       # up to -6 dB under the voice
+    n = len(duck); m.L[:n] *= duck; m.R[:n] *= duck; m.rev_L[:n] *= duck; m.rev_R[:n] *= duck
+    m.add(0.0, norm(vo), gain=0.95, rev=0.06)
+
 out = sys.argv[1] if len(sys.argv) > 1 else 'ep14.wav'
 render_phone(m, out, rev_time=2.4, target=-10.5, tp=-1.5, limit=True)
 print('wrote', out)

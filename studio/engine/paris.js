@@ -72,7 +72,7 @@ export function heatize(mat, { organic = 0, heat = 1, heatU = null } = {}) {
           float hk = clamp(uHeat * uHeatK, 0.0, 1.0);
           if (hk > 0.0) {
             float hv = 0.8 + 0.4 * hn3(vHeatW * 0.35);
-            float fres = pow(1.0 - abs(dot(normal, geometryViewDir)), 2.0);
+            float fres = pow(max(1.0 - abs(dot(normal, geometryViewDir)), 0.0), 2.0);
             totalEmissiveRadiance += blackbody(hk * hv * 0.8) * hk * hk * 1.8 * (0.3 + 0.9 * fres);
           }
         }`);
@@ -530,7 +530,7 @@ export function makeDaySky(sunDir, { zen = '#2f62b8', hor = '#c8d7e6', mid = nul
         vec3 d = normalize(vDir); float el = max(d.y, 0.0);
         float cs = dot(d, uSun);
         vec3 col = mix(uHor, uZen, pow(clamp(el, 0.0, 1.0), 0.42));
-        if (uMidK > 0.5) col = mix(mix(uHor, uMid, smoothstep(0.0, 0.22, el)), uZen, smoothstep(0.12, 0.85, pow(el, 0.8)));
+        if (uMidK > 0.5) col = mix(mix(uHor, uMid, smoothstep(0.0, 0.22, el)), uZen, smoothstep(0.12, 0.85, pow(max(el, 0.0), 0.8)));
         col *= mix(1.0, 0.82, smoothstep(0.2, -0.6, cs));                 // deeper away from the sun
         col += uSunCol * (pow(max(cs, 0.0), 8.0) * 0.35 + pow(max(cs, 0.0), 64.0) * 0.9);
         col = mix(col, uHor * 0.85, smoothstep(0.02, -0.08, d.y));          // below the horizon
@@ -549,7 +549,7 @@ export function makeDaySky(sunDir, { zen = '#2f62b8', hor = '#c8d7e6', mid = nul
           col = mix(col, cm.rgb * uCMBI, rev * uCMB) + vec3(1.0, 0.9, 0.7) * edge * 1.1 * uCMB;
         }
         // the air glowing (CMB energy absorbed): billowing incandescent plasma (alpha channel of the CMB map = fbm)
-        vec3 glow = uWhiteCol * (0.8 + 0.35 * pow(1.0 - el, 3.0)) * mix(1.0, 0.55 + 0.9 * cm.a, uPlasma);
+        vec3 glow = uWhiteCol * (0.8 + 0.35 * pow(max(1.0 - el, 0.0), 3.0)) * mix(1.0, 0.55 + 0.9 * cm.a, uPlasma);
         glow *= mix(1.0, 0.35 + 1.5 * dot(cm.rgb, vec3(0.5, 0.35, 0.15)), clamp(uCMB, 0.0, 1.0) * 0.85);   // the microwave pattern burns into the glow
         col = mix(col, glow, uWhite);
         gl_FragColor = vec4(col, 1.0);

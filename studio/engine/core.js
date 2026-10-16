@@ -21,12 +21,28 @@ export function rng(seed) {
 export const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 export const lerp = (a, b, t) => a + (b - a) * t;
 export const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+// rule 23: the HUD is big while the countdown runs (part of the hook), then shrinks smoothly, with no cut, starting 1 s
+// before the event and taking 0.55 s (smootherstep): the timer goes to `small` of its size, the small lines a bit less
+export const hudK = (t, tEvent, small = 0.62) => { const x = clamp((t - (tEvent - 1.0)) / 0.55); return 1 - (1 - small) * x * x * x * (x * (6 * x - 15) + 10); };
 export const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 export const easeOut = (t) => 1 - Math.pow(1 - clamp(t), 3);
 export const easeIn = (t) => Math.pow(clamp(t), 3);
 export const fmt = (n) => Math.round(n).toLocaleString('en-US');
 
 // ---------- renderer + post ----------
+// Before the bloom: any NaN pixel becomes black and any +Inf becomes a bright but finite value, and everything is capped
+// at 16000. UnrealBloom blurs one bad pixel into a big black rectangle (post 8's atoms shot on the PC). The test reads
+// the float's bits, which a fast-math compiler cannot optimise away the way it can drop isnan() or x != x.
+const SanitizeShader = {
+  uniforms: { tDiffuse: { value: null } },
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader: `
+    uniform sampler2D tDiffuse; varying vec2 vUv;
+    float fin(float x){ uint b = floatBitsToUint(x);
+      if ((b & 0x7f800000u) == 0x7f800000u) return ((b & 0x007fffffu) != 0u || (b & 0x80000000u) != 0u) ? 0.0 : 16000.0;
+      return clamp(x, 0.0, 16000.0); }
+    void main(){ vec4 c = texture2D(tDiffuse, vUv); gl_FragColor = vec4(fin(c.r), fin(c.g), fin(c.b), clamp(fin(c.a), 0.0, 1.0)); }`,
+};
 const GradeShader = {
   uniforms: {
     tDiffuse: { value: null }, uTime: { value: 0 }, uVignette: { value: 0.55 }, uGrain: { value: 0.035 },
@@ -47,7 +63,7 @@ const GradeShader = {
       uv = 0.5 + c * (1.0 + uBarrel * dot(c, c)); c = uv - 0.5;                    // lens punch (barrel)
       // a refraction ring (a shock front crossing the lens) and heat shimmer round a point; both smooth in time
       vec2 asp = vec2(1.0, 1.7778), wd = (uv - uWarpC) * asp; float wr = length(wd);
-      float ring = uWarp * exp(-pow((wr - uWarpR) / max(uWarpW, 1e-3), 2.0));
+      float ring = uWarp * exp(-((wr - uWarpR) / max(uWarpW, 1e-3)) * ((wr - uWarpR) / max(uWarpW, 1e-3)));
       vec2 wdir = wr > 1e-4 ? (wd / wr) / asp : vec2(0.0);
       vec2 hd = (uv - uHeatC) * asp; float hk = uHeatA * exp(-dot(hd, hd) / max(uHeatR * uHeatR, 1e-4));
       vec2 shim = hk * 0.004 * vec2(sin(uv.y * 90.0 + uTime * 6.0) + 0.5 * sin(uv.y * 210.0 - uTime * 9.0), cos(uv.x * 70.0 - uTime * 5.0));
@@ -102,6 +118,7 @@ export function createRenderer() {
   const output = new OutputPass();
   const grade = new ShaderPass(GradeShader);
   composer.addPass(renderPass);
+  composer.addPass(new ShaderPass(SanitizeShader));
   composer.addPass(bloom);
   composer.addPass(output);
   composer.addPass(grade);
@@ -137,7 +154,7 @@ export class Overlay {
     const k = key + prop;
     if (this.cache.get(k) === val) return;
     this.cache.set(k, val);
-    if (prop === 'html') el.innerHTML = val; else el.style[prop] = val;
+    if (prop === 'html') el.innerHTML = val; else if (prop.startsWith('--')) el.style.setProperty(prop, val); else el.style[prop] = val;
   }
   apply(s) {
     const e = this.el;
@@ -152,6 +169,7 @@ export class Overlay {
     // HUD
     const h = s.hud;
     this.set('hud', e.hud, 'opacity', String(h ? h.a : 0));
+    this.set('hud', e.hud, '--k', String(h && h.k != null ? h.k : 1));   // HUD size (rule 23): 1 = big, hudK() shrinks it
     if (h) {
       this.set('hudLab', e.hudLab, 'html', h.lab || '');
       this.set('hudVal', e.hudVal, 'html', h.val || '');

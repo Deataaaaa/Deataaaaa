@@ -17,15 +17,20 @@ function Start-Log([string]$path, [string]$title) {
   $script:LogFile = $path
   Set-Content -LiteralPath $path -Value ($title + ' ' + (Get-Date -Format s)) -Encoding UTF8
 }
+$script:Quiet = $false                                      # render.ps1: program output goes to the log only
+function Log([string]$t) { if ($script:LogFile) { Add-Content -LiteralPath $script:LogFile -Value $t -Encoding UTF8 } }
 function Say([string]$t) {
-  Write-Host $t -ForegroundColor Cyan
-  if ($script:LogFile) { Add-Content -LiteralPath $script:LogFile -Value $t -Encoding UTF8 }
+  if (-not $script:Quiet) { Write-Host $t -ForegroundColor Cyan }
+  Log $t
 }
-# runs a program, shows its output and keeps it in the log; returns its exit code
+# runs a program, shows its output (unless Quiet) and keeps it in the log; returns its exit code. Its output is also
+# kept in $script:LastOut (render.ps1 reads the results from it).
 function Run([string]$exe, [string[]]$argv) {
+  $script:LastOut = New-Object System.Collections.ArrayList
   & $exe @argv 2>&1 | ForEach-Object {
-    $l = "$_"; Write-Host $l
-    if ($script:LogFile) { Add-Content -LiteralPath $script:LogFile -Value $l -Encoding UTF8 }
+    $l = "$_"; [void]$script:LastOut.Add($l)
+    if (-not $script:Quiet) { Write-Host $l }
+    Log $l
   }
   return $LASTEXITCODE
 }
@@ -33,17 +38,6 @@ function RefreshPath {
   $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
 }
 function Has([string]$cmd) { return [bool](Get-Command $cmd -ErrorAction SilentlyContinue) }
-
-# Google Drive for desktop shows "My Drive" on its own drive letter (G: by default; "Mon Drive" in French)
-function Find-GoogleDrive {
-  $names = @('My Drive', 'Mon Drive', 'Mi unidad', 'Meine Ablage', 'Il mio Drive', 'Meu Drive', 'Mijn Drive')
-  foreach ($d in Get-PSDrive -PSProvider FileSystem) {
-    foreach ($n in $names) { $p = Join-Path $d.Root $n; if (Test-Path -LiteralPath $p) { return $p } }
-  }
-  $old = Join-Path $env:USERPROFILE 'Google Drive'
-  if (Test-Path -LiteralPath $old) { return $old }
-  return $null
-}
 
 # the 3D people listed in pc\avatars.txt (Rocketbox, MIT) and the two Mixamo rigs from the three.js examples
 function Ensure-Models([string]$studio, [string]$pc) {

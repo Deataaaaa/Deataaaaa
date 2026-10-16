@@ -154,7 +154,7 @@ export function makeOcean7(sky) {
         vec2 gr = vec2(bnoise(q + vec2(e, 0.0)) + 0.5 * bnoise(q2 + vec2(e, 0.0)) - h0, bnoise(q + vec2(0.0, e)) + 0.5 * bnoise(q2 + vec2(0.0, e)) - h0) / e;
         vec3 N = normalize(vN + vec3(-gr.x, 0.0, -gr.y) * 0.18 * fd);
         vec3 V = normalize(cameraPosition - vW);
-        float fres = 0.02 + 0.98 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
+        float fres = 0.02 + 0.98 * pow(clamp(1.0 - dot(N, V), 0.0, 1.0), 5.0);
         vec3 R = reflect(-V, N); R.y = abs(R.y);
         vec3 col;
         float thick = vW.y - groundY(p);
@@ -453,7 +453,7 @@ export function makeTsunami(sky) {
         vec2 q3 = vec2(vZ * 0.1, vBH * 0.06 - uTime * 1.5);                     // churn inside the whitewater
         float n3 = bfbmAA(q3 + 2.1, max(fz * 0.1, fh * 0.06));
         N = normalize(N + vec3(0.0, (n1 - 0.5) * 0.6, (n2 - 0.5) * 0.7));
-        float fres = 0.02 + 0.98 * pow(1.0 - abs(dot(N, V)), 5.0);
+        float fres = 0.02 + 0.98 * pow(max(1.0 - abs(dot(N, V)), 0.0), 5.0);
         vec3 R = reflect(-V, N); R.y = abs(R.y);
         float back = pow(clamp(0.5 + 0.5 * dot(-V, uSun), 0.0, 1.0), 3.0);
         vec3 deep = vec3(0.008, 0.026, 0.03), silt = vec3(0.045, 0.036, 0.022);

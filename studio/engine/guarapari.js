@@ -144,7 +144,7 @@ export function makeOcean(sky) {
         vec2 gr = vec2(bnoise(q + vec2(e, 0.0)) + 0.5 * bnoise(q2 + vec2(e, 0.0)) - h0, bnoise(q + vec2(0.0, e)) + 0.5 * bnoise(q2 + vec2(0.0, e)) - h0) / e;
         vec3 N = normalize(vN + vec3(-gr.x, 0.0, -gr.y) * 0.18 * fd);
         vec3 V = normalize(cameraPosition - vW);
-        float fres = 0.02 + 0.98 * pow(1.0 - max(dot(N, V), 0.0), 5.0);
+        float fres = 0.02 + 0.98 * pow(clamp(1.0 - dot(N, V), 0.0, 1.0), 5.0);
         vec3 R = reflect(-V, N); R.y = abs(R.y);
         vec3 refl = duskSky(R);
         // the burning coast in the waves: a band of fire just above the land horizon (the land lies toward -x)

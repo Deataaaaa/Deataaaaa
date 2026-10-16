@@ -145,12 +145,13 @@ const WALLS = {
   3: [[0.4, [0.62, 0.62, 0.6]], [0.65, [0.5, 0.49, 0.47]], [0.85, [0.25, 0.26, 0.28]], [1.01, [0.52, 0.32, 0.24]]],
 };
 const v3 = (c) => `vec3(${c.map((x) => x.toFixed(3)).join(', ')})`;
-const WALL_GLSL = `vec3 wallCol(float st, float h){
-      if (st < 0.5) { ${WALLS[0].map(([k, c]) => `if (h < ${k.toFixed(2)}) return ${v3(c)};`).join(' ')} }
-      if (st < 1.5) return pastel(h) * 0.72;
-      if (st < 2.5) { ${WALLS[2].map(([k, c]) => `if (h < ${k.toFixed(2)}) return ${v3(c)};`).join(' ')} }
-      if (st < 3.5) { ${WALLS[3].map(([k, c]) => `if (h < ${k.toFixed(2)}) return ${v3(c)};`).join(' ')} }
-      return pastel(h) * 0.76; }`;
+const WALL_GLSL = `vec3 wallCol(float st, float h){     // one exit (early returns gave D3D warning X4000 on the PC)
+      vec3 c = pastel(h) * 0.76;
+      if (st < 0.5) { ${WALLS[0].map(([k, c]) => `if (h < ${k.toFixed(2)}) c = ${v3(c)}; else`).join(' ')} c = pastel(h) * 0.72; }
+      else if (st < 1.5) c = pastel(h) * 0.72;
+      else if (st < 2.5) { ${WALLS[2].map(([k, c]) => `if (h < ${k.toFixed(2)}) c = ${v3(c)}; else`).join(' ')} c = pastel(h) * 0.76; }
+      else if (st < 3.5) { ${WALLS[3].map(([k, c]) => `if (h < ${k.toFixed(2)}) c = ${v3(c)}; else`).join(' ')} c = pastel(h) * 0.76; }
+      return c; }`;
 const PASTEL_JS = PASTEL.map((c) => c.match(/[\d.]+/g).map(Number));
 function wallColJS(st, h) {
   if (WALLS[st]) return WALLS[st].find(([k]) => h < k)[1];

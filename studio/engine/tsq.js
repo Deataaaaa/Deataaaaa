@@ -199,8 +199,10 @@ const SCREEN_FS = `uniform float uT, uPower, uFrost; uniform sampler2D uWide, uT
   ${PULSE}
   vec3 adAt(float tile, vec2 u, float tall){
     vec2 uv;
-    if (tall > 0.5) { float i = mod(tile, uNT), col = mod(i, 4.0), row = floor(i / 4.0); uv = vec2((col + u.x) / 4.0, 1.0 - (row + 1.0 - u.y) / 2.0); return texture2D(uTall, uv).rgb; }
-    float i = mod(tile, uNW), col = mod(i, 4.0), row = floor(i / 4.0); uv = vec2((col + u.x) / 4.0, 1.0 - (row + 1.0 - u.y) / 4.0); return texture2D(uWide, uv).rgb;
+    vec3 c = vec3(0.0);                                  // one exit (an early return gave D3D warning X4000 on the PC)
+    if (tall > 0.5) { float i = mod(tile, uNT), col = mod(i, 4.0), row = floor(i / 4.0); uv = vec2((col + u.x) / 4.0, 1.0 - (row + 1.0 - u.y) / 2.0); c = texture2D(uTall, uv).rgb; }
+    else { float i = mod(tile, uNW), col = mod(i, 4.0), row = floor(i / 4.0); uv = vec2((col + u.x) / 4.0, 1.0 - (row + 1.0 - u.y) / 4.0); c = texture2D(uWide, uv).rgb; }
+    return c;
   }
   void main(){
     vec2 px = vUv * vSize.xy; vec2 fw = fwidth(px) + 1e-4;

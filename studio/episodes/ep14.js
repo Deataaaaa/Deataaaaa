@@ -5,7 +5,7 @@
 // through the buildings, glass and signs. The city (33-43): from Tokyo Tower, the mushroom cloud. Space (43-51).
 // The rewind (51-62): back to the instant it appeared; CERN's real numbers. Loop end card + Follow for more (62-68).
 import * as THREE from 'three';
-import { createRenderer, Overlay, W, H, rng, smooth, clamp, captionAt } from '../engine/core.js';
+import { createRenderer, Overlay, W, H, rng, smooth, clamp, captionAt, hudK } from '../engine/core.js';
 import { loadTex } from '../engine/assets.js';
 import { makeSpace6, geoDir } from '../engine/space6.js';
 import { makeEndTag } from '../engine/endtag.js';
@@ -232,14 +232,15 @@ export async function create() {
   }
 
   function hudAt(t, phys) {
-    if (t < T.APPEAR) return { a: 1, lab: '1 gram of antimatter appears in', val: fmtT(T.APPEAR - t), sub: 'Shibuya Crossing, Tokyo · 9:12 pm', sub2: 'Up to 3,000 people per green light' };
+    const k = hudK(t, T.APPEAR);                     // rule 23: big during the countdown, small from 1 s before it appears
+    if (t < T.APPEAR) return { a: 1, k, lab: '1 gram of antimatter appears in', val: fmtT(T.APPEAR - t), sub: 'Shibuya Crossing, Tokyo · 9:12 pm', sub2: 'Up to 3,000 people per green light' };
     if (t < T.REWIND) {
-      if (t >= T.MICRO && t < T.MACRO) return { a: 1, lab: 'Time since it appeared', val: fmtPhys(phys), sub: 'Zoomed in a billion times', sub2: 'Air molecule meets anti-aluminium' };
+      if (t >= T.MICRO && t < T.MACRO) return { a: 1, k, lab: 'Time since it appeared', val: fmtPhys(phys), sub: 'Zoomed in a billion times', sub2: 'Air molecule meets anti-aluminium' };
       const sub = t < T.CITY ? 'Slow motion' : 'Time sped up';
       const sub2 = t < T.MILLI ? '1 g + 1 g of air → 1.8 × 10¹⁴ J' : t < T.CITY ? '= 43 kilotons of TNT' : 'Hiroshima, 1945: 15 kilotons';
-      return { a: 1, lab: 'Time since it appeared', val: fmtPhys(phys), sub, sub2 };
+      return { a: 1, k, lab: 'Time since it appeared', val: fmtPhys(phys), sub, sub2 };
     }
-    if (t < T.END) return { a: smooth(T.REWIND, T.REWIND + 0.4, t) * (1 - smooth(T.END - 0.3, T.END, t)), lab: 'All the antimatter ever made', val: '< 10 ng', sub: 'Cost of 1 gram: $62.5 trillion', sub2: 'NASA estimate, 1999' };
+    if (t < T.END) return { k, a: smooth(T.REWIND, T.REWIND + 0.4, t) * (1 - smooth(T.END - 0.3, T.END, t)), lab: 'All the antimatter ever made', val: '< 10 ng', sub: 'Cost of 1 gram: $62.5 trillion', sub2: 'NASA estimate, 1999' };
     return null;
   }
 
@@ -275,7 +276,8 @@ export async function create() {
       c.group.position.copy(c.p0); c.group.rotation.set(0, c.r0, 0);
       if (age > 0) { tmp.set(c.p0.x - BEAD.x, 0, c.p0.z - BEAD.z).normalize(); const s = 0.5 * 0.02 * age * age * Math.min(1, 40 / d); c.group.position.addScaledVector(tmp, s); c.group.position.y += s * 0.25; c.group.rotation.z = Math.min(1.2, s * 0.08); } }
     you.root.visible = !(on && Rf > 2.2);
-    motes.update(0, cam, R.SSAA); motes.points.visible = t >= T.APPEAR && t < T.MILLI || t >= T.REWIND; motes.u.uGain.value = 1 + 2.5 * smooth(0.05, 1.0, Rf);
+    motes.u.uNear.value = t >= T.REWIND ? 1.0 : 0.3; motes.update(0, cam, R.SSAA);   // the rewind push-in: no mote within 1-2.5 m of the lens (they popped at 57 s)
+    motes.points.visible = t >= T.APPEAR && t < T.MILLI || t >= T.REWIND; motes.u.uGain.value = 1 + 2.5 * smooth(0.05, 1.0, Rf);
     ion.update(on && t >= T.MACRO && t < T.MILLI ? Rf * 2.3 : -10, cam, R.SSAA); ion.points.visible = on && t >= T.MACRO && t < T.MILLI;
   }
 

@@ -52,7 +52,7 @@ export function makeFireball({ detail = 6 } = {}) {
         float k = uHeat * (0.5 + 0.5 * pow(mu, 0.6)) * (0.72 + 0.45 * n1 + 0.22 * rid + 0.1 * vT);
         vec3 c = tramp(clamp(k, 0.0, 1.0)) * (0.12 + 4.2 * pow(clamp(k, 0.0, 1.2), 2.4));
         c = mix(c, c * vec3(0.72, 0.7, 1.3) + vec3(0.02, 0.0, 0.06) * k, uViolet);
-        float smk = smoothstep(0.05, -0.45, n1) * pow(1.0 - mu, 0.7) * uSoot;           // soot patches drifting over the limb
+        float smk = smoothstep(0.05, -0.45, n1) * pow(max(1.0 - mu, 0.0), 0.7) * uSoot;           // soot patches drifting over the limb
         c *= 1.0 - 0.88 * smk;
         vec3 smoke = mix(vec3(0.05, 0.04, 0.035), vec3(0.3, 0.17, 0.09), clamp(n1 * 0.5 + 0.5, 0.0, 1.0) * (1.0 - mu * 0.5));
         c = mix(c, smoke, uSmoke * smoothstep(0.1, 0.6, 1.0 - k + 0.3 * n1));
@@ -94,7 +94,7 @@ export function makeShock() {
     fragmentShader: `${SIMPLEX}
       uniform float uA, uTime; uniform vec3 uCol; varying vec3 vN; varying vec3 vW;
       void main(){ vec3 V = normalize(cameraPosition - vW); float mu = abs(dot(normalize(vN), V));
-        float rim = pow(1.0 - mu, 3.0), mott = 0.6 + 0.4 * fbm3(vN * 6.0 + uTime * 0.1, 3);
+        float rim = pow(max(1.0 - mu, 0.0), 3.0), mott = 0.6 + 0.4 * fbm3(vN * 6.0 + uTime * 0.1, 3);
         float a = uA * (0.08 * mott + 0.5 * rim) * smoothstep(-2.0, 2.0, vW.y);
         gl_FragColor = vec4(uCol, clamp(a, 0.0, 1.0));
         #include <tonemapping_fragment>

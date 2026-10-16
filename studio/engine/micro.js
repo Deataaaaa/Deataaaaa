@@ -34,7 +34,7 @@ export function makeMicro({ t0, tHit, t1, neon }) {
   // with a small hot nucleus inside
   const shellMat = (col) => new THREE.ShaderMaterial({ uniforms: { uCol: { value: new THREE.Color(...col) } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     vertexShader: `varying vec3 vN; varying vec3 vV; void main(){ vec4 w = modelMatrix * instanceMatrix * vec4(position, 1.0); vN = normalize(mat3(modelMatrix * instanceMatrix) * normal); vV = cameraPosition - w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
-    fragmentShader: `uniform vec3 uCol; varying vec3 vN; varying vec3 vV; void main(){ float mu = abs(dot(normalize(vN), normalize(vV))); float g = 0.06 + 1.15 * pow(1.0 - mu, 2.4);
+    fragmentShader: `uniform vec3 uCol; varying vec3 vN; varying vec3 vV; void main(){ float mu = abs(dot(normalize(vN), normalize(vV))); float g = 0.06 + 1.15 * pow(max(1.0 - mu, 0.0), 2.4);
       gl_FragColor = vec4(uCol * g, 1.0);
       #include <tonemapping_fragment>
       #include <colorspace_fragment>

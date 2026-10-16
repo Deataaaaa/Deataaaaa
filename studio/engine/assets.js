@@ -508,7 +508,7 @@ export function makeGlobe(tex) {
           vec3 lava = mix(vec3(1.0,0.25,0.03), vec3(1.0,0.78,0.4), nz) * (0.9 + 0.8*smoothstep(uBurn-0.2, uBurn-0.6, ang));
           col = mix(col, lava, m);
         }
-        float rim = pow(1.0 - max(dot(n, vV), 0.0), 2.5);
+        float rim = pow(clamp(1.0 - dot(n, vV), 0.0, 1.0), 2.5);
         col += vec3(0.30,0.55,1.0) * rim * (0.15 + 0.85*smoothstep(-0.3,0.6,d)) * uRim;
         gl_FragColor = vec4(col, 1.0);
       }`,

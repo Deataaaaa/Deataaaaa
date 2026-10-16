@@ -90,10 +90,16 @@ often while at work, so every deliverable has to be ready to post straight from 
     re-reading big files, few low-res stills (contact sheets, not single frames), checks by script output. Final renders
     run on the owner's PC (RENDER.bat), never here.
 
-22. **Voiceover on every video, always Cori** (owner, 16 Oct 2026). A calm female narrator reads along with the captions:
-    Piper voice `en_GB-cori-high` (public-domain data, free for commercial use), no deepening, never another voice. Lines in
-    `studio/audio/vo/epNN_lines.json` (one per caption window), `tools/vo.py` makes the WAV (committed), the episode's audio
-    script ducks the music about 6 dB under it. Send the owner the soundtrack to check before the render.
+22. **Voiceover on every video, Kokoro `af_heart`** (owner, 16 Oct 2026: Cori felt "too robotic"). A calm, natural female
+    narrator reads along with the captions: Kokoro-82M (Apache-2.0, free for commercial use) voice `af_heart`, 8 % under its
+    default pace, no deepening, never another voice without the owner's OK. Lines in `studio/audio/vo/epNN_lines.json` (one per
+    caption window), `tools/vo.py <lines> kokoro:af_heart <wav>` makes the WAV (committed), the episode's audio script ducks the
+    music about 6 dB under it. Send the owner the soundtrack to check before the render.
+
+23. **Small, readable HUD** (owner, 16 Oct 2026: "make this text tinier with an easier and readable font"). The HUD block (label,
+    timer, sub lines) is Inter with tabular figures (`.cine #hud` in `player.html`). It is big while the countdown runs (part of
+    the hook), then shrinks smoothly, never with a cut: starting 1 s before the event and taking 0.55 s, the timer goes to 62 %
+    of its size and the small lines a bit less (`hudK(t, tEvent)` in `core.js`, passed as `hud.k`), and it stays small after.
 
 ## Delivery checklist
 - `studio/encode.sh <frames> <wav> videos/postN_<slug>`: HQ + `_phone.mp4` (< 30 MB, the chat's send limit).
@@ -115,7 +121,7 @@ often while at work, so every deliverable has to be ready to post straight from 
 | 5 | `studio/episodes/ep11.js` | Every radioactive atom decays at once (Guarapari black-sand beach → your body and banana → granite → continents → Goiânia 1987) | delivered 10 Oct (68 s, tag 05; first video with Apple and the hand-spinner WTF, rule 19). First render on the owner's PC: 4 min in all (the cloud box needed ~6 h). Covers: `videos/post5_cover.jpg` (burning city), `post5_cover_apple.jpg` |
 | 6 | `studio/episodes/ep12.js` | Every atom on Earth stops moving for 1 s (Times Square at blue hour → the frozen second → absolute zero, frost, snow → the sky falls → Earth turns white → Vostok 1983) | built 10 Oct (68 s, tag 06; WTF = a snowman in sunglasses next to you; Apple on the plaza in front of the steps at 8.6-10.6 s; first Follow-for-more end tag). Look approved by the owner ("fine as is"); rendered on the owner's PC via RENDER.bat. Cover `videos/post6_cover.jpg` |
 | 7 | `studio/episodes/ep13.js` | The air stops turning with Earth for 30 s (POV on Baker Beach, San Francisco → 1,320 km/h wind, the Golden Gate twists and breaks → space → "then the sea pulls back…" → the biggest tsunami) | built 15 Oct (68 s, tag 07; POV with hands by IK; WTF = a capybara with an orange on its head flying past in the storm at 0:01, 0:13, 0:21, 0:28 and 0:38, small and quick (owner: only the flying one, for "why is there a capybara flying past at x:xx" comments; the hook is the bridge twisting in slow motion); Apple on a rock in the swash, calm part). Owner: the tsunami must be "MEAN ASF": v2 wave 440 → 770 m (dark silt-loaded face, foam lace climbing it, a lip that passes over you at the cut, a mane of spray off the crest, a churning toe, debris and a boat on the face), it swallows the sun (the light dies at 45.4-47.4 s) and both bridge towers (50.6 and 55.3 s, bursts + braams), roar cut 0.3 s before the hit. Owner after the first PC render: "straight cut to the gust, boring, not enough view, not enough destruction": v3 = one take from the walk through the gust (shoved down at 0:11, hands up, look at the houses being ripped off their foundations, junk flying past, then across to the bridge with a push-in to fov 29 while it twists and breaks), houses and trees torn from the Presidio cross the bridge view, much less haze. Cover `videos/post7_cover.jpg` |
-| 8 | `studio/episodes/ep14.js` | 1 gram of antimatter appears in front of you (Shibuya Crossing at night → the bead, femtoseconds: atoms annihilating on its surface → the plasma ball in bullet time → milliseconds: the fireball and the shock down the canyon → Tokyo Tower: the mushroom cloud → space → back to the instant it appeared; CERN < 10 ng, $62.5 trillion a gram) | built 16 Oct (68 s, tag 08; new Shibuya set `engine/shibuya.js` with Japanese neon signs from a Noto Sans JP subset; walking crowd `poses.js walk()`; `engine/antimatter.js` fireball/shock/clock; `engine/micro.js` atoms; lens effects in the grade: chroma, shock refraction ring, heat shimmer, punches; WTF = a furry monster plush keychain tumbling intact past the rooftop camera at 0:32-0:33 (`engine/plush.js`); Apple on a vending machine, north-east corner, calm part). Cover `videos/post8_cover.jpg` |
+| 8 | `studio/episodes/ep14.js` | 1 gram of antimatter appears in front of you (Shibuya Crossing at night → the bead, femtoseconds: atoms annihilating on its surface → the plasma ball in bullet time → milliseconds: the fireball and the shock down the canyon → Tokyo Tower: the mushroom cloud → space → back to the instant it appeared; CERN < 10 ng, $62.5 trillion a gram) | built 16 Oct (68 s, tag 08; new Shibuya set `engine/shibuya.js` with Japanese neon signs from a Noto Sans JP subset; walking crowd `poses.js walk()`; `engine/antimatter.js` fireball/shock/clock; `engine/micro.js` atoms; lens effects in the grade: chroma, shock refraction ring, heat shimmer, punches; WTF = a furry monster plush keychain tumbling intact past the rooftop camera at 0:32-0:33 (`engine/plush.js`); Apple on a vending machine, south-east corner, calm part). Cover `videos/post8_cover.jpg` |
 Cast log (rule 16): post 1 elevator = Michelle (dark skin, curly black hair, red headphones); post 2 plane =
 Michelle (same); post 3 whale = POV diver, black wetsuit and gloves (body never seen); post 4 light = Male_Adult_17
 (beard, black cap, blue-white hoodie; his friend Female_Adult_12, brunette with bangs, black hoodie); post 5 radioactive =
@@ -134,10 +140,13 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
   "I do have a very good PC but my girlfriend would get mad if it is turned on 24/7": the PC can only be used for
   short render sessions, started by them. Their PC: Windows, AMD RX 6700 XT, Google Drive for desktop.
 - PC render kit (`pc/`, instructions in `pc/README.md`): `SETUP.bat` once (winget tools, npm + Chromium, pip, the 3D
-  people from `pc/avatars.txt`, a GPU test frame); then `RENDER.bat` per video: `git pull`, soundtrack,
-  `tools/renderall.mjs --gpu` (N interleaved workers), `checkframes.py`, `encode.sh` (Git Bash), `sheet1fps.py`, copy to
-  Google Drive › DeatAnimation (`<name>_phone.mp4`, cover, `_sheet.jpg`, `_flicker.txt`, `_log.txt`; read them back with
-  the Drive connector), wait for the upload, shut down. To hand over a video: finish and check it here with previews,
+  people from `pc/avatars.txt`, a GPU test frame); then `RENDER.bat` per video ("DeatAnimation Render Engine (beta)", a CMD
+  UI in `render.ps1`; owner, 16 Oct 2026: no Google Drive, a beta look, usage %, never pile up videos): git reset to the
+  branch, delete the last run's `videos/*.mp4|txt` and everything in `studio/out`, soundtrack, `tools/renderall.mjs --gpu` in
+  the background (its output in `studio/out/render_workers_log.txt`) with a live bar (frames on disk, fps, ETA) and GPU/CPU/
+  VRAM/RAM use from WMI perf classes, `checkframes.py` (also flags black areas), `encode.sh` (Git Bash), `sheet1fps.py`, the
+  frames deleted, Explorer opened on the phone file, optional shutdown with a key to cancel. Program output only goes to
+  `studio/out/pc_render_log.txt`: the owner pastes it in the chat when something fails. To hand over a video: finish and check it here with previews,
   set `pc/job.json` (ep, name, cover, workers), add any new avatar to `pc/avatars.txt`, push, then tell the owner to
   double-click RENDER.bat. The owner's PC has no winget (App Installer missing): `setup.ps1` falls back to direct downloads
   (Node zip, python.org installer, gyan.dev ffmpeg, Git installer); Git itself came from git-scm.com. Keep `pc/*.ps1` ASCII only (PowerShell 5.1) and bash scripts LF (`.gitattributes`); Windows
@@ -282,10 +291,15 @@ phone battery catching fire in your pocket. Old built-but-unpublished episodes: 
 - Very bright lights on glossy wet surfaces push specular peaks past half-float range (Inf, then NaN that UnrealBloom smears
   into a black rectangle): ep14 caps every built-in material's output (`ShaderChunk.opaque_fragment`, min 20000) and raises the
   wet ground's minimum roughness while the fireball's light is on. A camera inside an additive halo sphere washes the frame.
-- Voiceover (from post 8): `studio/tools/vo.py <lines.json> <voice.onnx> <out.wav>` synthesises each line with Piper (offline neural
-  TTS, `pip install piper-tts`; voices from huggingface.co/rhasspy/piper-voices), fits it in its caption window, deepens it 5 %;
-  the WAV is committed (`studio/audio/vo/`) so the PC needs no TTS; the episode's audio script ducks the music under it.
-  Voice (owner, 16 Oct: "a sweet female voice that isn't annoying"): en_GB-cori-high (public-domain LibriVox data), no deepening;
-  alternatives kristin, ljspeech (public domain). Never ryan or hfc_female (CC BY-NC-SA: non-commercial).
+- Voiceover (from post 8): `studio/tools/vo.py <lines.json> <voice> <out.wav>` synthesises each line offline, fits it in its
+  caption window; the WAV is committed (`studio/audio/vo/`) so the PC needs no TTS; the episode's audio script ducks the music.
+  Voice: `kokoro:af_heart` (Kokoro-82M, Apache-2.0: `pip install kokoro-onnx`, `kokoro-v1.0.onnx` + `voices-v1.0.bin` from the
+  github.com/thewh1teagle/kokoro-onnx releases in `$KOKORO_DIR`). Piper voices (`.onnx`) still work but sound robotic (Cori was
+  dropped for that). Licences: never Piper ryan or hfc_female, XTTS or F5 (non-commercial).
+- Black rectangles on the PC only (post 8 v1, 17.6 s): HLSL computes pow(x, y) as exp2(y log2 x), so a base a hair below 0
+  (`1.0 - abs(dot(n, v))` when the dot rounds to 1.0000001) gives NaN, and UnrealBloom blurs one NaN pixel into a rectangle
+  (or a whole black frame, which the flicker check skips). Clamp every pow base (`pow(max(1.0 - mu, 0.0), k)`); `core.js` now
+  also runs a sanitize pass before the bloom (NaN to 0, +Inf and anything above 16000 to 16000, tested on the float's bits so
+  fast-math cannot drop it), and `checkframes.py` lists frames with sudden black areas. SwiftShader here does not show it.
 - Parallel render workers used to pick a random port and could collide (EADDRINUSE killed one silently): `render.mjs`
   now listens on a free port. Billboard smoke seen from above reads as white blobs: fade it out when the camera rises.

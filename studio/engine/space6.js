@@ -60,7 +60,7 @@ export function makeSpace6(tex) {
         col += vec3(1.0, 0.9, 0.8) * spec;
         col += night * vec3(1.0, 0.75, 0.45) * 1.4 * (1.0 - lit) * (1.0 - c) * uLights;
         // the air's sunlit rim, thinner once the cold air has fallen
-        float mu = max(dot(n, v), 0.0), rim = pow(1.0 - mu, mix(5.0, 3.0, uAtm));
+        float mu = max(dot(n, v), 0.0), rim = pow(max(1.0 - mu, 0.0), mix(5.0, 3.0, uAtm));
         col += vec3(0.25, 0.5, 1.0) * max(d + 0.15, 0.0) * rim * (0.35 + 0.65 * uAtm);
         gl_FragColor = vec4(col, 1.0);
         #include <tonemapping_fragment>
@@ -73,7 +73,7 @@ export function makeSpace6(tex) {
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.BackSide, uniforms: { uSun: U.uSun, uAtm: U.uAtm },
     vertexShader: `varying vec3 vN; varying vec3 vW; void main(){ vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
     fragmentShader: `uniform vec3 uSun; uniform float uAtm; varying vec3 vN; varying vec3 vW;
-      void main(){ vec3 v = normalize(cameraPosition - vW); float mu = abs(dot(normalize(vN), v)); float a = pow(1.0 - mu, 6.0) * smoothstep(-0.3, 0.4, dot(normalize(vW), uSun));
+      void main(){ vec3 v = normalize(cameraPosition - vW); float mu = abs(dot(normalize(vN), v)); float a = pow(max(1.0 - mu, 0.0), 6.0) * smoothstep(-0.3, 0.4, dot(normalize(vW), uSun));
         gl_FragColor = vec4(vec3(0.3, 0.55, 1.0) * a * 0.9 * (0.25 + 0.75 * uAtm), 1.0); }`,
   }));
   scene.add(halo);

@@ -16,7 +16,8 @@ fs.mkdirSync(out, { recursive: true });
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.jpg': 'image/jpeg', '.png': 'image/png', '.woff2': 'font/woff2', '.css': 'text/css' };
 const srv = http.createServer((q, s) => {
   const p = path.join(root, decodeURIComponent(q.url.split('?')[0]));
-  if (!p.startsWith(root) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { s.writeHead(404); return s.end(); }
+  if (q.url === '/favicon.ico') { s.writeHead(204); return s.end(); }   // Chromium asks for one: no 404 in the log
+  if (!p.startsWith(root) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { console.log('[server] 404', q.url); s.writeHead(404); return s.end(); }
   s.writeHead(200, { 'Content-Type': types[path.extname(p)] || 'application/octet-stream' });
   fs.createReadStream(p).pipe(s);
 });

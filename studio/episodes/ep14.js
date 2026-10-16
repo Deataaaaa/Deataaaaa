@@ -51,6 +51,9 @@ export async function create() {
   const q = new URLSearchParams(location.search);
   globalThis.SSAA = Number(q.get('ssaa') ?? 2); globalThis.MSAA = Number(q.get('msaa') ?? 0);
   fadeShadowBorders(0.2);
+  // a bright light on wet glass and asphalt makes specular peaks past what the half-float buffers hold (Inf, then a NaN
+  // that the bloom smears into a black rectangle): cap every built-in material's output
+  THREE.ShaderChunk.opaque_fragment = THREE.ShaderChunk.opaque_fragment.replace('vec4( outgoingLight, diffuseColor.a )', 'vec4( min( outgoingLight, vec3( 20000.0 ) ), diffuseColor.a )');
   const R = createRenderer();
   const ov = new Overlay();
   document.body.classList.add('cine');
@@ -188,9 +191,20 @@ export async function create() {
   scene.add(dust.mesh);
   // the mushroom cloud for the far shot: the stem and the rolling cap (lit cards, fire-lit from below)
   const MN = 260, mush = new Billboards(MN, { map: smokeT, tiles: [2, 2], additive: false, lit: true, nearK: 0, near: 50 });
-  mush.u.uLitCol.value.set('#ffb070'); mush.u.uShadeCol.value.set('#2c1e1c'); mush.u.uFogD.value = 0;
+  mush.u.uLitCol.value.set('#ffae66'); mush.u.uShadeCol.value.set('#4a2e24'); mush.u.uFogD.value = 0;
   const mushP = []; for (let i = 0; i < MN; i++) mushP.push([fxr(), fxr(), fxr(), fxr()]);
   scene.add(mush.mesh);
+  // dust motes hanging in the air round the bead (time is all but stopped), lit by the neon, then by the plasma
+  const MON = 1400, motes = new Sparks(MON, { minPx: 1.6, maxPx: 6, near: 0.3, additive: true });
+  for (let i = 0; i < MON; i++) { const a = fxr() * 6.283, rr = 0.3 + 5.5 * Math.sqrt(fxr()), y = 0.3 + fxr() * 3.2, c = 0.35 + 0.4 * fxr();
+    motes.set(i, BEAD.x + Math.cos(a) * rr, y, BEAD.z + Math.sin(a) * rr, (fxr() - 0.5) * 0.03, (fxr() - 0.5) * 0.01, (fxr() - 0.5) * 0.03, c, c * 0.95, c * 1.05, 0.0025 + fxr() * 0.003, -100, 1000, fxr()); }
+  motes.commit(); motes.u.uTurb.value = 0.03; motes.u.uTurbF.value = 0.4; scene.add(motes.points);
+  // the air lighting up ahead of the ball: sparkles that flash as the ionisation front passes them, then fade
+  // (the system's clock here is the front's radius in metres: birth = the sparkle's distance, life = 0.9 m)
+  const ION = 5000, ion = new Sparks(ION, { minPx: 1.6, maxPx: 5, near: 0.25, additive: true });
+  for (let i = 0; i < ION; i++) { const u = fxr() * 2 - 1, a = fxr() * 6.283, rr = 0.02 + 4.6 * Math.pow(fxr(), 0.6), s1 = Math.sqrt(1 - u * u);
+    const c = 0.8 + 0.6 * fxr(); ion.set(i, BEAD.x + rr * s1 * Math.cos(a), BEAD.y + rr * u, BEAD.z + rr * s1 * Math.sin(a), 0, 0, 0, c * 0.8, c * 0.75, c * 1.1, 0.002 + fxr() * 0.003, rr, 0.9, fxr()); }
+  ion.commit(); scene.add(ion.points);
   // embers drifting in the far shot (and the space shot's flash fades on its own)
   await Promise.all(TEX_PENDING);
 
@@ -226,10 +240,10 @@ export async function create() {
     FB.mesh.visible = on && Rf > 0.0046; FB.U.uR.value = Rf; FB.U.uTime.value = t * 0.25; FB.U.uHeat.value = 1.0 - 0.18 * smooth(1e-4, 3e-2, ph);
     FB.U.uRough.value = 0.05 + 0.1 * smooth(1e-10, 1e-6, ph); FB.U.uSmoke.value = 0; FB.U.uSquash.value = 1; FB.U.uViolet.value = 1 - smooth(1e-6, 3e-4, ph); FB.U.uSoot.value = smooth(3e-4, 1e-2, ph);
     FB.mesh.position.copy(BEAD).setY(Math.max(BEAD.y, Rf * 0.25 + BEAD.y * (1 - smooth(0.5, 3, Rf))));
-    HL.mesh.visible = on && ph < 2e-2; HL.mesh.position.copy(FB.mesh.position); HL.U.uR.value = Math.max(0.012, Rf * (2.6 - 1.2 * smooth(1e-6, 1e-3, ph))); HL.U.uI.value = 0.9 * (1 - smooth(3e-3, 2e-2, ph));
+    HL.mesh.visible = on && ph < 2e-2; HL.mesh.position.copy(FB.mesh.position); HL.U.uR.value = Math.max(0.012, Rf * (2.6 - 1.2 * smooth(1e-6, 1e-3, ph))); HL.U.uI.value = 0.3 * (1 - smooth(3e-3, 2e-2, ph));
     SK.mesh.visible = on && ph > 2e-6; SK.mesh.position.copy(BEAD).setY(0); SK.U.uR.value = Rs * 1.05; SK.U.uA.value = 0.55 * smooth(2e-6, 2e-5, ph); SK.U.uTime.value = t;
     // the light: grows with the ball; the shadows it throws are the picture in the first nanoseconds
-    fbL.visible = on; fbL.position.copy(FB.mesh.position); fbL.intensity = on ? THREE.MathUtils.lerp(10 * Math.pow(Math.max(Rf, 0.005) / 0.005, 0.7), 600 * Rf * Rf, smooth(1, 5, Rf)) : 0;
+    fbL.visible = on && Rf > 0.0047; fbL.position.copy(FB.mesh.position); SB.U.uMinRough.value = fbL.visible ? 0.22 : 0; fbL.intensity = on ? THREE.MathUtils.lerp(10 * Math.pow(Math.max(Rf, 0.005) / 0.005, 0.7), 600 * Rf * Rf, smooth(1, 5, Rf)) : 0;
     SB.U.uShock.value = on ? Rs : -1;
     TQ.uPower.value = on ? 1 - smooth(38, 50, Rs) : 1;
     glass.update(ph * 1000, cam, R.SSAA); glass.points.visible = Rs > 15;
@@ -246,6 +260,8 @@ export async function create() {
       c.group.position.copy(c.p0); c.group.rotation.set(0, c.r0, 0);
       if (age > 0) { tmp.set(c.p0.x - BEAD.x, 0, c.p0.z - BEAD.z).normalize(); const s = 0.5 * 0.02 * age * age * Math.min(1, 40 / d); c.group.position.addScaledVector(tmp, s); c.group.position.y += s * 0.25; c.group.rotation.z = Math.min(1.2, s * 0.08); } }
     you.root.visible = !(on && Rf > 2.2);
+    motes.update(0, cam, R.SSAA); motes.points.visible = t >= T.APPEAR && t < T.MILLI || t >= T.REWIND; motes.u.uGain.value = 1 + 2.5 * smooth(0.05, 1.0, Rf);
+    ion.update(on && t < T.MILLI ? Rf * 2.3 : -10, cam, R.SSAA); ion.points.visible = on && t >= T.APPEAR && t < T.MILLI;
   }
 
   function frame(t) {
@@ -284,9 +300,9 @@ export async function create() {
       fbL.visible = true; fbL.castShadow = false; fbL.position.copy(FB.mesh.position); fbL.color.set('#ffb36e'); fbL.intensity = 4e8 * (1 - 0.7 * smooth(1, 30, p)); fbL.distance = 0;
       // the stem and the cap
       for (let i = 0; i < MN; i++) { const [a, b, c, sd] = mushP[i];
-        if (i < 110) { const h = b * cy, rr = 60 + 90 * (1 - b) + 40 * c, an = a * 6.283 + t * 0.05; const sz = 120 + 160 * c;
+        if (i < 110) { const h = b * cy, rr = 80 + 140 * (1 - b) + 60 * c, an = a * 6.283 + t * 0.05; const sz = 180 + 220 * c;
           mush.set(i, BEAD.x + Math.cos(an) * rr, h, BEAD.z + Math.sin(an) * rr, sz, sz, 1, 1, 1, 0.85 * smooth(1.5, 5, p) * smooth(0, 0.1, b), sd * 6.28 + t * 0.03, Math.floor(sd * 4)); }
-        else { const an = a * 6.283 + t * 0.04, rr = Rb * (0.9 + 0.5 * c) * (0.8 + 0.6 * smooth(5, 40, p)), yy = cy + Rb * (b - 0.4) * 0.8, sz = Rb * (0.55 + 0.5 * c);
+        else { const an = a * 6.283 + t * 0.04, rr = Rb * (1.0 + 0.8 * c) * (1 + 1.5 * smooth(3, 40, p)), yy = cy + Rb * (b - 0.35) * (1 + 0.8 * smooth(3, 40, p)), sz = Rb * (0.75 + 0.6 * c) * (1 + 0.6 * smooth(3, 40, p));
           mush.set(i, BEAD.x + Math.cos(an) * rr, yy, BEAD.z + Math.sin(an) * rr, sz, sz * 0.8, 1, 1, 1, 0.9 * smooth(3, 10, p), sd * 6.28 + t * 0.05, Math.floor(sd * 4)); } }
       mush.commit(); mush.update(cam, R.SSAA, V(0, 1, 0));
       mush.mesh.visible = true; dust.mesh.visible = false; glass.points.visible = false;
@@ -319,7 +335,7 @@ export async function create() {
       ST.lampM.emissiveIntensity = 4 * (1 - smooth(25, 40, SB.U.uShock.value));
       scene.fog.density = 0.0016;
       U.uTint.value.set(1 + 0.04 * burn, 1, 1 + 0.06 * burn - 0.08 * big);
-      flare.update(cam, FB.mesh.position, t >= T.REWIND ? 0.05 : phys > 0 ? 0.25 + 0.75 * burn : 0, 0.5 + 0.6 * big);
+      flare.update(cam, FB.mesh.position, t >= T.REWIND ? 0.03 : phys > 0 ? 0.12 + 0.6 * burn : 0, 0.4 + 0.6 * big);
       // the shock reaches the rooftop camera (~31.8 s): a jolt, then white into the cut
       if (t >= T.MILLI && t < T.CITY) { const hit = t - 32.05; if (hit > 0) { const k = Math.exp(-hit * 3) * Math.sin(hit * 46); U.uShake.value.set(0.006 * k, 0.004 * k); } U.uFadeWhite.value = smooth(32.45, 33.0, t); }
       if (t >= T.APPEAR && t < T.MILLI) U.uFadeWhite.value = 0.8 * Math.exp(-(t - T.APPEAR) * 8) + smooth(21.5, 22.0, t) * 0.9;

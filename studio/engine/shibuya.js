@@ -10,7 +10,7 @@ import { rng } from './core.js';
 import { makeFacadeMaterial } from './town5.js';
 import { makeScreens, TQ } from './tsq.js';
 
-export const SB = { RX: 13, RZ: 11, LX: 19, LZ: 17, U: { uShock: { value: -1 }, uSignGain: { value: 1 } } };
+export const SB = { RX: 13, RZ: 11, LX: 19, LZ: 17, U: { uShock: { value: -1 }, uSignGain: { value: 1 }, uMinRough: { value: 0 } } };
 
 // ---------------------------------------------------------------------------------------------------------------
 // the ground: asphalt (wet, puddles), zebra crossings, stop lines and lane dashes, paved sidewalks with granite curbs
@@ -18,10 +18,11 @@ export const SB = { RX: 13, RZ: 11, LX: 19, LZ: 17, U: { uShock: { value: -1 }, 
 export function makeShibuyaGround() {
   const mat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.6, metalness: 0.0 });
   mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uMinRough = SB.U.uMinRough;
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vGW;')
       .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvGW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
-      varying vec3 vGW;
+      varying vec3 vGW; uniform float uMinRough;
       float gh(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
       float gn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
         return mix(mix(gh(i), gh(i + vec2(1, 0)), f.x), mix(gh(i + vec2(0, 1)), gh(i + vec2(1, 1)), f.x), f.y); }
@@ -70,7 +71,7 @@ export function makeShibuyaGround() {
       float gRough = mix(mix(0.62, 0.7, grit), 0.05, pud);
       gRough = mix(gRough, mix(0.45, 0.12, pud), paint);
       gRough = mix(gRough, mix(0.5, 0.1, pud), 1.0 - road);
-    `).replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = gRough;');
+    `).replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = max(gRough, uMinRough);');
   };
   mat.customProgramCacheKey = () => 'shibuya_ground_v1';
   const m = new THREE.Mesh(new THREE.PlaneGeometry(1600, 1600, 1, 1).rotateX(-Math.PI / 2), mat);

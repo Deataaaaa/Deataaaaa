@@ -68,8 +68,8 @@ export function makeShibuyaGround() {
       col = mix(col, vec3(0.78, 0.78, 0.76), paint * 0.92);
       float wet = mix(0.35, 1.0, pud);
       diffuseColor.rgb = col * (1.0 - 0.45 * wet * (1.0 - paint * 0.5));
-      float gRough = mix(mix(0.62, 0.7, grit), 0.1, pud);
-      gRough = mix(gRough, mix(0.45, 0.12, pud), paint);
+      float gRough = mix(mix(0.62, 0.7, grit), 0.16, pud);
+      gRough = mix(gRough, mix(0.5, 0.3, pud), paint);
       gRough = mix(gRough, mix(0.5, 0.1, pud), 1.0 - road);
     `).replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = max(gRough, uMinRough);');
   };

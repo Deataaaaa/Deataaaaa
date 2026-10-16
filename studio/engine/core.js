@@ -33,19 +33,29 @@ const GradeShader = {
     uFade: { value: 0 }, uFadeWhite: { value: 0 }, uSat: { value: 1.0 }, uContrast: { value: 1.04 },
     uAberr: { value: 0.006 }, uTint: { value: new THREE.Vector3(1, 1, 1) }, uShake: { value: new THREE.Vector2(0, 0) },
     uTunnel: { value: 0 }, uScan: { value: 0 },
+    uWarp: { value: 0 }, uWarpC: { value: new THREE.Vector2(0.5, 0.5) }, uWarpR: { value: 0 }, uWarpW: { value: 0.05 },
+    uHeatA: { value: 0 }, uHeatC: { value: new THREE.Vector2(0.5, 0.5) }, uHeatR: { value: 0.2 }, uBarrel: { value: 0 },
   },
   vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
   fragmentShader: `
     uniform sampler2D tDiffuse; uniform float uTime,uVignette,uGrain,uFade,uFadeWhite,uSat,uContrast,uAberr,uTunnel,uScan;
     uniform vec3 uTint; uniform vec2 uShake; varying vec2 vUv;
+    uniform float uWarp, uWarpR, uWarpW, uHeatA, uHeatR, uBarrel; uniform vec2 uWarpC, uHeatC;
     float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
     void main(){
       vec2 uv = vUv + uShake; vec2 c = uv - 0.5;
-      float ab = uAberr * dot(c,c) * 4.0;
+      uv = 0.5 + c * (1.0 + uBarrel * dot(c, c)); c = uv - 0.5;                    // lens punch (barrel)
+      // a refraction ring (a shock front crossing the lens) and heat shimmer round a point; both smooth in time
+      vec2 asp = vec2(1.0, 1.7778), wd = (uv - uWarpC) * asp; float wr = length(wd);
+      float ring = uWarp * exp(-pow((wr - uWarpR) / max(uWarpW, 1e-3), 2.0));
+      vec2 wdir = wr > 1e-4 ? (wd / wr) / asp : vec2(0.0);
+      vec2 hd = (uv - uHeatC) * asp; float hk = uHeatA * exp(-dot(hd, hd) / max(uHeatR * uHeatR, 1e-4));
+      vec2 shim = hk * 0.004 * vec2(sin(uv.y * 90.0 + uTime * 6.0) + 0.5 * sin(uv.y * 210.0 - uTime * 9.0), cos(uv.x * 70.0 - uTime * 5.0));
+      float ab = uAberr * dot(c,c) * 4.0 + ring * 0.6;
       vec3 col;
-      col.r = texture2D(tDiffuse, uv + c*ab).r;
-      col.g = texture2D(tDiffuse, uv).g;
-      col.b = texture2D(tDiffuse, uv - c*ab).b;
+      col.r = texture2D(tDiffuse, uv + wdir * ring * 1.3 + shim + c*ab).r;
+      col.g = texture2D(tDiffuse, uv + wdir * ring + shim).g;
+      col.b = texture2D(tDiffuse, uv + wdir * ring * 0.7 + shim - c*ab).b;
       if (uTunnel > 0.001) {   // hypoxia: soft smear towards the edges, then tunnel vision
         float r = length(c*vec2(1.0,0.62)); vec2 o = c * uTunnel * 0.035 * smoothstep(0.1, 0.6, r);
         col = (col + texture2D(tDiffuse, uv + o).rgb + texture2D(tDiffuse, uv - o).rgb + texture2D(tDiffuse, uv + o.yx).rgb) / 4.0;

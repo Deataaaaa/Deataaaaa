@@ -31,8 +31,8 @@ export function makeMicro({ t0, tHit, t1, neon }) {
   const events = mols.map((m) => ({ t: m.hit, p: V(m.x, 0.3, m.z), m }));
   // ---- drawing: nuclei (instanced bright spheres), clouds (additive glow cards), event flashes, rays, sparks ----
   const nucG = new THREE.SphereGeometry(1, 12, 8);
-  const antiN = new THREE.InstancedMesh(nucG, new THREE.MeshBasicMaterial({ color: new THREE.Color(3.2, 0.9, 1.9) }), atoms.length);
-  const matN = new THREE.InstancedMesh(nucG, new THREE.MeshBasicMaterial({ color: new THREE.Color(0.8, 2.2, 3.4) }), mols.length * 2);
+  const antiN = new THREE.InstancedMesh(nucG, new THREE.MeshBasicMaterial({ color: new THREE.Color(4.0, 1.1, 2.3) }), atoms.length);
+  const matN = new THREE.InstancedMesh(nucG, new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 2.8, 4.2) }), mols.length * 2);
   antiN.frustumCulled = matN.frustumCulled = false; scene.add(antiN, matN);
   const clouds = new Billboards(atoms.length + mols.length * 2, { map: glow, tiles: [1, 1], additive: true, nearK: 0, near: 0.3 });
   const flashes = new Billboards(events.length * 2, { map: glow, tiles: [1, 1], additive: true, nearK: 0, near: 0.3 });
@@ -40,7 +40,7 @@ export function makeMicro({ t0, tHit, t1, neon }) {
   // the out-of-focus street behind: big soft neon discs
   const bok = new Billboards(40, { map: glow, tiles: [1, 1], additive: true, nearK: 0, near: 1 });
   for (let i = 0; i < 40; i++) { const c = new THREE.Color(neon[i % neon.length]), a = r() * Math.PI * 2, d = 260 + r() * 200;
-    bok.set(i, Math.cos(a) * d, -40 + r() * 220, -120 - Math.abs(Math.sin(a)) * d, 50 + r() * 70, 50 + r() * 70, c.r, c.g, c.b, 0.1 + 0.08 * r(), 0, 0); }
+    bok.set(i, Math.cos(a) * d, -40 + r() * 220, -120 - Math.abs(Math.sin(a)) * d, 30 + r() * 40, 30 + r() * 40, c.r, c.g, c.b, 0.035 + 0.03 * r(), 0, 0); }
   bok.commit(); scene.add(bok.mesh);
   // gamma rays (white-blue, fast, straight), pions (amber / green / magenta, slower), per event; plus a spray of sparks
   const RAYS = 12, rays = new Streaks(events.length * RAYS, { widthPx: 2.2 });
@@ -65,7 +65,7 @@ export function makeMicro({ t0, tHit, t1, neon }) {
     // the crystal: torn outward round each hole, atoms within 2.6 A of an event annihilated (a pulse, then gone)
     let ci = 0;
     atoms.forEach((a, i) => {
-      tmp.copy(a.p); let s = 0.26, heat = 0, gone = false;
+      tmp.copy(a.p); let s = 0.3, heat = 0, gone = false;
       for (const e of events) {
         if (t < e.t) continue;
         const d = a.p.distanceTo(e.p), age = t - e.t;
@@ -76,19 +76,19 @@ export function makeMicro({ t0, tHit, t1, neon }) {
       }
       if (gone) s = 0;
       m4.compose(tmp, q, sv.setScalar(s)); antiN.setMatrixAt(i, m4);
-      if (gone) clouds.hide(ci++); else clouds.set(ci++, tmp.x, tmp.y, tmp.z, 3.4, 3.4, 0.9 + 0.5 * heat, 0.22 + 0.4 * heat, 0.55 + 0.3 * heat, 0.38 + 0.4 * heat, a.seed * 6.28, 0);
+      if (gone) clouds.hide(ci++); else clouds.set(ci++, tmp.x, tmp.y, tmp.z, 2.3, 2.3, 0.9 + 0.5 * heat, 0.2 + 0.4 * heat, 0.55 + 0.3 * heat, 0.16 + 0.4 * heat, a.seed * 6.28, 0);
     });
     antiN.instanceMatrix.needsUpdate = true;
     // the molecules: falling and tumbling until they touch, then gone with a pulse
     mols.forEach((m, i) => {
       const y = m.y0 - m.v * (t - t0), age = t - m.hit, ang = m.ph + m.spin * (t - t0);
-      const k = age / 0.1, s = age < 0 ? 0.24 : k < 1 ? 0.24 * (1 + 0.9 * Math.sin(Math.PI * k)) : 0;
+      const k = age / 0.1, s = age < 0 ? 0.3 : k < 1 ? 0.3 * (1 + 0.9 * Math.sin(Math.PI * k)) : 0;
       q.setFromAxisAngle(m.ax, ang);
       for (const sd of [-1, 1]) {
         tmp.set(0, sd * m.bond / 2, 0).applyQuaternion(q).add(V(m.x, Math.max(y, 1.15), m.z));
         m4.compose(tmp, new THREE.Quaternion(), sv.setScalar(s)); matN.setMatrixAt(i * 2 + (sd > 0 ? 1 : 0), m4);
         const cid = atoms.length + i * 2 + (sd > 0 ? 1 : 0);
-        if (s === 0 || y > 40) clouds.hide(cid); else clouds.set(cid, tmp.x, tmp.y, tmp.z, 3.0, 3.0, m.n2 ? 0.25 : 0.35, m.n2 ? 0.62 : 0.75, 1.0, 0.42, m.ph, 0);
+        if (s === 0 || y > 40) clouds.hide(cid); else clouds.set(cid, tmp.x, tmp.y, tmp.z, 2.6, 2.6, m.n2 ? 0.2 : 0.3, m.n2 ? 0.7 : 0.85, 1.2, 0.55, m.ph, 0);
       }
     });
     matN.instanceMatrix.needsUpdate = true; clouds.commit(); clouds.update(cam, globalThis.SSAA || 1);

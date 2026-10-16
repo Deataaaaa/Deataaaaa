@@ -49,9 +49,9 @@ export const milli = new CamPath([
 // the city (33-43 s): from beside Tokyo Tower's top deck, looking west 4 km across the city at the fireball rising
 // into a mushroom cloud; the view tilts up with it
 export const city = new CamPath([
-  [33.0, V(TOWER.x - 70, 255, TOWER.z - 30), V(0, 260, -60), 34],
-  [38.0, V(TOWER.x - 72, 256, TOWER.z - 31), V(0, 1400, -60), 38],
-  [43.0, V(TOWER.x - 74, 257, TOWER.z - 32), V(0, 2900, -60), 42],
+  [33.0, V(TOWER.x + 90, 240, TOWER.z + 14), V(0, 260, -60), 40],
+  [38.0, V(TOWER.x + 91, 241, TOWER.z + 14), V(0, 1300, -60), 41],
+  [43.0, V(TOWER.x + 92, 242, TOWER.z + 14), V(0, 2700, -60), 42],
 ], { easeIn: false, easeOut: false, arc: true });
 
 // the rewind (51-62 s): back to the instant it appeared, everyone frozen: down from above to the bead and your face

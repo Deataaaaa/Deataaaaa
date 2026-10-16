@@ -31,22 +31,22 @@ export function makeFireball({ detail = 6 } = {}) {
   const mat = new THREE.ShaderMaterial({
     uniforms: U, transparent: false,
     vertexShader: `${SIMPLEX}
-      uniform float uTime, uR, uRough, uSquash; varying vec3 vN; varying vec3 vW; varying float vT;
+      uniform float uTime, uR, uRough, uSquash; varying vec3 vN; varying vec3 vO; varying vec3 vW; varying float vT;
       void main(){
         vec3 n = normalize(position);
         float t = fbm3(n * 2.4 + vec3(0.0, -uTime * 0.35, 0.0), 4), t2 = fbm3(n * 7.0 + vec3(uTime * 0.2), 3);
         float d = 1.0 + uRough * (0.8 * t + 0.35 * t2);
         vec3 p = n * d * uR; p.y *= uSquash;
-        vN = n; vT = t * 0.7 + t2 * 0.3;
+        vO = n; vN = normalize(mat3(modelMatrix) * n); vT = t * 0.7 + t2 * 0.3;
         vec4 w = modelMatrix * vec4(p, 1.0); vW = w.xyz;
         gl_Position = projectionMatrix * viewMatrix * w;
       }`,
     fragmentShader: `${SIMPLEX}${RAMP}
-      uniform float uTime, uHeat, uGain, uSmoke; varying vec3 vN; varying vec3 vW; varying float vT;
+      uniform float uTime, uHeat, uGain, uSmoke; varying vec3 vN; varying vec3 vO; varying vec3 vW; varying float vT;
       void main(){
-        vec3 V = normalize(cameraPosition - vW), N = normalize(mat3(modelMatrix) * vN);
+        vec3 V = normalize(cameraPosition - vW), N = normalize(vN);
         float mu = clamp(dot(N, V), 0.0, 1.0);
-        float cells = fbm3(vN * 5.0 + vec3(0.0, -uTime * 0.6, uTime * 0.2), 4);
+        float cells = fbm3(vO * 5.0 + vec3(0.0, -uTime * 0.6, uTime * 0.2), 4);
         // hotter at the centre of the disc (looking deep into the ball), cooler at the limb; darker cells
         float k = uHeat * (0.62 + 0.38 * mu) * (0.85 + 0.35 * cells + 0.2 * vT);
         vec3 c = tramp(clamp(k, 0.0, 1.0)) * (0.35 + 2.2 * pow(clamp(k, 0.0, 1.0), 1.5));

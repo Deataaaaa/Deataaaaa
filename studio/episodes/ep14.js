@@ -58,21 +58,21 @@ export async function create() {
   const V = (x, y, z) => new THREE.Vector3(x, y, z);
   // night: a deep blue-violet sky, the city's glow low on the horizon
   const sunDir = V(-0.3, -0.5, 0.2).normalize();
-  const SKYC = { zen: '#04060e', hor: '#2a2140', belt: '#3a2a4a', shade: '#0c0f20', sunCol: '#6a3a50' };
+  const SKYC = { zen: '#05060b', hor: '#1d1a24', belt: '#25202c', shade: '#0b0c14', sunCol: '#3a2a30' };
   const skyM = makeDuskSky(sunDir, SKYC); skyM.material.uniforms.uDisk.value = 0; scene.add(skyM);
   const pm = new THREE.PMREMGenerator(R.renderer);
   const envScene = new THREE.Scene(); { const s2 = makeDuskSky(sunDir, SKYC); s2.material.uniforms.uDisk.value = 0; envScene.add(s2); }
   // the neon and the screens as the wet street sees them: coloured panels all round, low on the horizon
   const NEONC = ['#ff3b8d', '#2ef0ff', '#ffe23d', '#ff4a3a', '#b46bff', '#ffffff', '#ff9d2e', '#3d7bff', '#ff3b8d', '#5dff6a', '#2ef0ff', '#ffb0d0'];
   for (let i = 0; i < 24; i++) {
-    const c = new THREE.Color(NEONC[i % 12]).multiplyScalar(1.4 + (i % 3) * 0.6), a = (i / 24) * Math.PI * 2 + 0.13 * i, h = 30 + (i * 37) % 90;
+    const c = new THREE.Color(NEONC[i % 12]).multiplyScalar(0.9 + (i % 3) * 0.45), a = (i / 24) * Math.PI * 2 + 0.13 * i, h = 30 + (i * 37) % 90;
     const p = new THREE.Mesh(new THREE.PlaneGeometry(60 + (i * 53) % 120, 20 + (i * 29) % 50), new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide }));
     p.position.set(Math.cos(a) * 500, h, Math.sin(a) * 500); p.lookAt(0, h, 0); envScene.add(p);
   }
   const env = pm.fromScene(envScene, 0, 1, 20000).texture;
-  scene.environment = env; scene.environmentIntensity = 0.7;
-  scene.fog = new THREE.FogExp2('#1a1630', 0.0016);
-  const hemi = new THREE.HemisphereLight('#4a4f78', '#2a1e1a', 0.55); scene.add(hemi);
+  scene.environment = env; scene.environmentIntensity = 0.55;
+  scene.fog = new THREE.FogExp2('#15141c', 0.0016);
+  const hemi = new THREE.HemisphereLight('#3c4258', '#2a201a', 0.5); scene.add(hemi);
   const key = new THREE.DirectionalLight('#a9b4ff', 0.35); key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -0.0002; key.shadow.normalBias = 0.03;
   const keyDir = V(0.3, 0.9, 0.25).normalize(); scene.add(key, key.target);
   const setShadow = (c, half) => { key.target.position.copy(c); key.position.copy(c).addScaledVector(keyDir, 200); Object.assign(key.shadow.camera, { left: -half, right: half, top: half, bottom: -half, near: 1, far: 400 }); key.shadow.camera.updateProjectionMatrix(); key.target.updateMatrixWorld(); };
@@ -228,7 +228,7 @@ export async function create() {
     HL.mesh.visible = on && ph < 2e-2; HL.mesh.position.copy(FB.mesh.position); HL.U.uR.value = Math.max(0.012, Rf * (2.6 - 1.2 * smooth(1e-6, 1e-3, ph))); HL.U.uI.value = 0.9 * (1 - smooth(3e-3, 2e-2, ph));
     SK.mesh.visible = on && ph > 2e-6; SK.mesh.position.copy(BEAD).setY(0); SK.U.uR.value = Rs * 1.05; SK.U.uA.value = 0.55 * smooth(2e-6, 2e-5, ph); SK.U.uTime.value = t;
     // the light: grows with the ball; the shadows it throws are the picture in the first nanoseconds
-    fbL.visible = on; fbL.position.copy(FB.mesh.position); fbL.intensity = on ? 10 * Math.pow(Math.max(Rf, 0.005) / 0.005, 0.7) * Math.pow(Math.max(1, Rf / 2), 0.8) : 0;
+    fbL.visible = on; fbL.position.copy(FB.mesh.position); fbL.intensity = on ? THREE.MathUtils.lerp(10 * Math.pow(Math.max(Rf, 0.005) / 0.005, 0.7), 600 * Rf * Rf, smooth(1, 5, Rf)) : 0;
     SB.U.uShock.value = on ? Rs : -1;
     TQ.uPower.value = on ? 1 - smooth(38, 50, Rs) : 1;
     glass.update(ph * 1000, cam, R.SSAA); glass.points.visible = Rs > 15;
@@ -299,7 +299,7 @@ export async function create() {
     } else {
       // ---------------- Shibuya: the glide, the nanoseconds, the milliseconds, the hook, the rewind ----------------
       TK.mesh.visible = tower.root.visible = towerLights.visible = cityGround.visible = false; SBY.group.visible = true; mush.mesh.visible = false; dust.mesh.visible = true;
-      fbL.color.set('#d8d0ff'); fbL.castShadow = true; scene.fog.color.set('#1a1630');
+      fbL.color.set('#d8d0ff'); fbL.castShadow = true; scene.fog.color.set('#15141c');
       if (t < T.HOOK) hook.apply(cam, t); else if (t < T.APPEAR) glide.apply(cam, t); else if (t < T.MILLI) nano.apply(cam, t); else if (t < T.CITY) milli.apply(cam, t); else rewind.apply(cam, t);
       if (q.get('dcam')) { const c = q.get('dcam').split(',').map(Number); cam.position.set(c[0], c[1], c[2]); cam.lookAt(c[3], c[4], c[5]); cam.fov = c[6] || 40; cam.updateProjectionMatrix(); cam.updateMatrixWorld(); }
       poseAll(story);
@@ -318,12 +318,13 @@ export async function create() {
       ST.lampM.emissiveIntensity = 4 * (1 - smooth(25, 40, SB.U.uShock.value));
       scene.fog.density = 0.0016;
       U.uTint.value.set(1 + 0.04 * burn, 1, 1 + 0.06 * burn - 0.08 * big);
-      flare.update(cam, FB.mesh.position, phys > 0 ? 0.25 + 0.75 * burn : 0, 0.5 + 0.6 * big);
+      flare.update(cam, FB.mesh.position, t >= T.REWIND ? 0.05 : phys > 0 ? 0.25 + 0.75 * burn : 0, 0.5 + 0.6 * big);
       // the shock reaches the rooftop camera (~31.8 s): a jolt, then white into the cut
       if (t >= T.MILLI && t < T.CITY) { const hit = t - 31.8; if (hit > 0) { const k = Math.exp(-hit * 3) * Math.sin(hit * 46); U.uShake.value.set(0.006 * k, 0.004 * k); } U.uFadeWhite.value = smooth(32.3, 33.0, t); }
       if (t >= T.APPEAR && t < T.MILLI) U.uFadeWhite.value = 0.8 * Math.exp(-(t - T.APPEAR) * 8) + smooth(21.5, 22.0, t) * 0.9;
       if (t >= T.REWIND) U.uFadeWhite.value = 0.9 * Math.exp(-(t - T.REWIND) * 3);
     }
+    skyM.position.copy(cam.position);
     R.renderPass.scene = rscene; R.renderPass.camera = rc;
     R.composer.render();
     const cover = q.get('cover') === '1', endA = smooth(T.END, T.END + 0.5, t);

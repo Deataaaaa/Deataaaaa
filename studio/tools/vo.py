@@ -1,6 +1,6 @@
 """Voiceover: synthesises each line with a Piper voice (offline neural TTS), fits it inside its caption window (speeds it up
 when needed, a touch slower and deeper otherwise) and writes one mono WAV at 24 kHz aligned to the video's time.
-usage: python3 tools/vo.py <lines.json> <voice.onnx> <out.wav> [duration]"""
+usage: python3 tools/vo.py <lines.json> <voice.onnx> <out.wav> [duration] [deepen, e.g. 1.05 for a lower male narrator, 1.0 = none]"""
 import sys, json, wave, io
 import numpy as np
 from scipy import signal
@@ -20,7 +20,7 @@ def synth(text, ls):
     nz = np.nonzero(np.abs(x) > 0.01)[0]                       # trim silence
     return x[max(0, nz[0] - 200): nz[-1] + 1200] if len(nz) else x
 
-DEEP = 1.05                                                    # resample: 5 % slower and lower (a deeper narrator)
+DEEP = float(sys.argv[5]) if len(sys.argv) > 5 else 1.0          # resample: e.g. 1.05 = 5 % slower and lower (a deeper narrator)
 track = np.zeros(int(dur * SRO))
 for t0, t1, text in lines:
     room = t1 - t0 - 0.1

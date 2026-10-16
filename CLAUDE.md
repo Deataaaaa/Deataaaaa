@@ -90,6 +90,11 @@ often while at work, so every deliverable has to be ready to post straight from 
     re-reading big files, few low-res stills (contact sheets, not single frames), checks by script output. Final renders
     run on the owner's PC (RENDER.bat), never here.
 
+22. **Voiceover on every video, always Cori** (owner, 16 Oct 2026). A calm female narrator reads along with the captions:
+    Piper voice `en_GB-cori-high` (public-domain data, free for commercial use), no deepening, never another voice. Lines in
+    `studio/audio/vo/epNN_lines.json` (one per caption window), `tools/vo.py` makes the WAV (committed), the episode's audio
+    script ducks the music about 6 dB under it. Send the owner the soundtrack to check before the render.
+
 ## Delivery checklist
 - `studio/encode.sh <frames> <wav> videos/postN_<slug>`: HQ + `_phone.mp4` (< 30 MB, the chat's send limit).
   (`day1_*` files = the Earth video, outside the series.)

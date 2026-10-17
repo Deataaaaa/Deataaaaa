@@ -28,14 +28,14 @@ export class Rain {
       uGain: { value: 1 }, uNear: { value: near }, uFocus: { value: 4 }, uAper: { value: 0 }, uWind: { value: new THREE.Vector3(0.6, 0, 0.3) },
       uRes: { value: new THREE.Vector2(1080, 1920) }, uStreakK: { value: 18 }, uBeadK: { value: 3 }, uFogC: { value: new THREE.Color('#2a3140') }, uFogD: { value: 0.002 }, uFade: { value: 1 },
       uSpotP: { value: spots.map((v) => v.clone()) }, uSpotD: { value: spots.map((v) => v.clone().set(0, -1, 0)) }, uSpotC: { value: spots.map((v) => v.clone().set(0, 0, 0)) },
-      uSpotCos: { value: spots.map(() => new THREE.Vector2(0.9, 0.8)) },
+      uSpotCos: { value: spots.map(() => new THREE.Vector2(0.9, 0.8)) }, uPrevVP: { value: new THREE.Matrix4() }, uCamBlur: { value: 0 }, uAirK: { value: 1 }, uNearFall: { value: 1.2 },
       uBoxC: { value: [...Array(MAXBOX)].map(() => new THREE.Vector3(0, -1e5, 0)) }, uBoxH: { value: [...Array(MAXBOX)].map(() => new THREE.Vector3(0, 0, 0)) }, uLight: { value: new THREE.Vector3(-0.4, 0.8, 0.4).normalize() },
     };
     const mat = new THREE.ShaderMaterial({
       uniforms: this.u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,   // screen-space quads: winding flips
       vertexShader: /* glsl */`
         attribute vec3 aP, aCol; attribute vec4 aPrm;                // aPrm: ybot, ytop, radius (m), seed
-        uniform float uT, uTf, uTb, uPxScale, uPR, uMinPx, uShutter, uGain, uNear, uFocus, uAper, uFogD, uFade, uStreakK, uBeadK;
+        uniform float uT, uTf, uTb, uPxScale, uPR, uMinPx, uShutter, uGain, uNear, uFocus, uAper, uFogD, uFade, uStreakK, uBeadK, uCamBlur, uAirK, uNearFall; uniform mat4 uPrevVP;
         uniform vec3 uWind; uniform vec2 uRes;
         uniform vec3 uSpotP[${MAXSPOT}], uSpotD[${MAXSPOT}], uSpotC[${MAXSPOT}]; uniform vec2 uSpotCos[${MAXSPOT}];
         uniform vec3 uBoxC[${MAXBOX}], uBoxH[${MAXBOX}];
@@ -52,9 +52,10 @@ export class Rain {
           float topFade = smoothstep(ytop, ytop - 2.5, p.y) * (aPrm.w > 1.5 ? smoothstep(ybot, ybot + 3.0, p.y) : 1.0);
           // drops inside a vehicle, under an umbrella or inside a person are not there (they hit it)
           for (int i = 0; i < ${MAXBOX}; i++) { vec3 q = abs(p - uBoxC[i]) - uBoxH[i]; if (max(q.x, max(q.y, q.z)) < 0.0) topFade = 0.0; }
-          // the streak: from where the drop is now up to where it was a shutter ago
-          vec3 tail = p + vec3(-uWind.x, vel, -uWind.z) * uShutter * (vel > 0.0 ? 1.0 : 0.0);
-          vec4 cH = projectionMatrix * viewMatrix * vec4(p, 1.0), cT = projectionMatrix * viewMatrix * vec4(tail, 1.0);
+          // the streak: from where the drop is now up to where it was a shutter ago (seen by the camera of a frame ago when
+          // the camera moves fast: hanging beads streak past a flying camera instead of jumping across the frame)
+          vec3 tail = p + vec3(-uWind.x, vel, -uWind.z) * uShutter * (vel > 0.0 ? 1.0 : 0.0) * (uCamBlur > 0.5 ? 0.5 : 1.0);
+          vec4 cH = projectionMatrix * viewMatrix * vec4(p, 1.0), cT = (uCamBlur > 0.5 ? uPrevVP : projectionMatrix * viewMatrix) * vec4(tail, 1.0);
           float depth = cH.w;
           if (depth < 0.05 || cT.w < 0.05) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
           vec2 sH = cH.xy / cH.w * 0.5 * uRes, sT = cT.xy / cT.w * 0.5 * uRes;
@@ -76,10 +77,12 @@ export class Rain {
           float energy = (rTrue * rTrue) / (rDraw * rDraw);                   // spread over a wider disc (DOF / min size)
           // spread along the streak; a falling drop is a tiny lens that catches the brightest light round it, so its
           // streak reads much brighter than its share of the background (uStreakK)
-          float spread = min(1.0, (2.0 * rDraw) / (len + 2.0 * rDraw) * (len > rDraw ? uStreakK : 1.0)) * (len > rDraw ? 1.0 : uBeadK);
+          float spread = vel > 0.0 ? min(1.0, (2.0 * rDraw) / (len + 2.0 * rDraw) * (len > rDraw ? uStreakK : 1.0)) * (len > rDraw ? 1.0 : uBeadK)
+                                   : min(1.0, (2.0 * rDraw) / (len + 2.0 * rDraw) * uBeadK);
           float fog = exp(-uFogD * depth);
-          vA = energy * spread * topFade * smoothstep(uNear, uNear * 2.2, depth) * fog * uFade;
-          vC = c * uGain;
+          float nr = vel > 0.0 ? uNearFall : uNear;                          // falling drops near the lens are thick bars: fade them sooner
+          vA = energy * spread * topFade * smoothstep(nr, nr * 2.2, depth) * fog * uFade;
+          vC = c * uGain * (aPrm.w > 1.5 ? uAirK : 1.0);   // aerial drops: catch the landing lights from tens of metres
         }`,
       fragmentShader: /* glsl */`
         varying vec2 vQ; varying vec3 vC; varying float vLen, vRpx, vA;
@@ -112,7 +115,11 @@ export class Rain {
   // axis-aligned boxes [{ c: Vector3, h: Vector3 (half extents) }] where drops are hidden
   setBoxes(list) { for (let i = 0; i < MAXBOX; i++) { const b = list[i]; if (b) { this.u.uBoxC.value[i].copy(b.c); this.u.uBoxH.value[i].copy(b.h); } else { this.u.uBoxC.value[i].set(0, -1e5, 0); this.u.uBoxH.value[i].set(0, 0, 0); } } }
   // t = the story clock (s), cam, pr = supersampling factor, W/H = the canvas size in CSS px
-  update(t, cam, pr, W = 1080, H = 1920) { this.u.uT.value = t; this.u.uPxScale.value = pxScale(cam); this.u.uPR.value = pr; this.u.uRes.value.set(W * pr, H * pr); }
+  // prevCam (optional): the camera one frame earlier, for camera motion blur
+  update(t, cam, pr, W = 1080, H = 1920, prevCam = null) {
+    this.u.uT.value = t; this.u.uPxScale.value = pxScale(cam); this.u.uPR.value = pr; this.u.uRes.value.set(W * pr, H * pr);
+    this.u.uCamBlur.value = prevCam ? 1 : 0; if (prevCam) this.u.uPrevVP.value.multiplyMatrices(prevCam.projectionMatrix, prevCam.matrixWorldInverse);
+  }
   // spot lights the drops can sit in: [{ p, d (unit), col (THREE.Color * intensity), inner, outer (cosines) }]
   setSpots(list) {
     for (let i = 0; i < MAXSPOT; i++) { const s = list[i];

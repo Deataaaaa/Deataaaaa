@@ -32,7 +32,7 @@ const browser = await chromium.launch(gpu
   : { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-driver-bug-workarounds'] });
 const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
 page.on('console', (m) => { const t = m.text(); if (!/GPU stall|GroupMarkerNotSet|Automatic fallback/.test(t)) console.log('[page]', t); });
-page.on('pageerror', (e) => console.log('[pageerror]', e.message));
+page.on('pageerror', (e) => console.log('[pageerror]', e.message, (e.stack || '').split('\n').slice(1, 4).join(' | ')));
 await page.goto(`http://localhost:${port}/engine/player.html?ep=${ep}${args.q ? '&' + args.q : ''}`, { timeout: 120000 });
 console.log('page loaded');
 const glName = await page.evaluate(() => {

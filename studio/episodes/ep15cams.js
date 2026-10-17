@@ -11,7 +11,7 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 // x1/2.5 just before the air returns); real time again after
 const KEYS = [[T.THICK, 0], [T.BRIDGE, 0.8], [T.PLANE, 1.8], [T.SPACE, 3.2], [T.BACK2, 4.6], [T.BACK, 5.0]];
 export function story(t) {
-  if (t < T.HOOK) return 3.0 + t * 0.1;                               // the hook: a flash-forward into the third second
+  if (t < T.HOOK) return 2.4 + t * 0.1;                               // the hook: a flash-forward into the third second
   if (t < T.THICK) return t - T.THICK;
   for (let i = 0; i < KEYS.length - 1; i++) { const [a, pa] = KEYS[i], [b, pb] = KEYS[i + 1]; if (t <= b) return pa + (t - a) / (b - a) * (pb - pa); }
   return 5.0 + (t - T.BACK);
@@ -52,11 +52,12 @@ class PlaneCam {
     cam.fov = L(a[3], b[3]); cam.updateProjectionMatrix(); cam.updateMatrixWorld();
   }
 }
-// the hook (0-3.6 s): beside the plane in the third second, engines dead, the rain hanging, Tower Bridge far below
-export const hook = new PlaneCam([
-  [0, [-8, 70, 30], [-2, -38, -18], 44],
-  [3.6, [-9, 64, 27], [-2, -40, -17], 42],
-]);
+// the hook (0-3.6 s): the most arresting image first (retention): close on you in the third second, the rain hanging
+// round your face like glass beads, the cup of tea frozen beside you, a slow push in
+export const hook = new CamPath([
+  [0, V(8.45, 10.48, 65.5), V(7.45, 10.6, 62.8), 34],
+  [3.6, V(8.15, 10.53, 64.85), V(7.5, 10.58, 62.8), 31],
+], { easeIn: false, easeOut: false, arc: true });
 // the glide (3.6-11 s), two takes cut on a soft hit at 7.0: Tower Bridge side-on from 330 m over the river (a slow
 // push), then high over the deck south of you, sinking to eye level in front of you (you walk toward the lens)
 export const T_CUT1 = 7.0;

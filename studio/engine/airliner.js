@@ -178,7 +178,7 @@ export function makeAirliner() {
     if (!(g.landK > 0.001)) return out;
     g.updateMatrixWorld(true);
     const dir = V(1, -0.12, 0).transformDirection(g.matrixWorld);
-    for (const m of [g.parts.landL, g.parts.landR]) out.push({ p: m.getWorldPosition(V(0, 0, 0)), d: dir.clone(), col: new THREE.Color(9 * g.landK, 8.5 * g.landK, 7.5 * g.landK), inner: 0.985, outer: 0.94 });
+    for (const m of [g.parts.landL, g.parts.landR]) out.push({ p: m.getWorldPosition(V(0, 0, 0)), d: dir.clone(), col: new THREE.Color(140 * g.landK, 132 * g.landK, 118 * g.landK), inner: 0.985, outer: 0.92 });
     return out;
   };
   return g;

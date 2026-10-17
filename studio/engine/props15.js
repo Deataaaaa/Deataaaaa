@@ -119,7 +119,9 @@ export function makeTeacup() {
   const g = new THREE.Group();
   const china = new THREE.MeshPhysicalMaterial({ color: '#f6f4ef', roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.05 });
   const rimM = new THREE.MeshStandardMaterial({ color: '#2a4f9e', roughness: 0.2, metalness: 0.2 });
-  const tea = new THREE.MeshPhysicalMaterial({ color: '#7a3d12', roughness: 0.08, transmission: 0.25, thickness: 0.01, clearcoat: 1 });
+  // tea: dark amber, glowing where the lamps behind it shine through (else it reads as a black wire at the blue hour)
+  const tea = new THREE.MeshPhysicalMaterial({ color: '#6b3a12', roughness: 0.03, transmission: 0.5, thickness: 0.006, attenuationColor: new THREE.Color('#a0601c'), attenuationDistance: 0.02,
+    clearcoat: 1, ior: 1.34, emissive: new THREE.Color('#9c6224'), emissiveIntensity: 0.16 });
   const cupPts = []; for (let i = 0; i <= 12; i++) { const u = i / 12; cupPts.push(new THREE.Vector2(0.024 + 0.022 * Math.sin(u * 1.35) + 0.008 * u, u * 0.062)); }
   const inner = cupPts.slice().reverse().map((p) => new THREE.Vector2(p.x - 0.0025, Math.max(0.004, p.y)));
   const cup = new THREE.Mesh(new THREE.LatheGeometry([...cupPts, ...inner], 32), china); cup.castShadow = true;
@@ -134,8 +136,47 @@ export function makeTeacup() {
   cupG.rotation.z = 0.55; cupG.position.set(0, 0.012, 0);
   const lip = V(-0.045, 0.072, 0).applyAxisAngle(V(0, 0, 1), 0.55).add(V(0, 0.012, 0));
   const pts = []; for (let i = 0; i <= 10; i++) { const u = i / 10; pts.push(lip.clone().add(V(-0.09 * u, 0.03 * u - 0.07 * u * u, 0.012 * Math.sin(u * 3)))); }
-  const ribbon = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.006, 8), tea); g.add(ribbon);
-  for (let i = 0; i < 14; i++) { const u = 0.7 + i * 0.05, d = new THREE.Mesh(new THREE.SphereGeometry(0.0025 + 0.003 * ((i * 37) % 10) / 10, 8, 6), tea);
+  // the ribbon thins as it stretches away from the lip (radius 5.5 -> 1.5 mm), then breaks into beads
+  const curve = new THREE.CatmullRomCurve3(pts), tg = new THREE.TubeGeometry(curve, 24, 0.0042, 8), tp = tg.attributes.position, c = V(0, 0, 0), q = V(0, 0, 0);
+  for (let i = 0; i <= 24; i++) { curve.getPointAt(i / 24, c); const k = (5.5 - 4.0 * i / 24) / 4.2;
+    for (let j = 0; j <= 8; j++) { const n = i * 9 + j; q.fromBufferAttribute(tp, n).sub(c).multiplyScalar(k).add(c); tp.setXYZ(n, q.x, q.y, q.z); } }
+  tg.computeVertexNormals();
+  const ribbon = new THREE.Mesh(tg, tea); g.add(ribbon);
+  for (let i = 0; i < 18; i++) { const u = 0.62 + i * 0.03, d = new THREE.Mesh(new THREE.SphereGeometry(0.0018 + 0.0022 * ((i * 37) % 10) / 10, 8, 6), tea);
     d.position.copy(lip).add(V(-0.09 * u - 0.01 * (i % 3), 0.03 * u - 0.07 * u * u - 0.004 * (i % 4), 0.012 * Math.sin(u * 3) + 0.006 * ((i % 5) - 2))); g.add(d); }
+  return g;
+}
+
+// a herring gull (forward +x, up +y, left wing +z), for birds seen close: smooth white body and head, yellow beak, grey wings
+// bent at the wrist with black tips and a white trailing edge. g.pose(a): shoulder angle a (rad, + = wings down), the hands
+// follow with a bit more; userData { wl, wr } like beach.js's makeGull
+export function makeGull2() {
+  const g = new THREE.Group();
+  const white = new THREE.MeshStandardMaterial({ color: '#f1f1ec', roughness: 0.75 });
+  const prof = [[0, -0.3], [0.03, -0.26], [0.055, -0.18], [0.07, -0.08], [0.074, 0.03], [0.064, 0.12], [0.046, 0.18], [0.04, 0.2]].map(([r, h]) => new THREE.Vector2(r, h));
+  const bodyG = new THREE.LatheGeometry(prof, 20); bodyG.rotateZ(-Math.PI / 2); bodyG.scale(1, 0.86, 0.92);
+  const body = new THREE.Mesh(bodyG, white); g.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.05, 16, 12), white); head.scale.set(1.15, 1, 0.95); head.position.set(0.235, 0.025, 0); g.add(head);
+  const beak = new THREE.Mesh(new THREE.ConeGeometry(0.012, 0.055, 8), new THREE.MeshStandardMaterial({ color: '#e3b62e', roughness: 0.45 }));
+  beak.rotation.z = -Math.PI / 2; beak.position.set(0.305, 0.018, 0); g.add(beak);
+  for (const s of [1, -1]) { const eye = new THREE.Mesh(new THREE.SphereGeometry(0.007, 8, 6), new THREE.MeshStandardMaterial({ color: '#141210', roughness: 0.2 })); eye.position.set(0.262, 0.042, 0.036 * s); g.add(eye); }
+  const tail = new THREE.BufferGeometry(); tail.setAttribute('position', new THREE.Float32BufferAttribute([-0.2, 0, 0.045, -0.36, 0, 0.075, -0.375, 0, 0, -0.2, 0, 0.045, -0.375, 0, 0, -0.2, 0, -0.045, -0.2, 0, -0.045, -0.375, 0, 0, -0.36, 0, -0.075], 3)); tail.computeVertexNormals();
+  g.add(new THREE.Mesh(tail, new THREE.MeshStandardMaterial({ color: '#ecece6', roughness: 0.8, side: THREE.DoubleSide })));
+  const wingM = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.82, side: THREE.DoubleSide });
+  const grey = new THREE.Color('#8e98a2'), blk = new THREE.Color('#17171a'), wht = new THREE.Color('#eeeeea');
+  // a wing panel: spanwise ns x chordwise 2 quads, from lead(s)/trail(s) at z = span * s, coloured by col(s, c)
+  const panel = (ns, span, lead, trail, col) => { const P = [], C = [], I = [];
+    for (let i = 0; i <= ns; i++) { const s = i / ns; for (let j = 0; j <= 2; j++) { const c = j / 2, x = lead(s) + (trail(s) - lead(s)) * c;
+      P.push(x, 0.012 * Math.sin(Math.PI * c) * (1 - 0.5 * s), span * s); const k = col(s, c); C.push(k.r, k.g, k.b); } }
+    for (let i = 0; i < ns; i++) for (let j = 0; j < 2; j++) { const a = i * 3 + j, b = a + 3; I.push(a, b, a + 1, a + 1, b, b + 1); }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(C, 3)); geo.setIndex(I); geo.computeVertexNormals(); return new THREE.Mesh(geo, wingM); };
+  const tmpCol = new THREE.Color();
+  const arm = () => panel(3, 0.32, (s) => 0.065 - 0.01 * s, (s) => -0.11, (s, c) => tmpCol.copy(grey).lerp(wht, c > 0.9 ? 0.7 : 0));
+  const hand = () => panel(4, 0.44, (s) => 0.055 - 0.16 * s * s, (s) => -0.11 - 0.045 * s, (s, c) => tmpCol.copy(grey).lerp(blk, THREE.MathUtils.smoothstep(s, 0.5, 0.68)).lerp(wht, c > 0.9 && s < 0.5 ? 0.6 : 0));
+  const side = (sgn) => { const w = new THREE.Group(), h = new THREE.Group(); w.position.set(0.02, 0.025, 0.045 * sgn); w.add(arm()); h.position.z = 0.32; h.add(hand()); w.add(h); w.scale.z = sgn; w.userData.hand = h; g.add(w); return w; };
+  const wl = side(1), wr = side(-1);
+  g.userData = { wl, wr };
+  g.pose = (a) => { wl.rotation.x = a; wr.rotation.x = -a; wl.userData.hand.rotation.x = a * 0.5 + 0.05; wr.userData.hand.rotation.x = a * 0.5 + 0.05; };
+  g.pose(0.1);
   return g;
 }

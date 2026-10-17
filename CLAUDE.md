@@ -88,7 +88,8 @@ often while at work, so every deliverable has to be ready to post straight from 
 
 21. **Spend as few tokens as possible** (owner, 15 Oct 2026, low on usage). Short replies, no narration, no
     re-reading big files, few low-res stills (contact sheets, not single frames), checks by script output. Final renders
-    run on the owner's PC (RENDER.bat), never here.
+    run on the owner's PC (RENDER.bat), never here. **Caveman style** (owner, 17 Oct 2026): every chat reply in bare fragments, no filler,
+    no pleasantries, no recaps ("Fix done. Push ok. Run RENDER.bat."). Code, commits and on-screen text stay normal.
 
 22. **Voiceover on every video, Kokoro `af_heart`** (owner, 16 Oct 2026: Cori felt "too robotic"). A calm, natural female
     narrator reads along with the captions: Kokoro-82M (Apache-2.0, free for commercial use) voice `af_heart`, 8 % under its

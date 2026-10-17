@@ -229,3 +229,17 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
 | All the antimatter ever made: < 10 ng | < 10 nanograms | CERN: the total antimatter produced in its history is less than 10 nanograms (CERN, "Angels and Demons" FAQ) |
 | Cost of 1 gram: $62.5 trillion (NASA estimate, 1999) | $62.5 × 10¹² | NASA (1999): producing 1 g of antihydrogen would cost about $62.5 trillion |
 | Time since it appeared (femto/pico/nano/micro/milliseconds, s) | – | Story clock; fireball radius from Sedov-Taylor R = 1.03 (E t²/ρ)^(1/5) in the millisecond shot (40 m at ~0.7 ms, 170 m at 30 ms); the nanosecond ball size is art-directed (radiation-dominated phase) |
+
+## EP15 (post 9): What if air became as thick as honey for 5 seconds? (London, Tower Bridge)
+- Viscosity: air 1.8 × 10⁻⁵ Pa·s at 20 °C; honey 2–10 Pa·s at 20 °C (thick honey ≈ 10). 10 / 1.8e-5 ≈ 5.6 × 10⁵: "about 500,000 times". Only the viscosity changes (density, pressure and composition stay air's).
+- Raindrops stop dead: Stokes terminal speed v = (2/9)(ρw − ρa) g r² / μ; r = 1 mm, μ = 10 Pa·s: 2.2 × 10⁻⁴ m/s (0.2 mm/s), reached in τ = 2ρw r²/(9μ) ≈ 2 × 10⁻⁵ s. Normal terminal speed of a 2 mm drop ≈ 6.5 m/s; 4 mm ≈ 8.8 m/s (Gunn & Kinzer 1949).
+- Birds hang: a pigeon (0.35 kg, body ~0.1 m radius) in Stokes drag 6πμRv sinks at v = mg/(6πμR) ≈ 3.4/(6π·10·0.1) ≈ 0.18 m/s; at Re = ρvL/μ ≈ 0.01 its wings cannot push air.
+- You can't breathe in: airway flow at a given pressure difference scales with 1/μ (Poiseuille), so a normal breath would take ~500,000 times longer; gas diffusion in the lungs slows the same way (Stokes–Einstein D ∝ 1/μ).
+- Sound dies within a metre: classical absorption α = 2ω²μ/(3ρc³); 1 kHz, μ = 10: α ≈ 5.4 Np/m (amplitude), so −47 dB after 1 m; at 100 Hz α ≈ 0.054/m (low rumble carries a few tens of metres).
+- Fuel engines choke: intake flow through filters, ports and compressors scales with 1/μ; a turbofan compressor blade (0.1 m chord, 300 m/s) drops from Re ≈ 2 × 10⁶ to ≈ 4: no compression, flame-out. Electric motors are not affected.
+- Big things keep moving: Stokes/Oseen drag on a 12 t bus at 30 km/h ≈ 3–9 kN (0.03–0.08 g); an A320 (65 t, 70 m/s) loses ~0.3 g to skin friction (Cf ≈ 1.33/√Re, Re ≈ 34) and its lift collapses: it slows and sinks, it does not stop. Hurricanes (Re ~ 10⁵–10⁶ even in honey-air) keep turning: not shown.
+- Heathrow: ~1,300 flights a day (2019: 475,000 movements/yr ≈ 1,300/day, ~650 arrivals); westerly operations (~70 % of the year) bring arrivals over central London; peak ~45 arrivals/h per runway → "a plane passes over every 90 seconds" (conservative). Over Tower Bridge (≈ 24 km from runway 27L) on a 3° slope: ≈ 1,260 m (≈ 4,100 ft).
+- Planes in the air at any moment: ~10,000 commercial flights (FlightRadar24 counts 15,000–20,000 tracked aircraft at peak including private and cargo).
+- People: 8.2 billion (UN, 2025–26): "8 billion".
+- Real anchor: British Airways Flight 9, 24 June 1982, Boeing 747-200 "City of Edinburgh": all four engines flamed out in volcanic ash from Mount Galunggung over Java at 37,000 ft. "In 1982, a 747 lost all 4 engines."
+- Tower Bridge: opened 1894; 244 m long; towers 65 m tall; high-level walkways 42 m above high water; central span 61 m; Victorian steel frame clad in Cornish granite and Portland stone; steelwork painted blue and white.

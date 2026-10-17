@@ -40,7 +40,9 @@ for t0, t1, text in lines:
     room = t1 - t0 - 0.1
     ls = 1.08 if KOKORO else 1.04; x = synth(text, ls)              # Kokoro: a calm narrator, 8 % under its default pace
     d = len(x) * DEEP / SRO
-    if d > room: ls = max(0.74, ls * room / d * 0.98); x = synth(text, ls); d = len(x) * DEEP / SRO
+    for _ in range(4):                                         # speech time is not linear in the speed: iterate
+        if d <= room or ls <= 0.74: break
+        ls = max(0.74, ls * room / d * 0.97); x = synth(text, ls); d = len(x) * DEEP / SRO
     x = signal.resample_poly(x, int(DEEP * 100), 100)
     i0 = int((t0 + 0.05) * SRO); track[i0:i0 + len(x)] += x[: len(track) - i0]
     print(f'{t0:5.1f}-{t1:5.1f}  {d:4.2f}s / {room:4.2f}s  ls {ls:.2f}  {text}')

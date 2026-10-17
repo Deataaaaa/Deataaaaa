@@ -119,7 +119,8 @@ export function makeAirliner() {
     const tip = secs[3].le, sk = loftGeo([{ le: tip.clone().add(V(-0.1, 0, 0)), chord: 1.5, t: 0.08 }, { le: tip.clone().add(V(-1.4, 2.3, sd * 0.35)), chord: 0.55, t: 0.07 }], sd > 0, true);
     const shark = new THREE.Mesh(sk, navy); body.add(shark);
     // the engine: nacelle (inlet lip, body, exhaust cone), pylon, fan face
-    const ex = xr + 2.6 - 3.6 * sweep * 0, ez = sd * 5.75, ey = wy - 1.45;
+    // (A320-style: the inlet ~2.7 m ahead of the leading edge, the nacelle tucked under the wing, its top 0.3 m below it)
+    const ez = sd * 5.75, le = xr - (5.75 - 1.7) * sweep, ex = le + 1.7, ey = wy - 1.37;
     const prof = [[0, 0.95], [0.15, 1.08], [0.6, 1.12], [2.4, 1.08], [3.6, 0.82], [4.2, 0.62]].map(([x, r]) => new THREE.Vector2(r, x));
     const nac = new THREE.Mesh(new THREE.LatheGeometry(prof, 36), white); nac.rotation.z = Math.PI / 2; nac.position.set(ex + 1.0, ey, ez); body.add(nac);
     const lip = new THREE.Mesh(new THREE.TorusGeometry(1.0, 0.1, 10, 36), metal); lip.rotation.y = Math.PI / 2; lip.position.set(ex + 1.0, ey, ez); body.add(lip);
@@ -127,7 +128,12 @@ export function makeAirliner() {
     const fan = new THREE.Mesh(new THREE.CircleGeometry(0.95, 48), fanMat()); fan.rotation.y = Math.PI / 2; fan.position.set(ex + 0.25, ey, ez); body.add(fan);
     const spinner = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.55, 20), metal); spinner.rotation.z = -Math.PI / 2; spinner.position.set(ex + 0.45, ey, ez); body.add(spinner);
     const cone = new THREE.Mesh(new THREE.ConeGeometry(0.45, 1.3, 20), dark); cone.rotation.z = Math.PI / 2; cone.position.set(ex - 3.6, ey, ez); body.add(cone);
-    const pyl = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.0, 0.32), white); pyl.position.set(ex - 1.2, ey + 0.95, ez); pyl.rotation.z = 0.05; body.add(pyl);
+    // the pylon: from just behind the fan (between the duct and the outer skin, so nothing shows through the inlet) back
+    // and up into the wing's underside, overlapping its chord by 2.4 m
+    const pf = ex + 0.15, pb = le - 2.4, py0 = ey + 1.0, py1 = wy + 0.15 + (5.75 - 1.7) * dih;
+    const psh = new THREE.Shape([V(pf, py0), V(pf, ey + 1.32), V(le + 0.25, py1), V(pb, py1), V(pb + 0.9, py0)].map((v) => new THREE.Vector2(v.x, v.y)));
+    const pg = new THREE.ExtrudeGeometry(psh, { depth: 0.26, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.04, bevelSegments: 2 }); pg.translate(0, 0, -0.13);
+    const pyl = new THREE.Mesh(pg, white); pyl.position.z = ez; body.add(pyl);
     (sd < 0 ? (g.fanL = fan) : (g.fanR = fan));
   }
   // belly fairing (the wing box) and the ram air turbine (hidden until both engines are lost)
@@ -144,7 +150,7 @@ export function makeAirliner() {
   for (const sd of [-1, 1]) { const hs = new THREE.Mesh(loftGeo([{ le: V(-14.6, 0.9, sd * 0.6), chord: 3.7, t: 0.1 }, { le: V(-17.4, 1.2, sd * 6.2), chord: 1.5, t: 0.09 }], sd > 0), white); body.add(hs); }
   // lights
   const glow = (col, k, r = 0.12) => new THREE.Mesh(new THREE.SphereGeometry(r, 10, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(col).multiplyScalar(k), toneMapped: true }));
-  const navL = glow('#ff2a20', 30), navR = glow('#20ff70', 30), navT = glow('#ffffff', 20);
+  const navL = glow('#ff2a20', 10), navR = glow('#20ff70', 10), navT = glow('#ffffff', 7);
   navL.position.set(xr - 15.2 * sweep - 0.3, wy + 15.2 * dih + 0.15, -16.95); navR.position.set(xr - 15.2 * sweep - 0.3, wy + 15.2 * dih + 0.15, 16.95); navT.position.set(-18.8, 0.9, 0);
   const strL = glow('#ffffff', 0, 0.16), strR = glow('#ffffff', 0, 0.16); strL.position.copy(navL.position).add(V(-0.25, 0, 0)); strR.position.copy(navR.position).add(V(-0.25, 0, 0));
   const bcnT = glow('#ff1a10', 0, 0.16), bcnB = glow('#ff1a10', 0, 0.16); bcnT.position.set(2, 2.1, 0); bcnB.position.set(1, -2.25, 0);
@@ -162,13 +168,13 @@ export function makeAirliner() {
     // the lights: strobes double-flash every 1.2 s, the beacon pulses every 1 s (smooth pulses of ~0.12 s)
     const pulse = (x, c, wdt) => Math.exp(-(((x - c) / wdt) ** 2));
     const s = (t % 1.2), st = pulse(s, 0.1, 0.035) + pulse(s, 0.32, 0.035), b = pulse(t % 1.0, 0.5, 0.07);
-    for (const m of [g.parts.strL, g.parts.strR]) m.material.color.setRGB(40 * st, 40 * st, 40 * st);
-    for (const m of [g.parts.bcnT, g.parts.bcnB]) m.material.color.setRGB(30 * b, 3 * b, 2 * b);
+    for (const m of [g.parts.strL, g.parts.strR]) m.material.color.setRGB(14 * st, 14 * st, 14 * st);
+    for (const m of [g.parts.bcnT, g.parts.bcnB]) m.material.color.setRGB(9 * b, 1 * b, 0.6 * b);
     // the generators drop off line as the engines run down: landing lights out, the cabin on emergency lighting
     const ge = phys - out - genOff, off = ge > 0;
     const lk = off ? Math.max(0, 1 - ge * 3) : 1;
     g.landK = landing * lk;
-    for (const m of [g.parts.landL, g.parts.landR]) m.material.color.setRGB(60 * g.landK, 56 * g.landK, 50 * g.landK);
+    for (const m of [g.parts.landL, g.parts.landR]) m.material.color.setRGB(16 * g.landK, 15 * g.landK, 13 * g.landK);
     U.uCabin.value = off ? 0.25 + 0.75 * Math.exp(-ge * 6) : 1;
     // the RAT swings down over 0.8 s
     const rk = clamp01((phys - out - ratAt) / 0.8); g.rat.visible = rk > 0; g.rat.rotation.z = -Math.PI / 2 * (1 - rk) * 0.98;
@@ -178,7 +184,7 @@ export function makeAirliner() {
     if (!(g.landK > 0.001)) return out;
     g.updateMatrixWorld(true);
     const dir = V(1, -0.12, 0).transformDirection(g.matrixWorld);
-    for (const m of [g.parts.landL, g.parts.landR]) out.push({ p: m.getWorldPosition(V(0, 0, 0)), d: dir.clone(), col: new THREE.Color(140 * g.landK, 132 * g.landK, 118 * g.landK), inner: 0.985, outer: 0.92 });
+    for (const m of [g.parts.landL, g.parts.landR]) out.push({ p: m.getWorldPosition(V(0, 0, 0)), d: dir.clone(), col: new THREE.Color(70 * g.landK, 66 * g.landK, 59 * g.landK), inner: 0.985, outer: 0.92 });
     return out;
   };
   return g;

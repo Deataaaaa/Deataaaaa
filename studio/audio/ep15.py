@@ -9,8 +9,8 @@ import sys
 import numpy as np
 from synth import *
 
-DUR = 68.0
-T = dict(HOOK=3.6, CUT1=7.0, THICK=11.0, BRIDGE=23.0, PLANE=33.0, SPACE=44.0, BACK2=50.0, BACK=51.0, RET2=56.0, END=62.0)
+DUR = 75.0
+T = dict(HOOK=3.6, CUT1=7.0, THICK=11.0, BRIDGE=23.0, PLANE=33.0, SPACE=44.0, BACK2=50.0, BACK=51.0, RET2=56.0, MEME=62.0, WAVE=65.0, END=69.6)
 m = Mix(DUR, seed=15)
 rng = np.random.default_rng(1515)
 def midi(n): return 440.0 * 2 ** ((n - 69) / 12)
@@ -48,13 +48,12 @@ def spool_down(dur, r, f0=1400.0, f1=60.0, tau=1.6):
 def clunk(r, f=180.0):
     d = 0.45; t = tt(d); x = np.sin(2 * np.pi * f * t) * np.exp(-t * 18) + 0.5 * bp(r.standard_normal(len(t)), 300, 2500) * np.exp(-t * 40)
     return norm(x)
-def smash(r):
-    # a china cup and saucer hitting wet stone: a bright crack, ringing shards, a few bouncing fragments
-    d = 0.9; t = tt(d); x = bp(r.standard_normal(len(t)), 2500, 9000) * np.exp(-t * 30)
-    for f in (3150.0, 4420.0, 5870.0, 7310.0): x += 0.25 * np.sin(2 * np.pi * f * t + r.uniform(0, 6)) * np.exp(-t * (14 + f / 900))
-    for k in range(5):
-        t0 = 0.08 + 0.11 * k + r.uniform(0, 0.04); i0 = int(t0 * SR); n = min(len(t) - i0, int(0.05 * SR))
-        x[i0:i0 + n] += (0.5 - 0.08 * k) * bp(r.standard_normal(n), 3000, 9000) * np.exp(-np.arange(n) / SR * 90)
+def splash(r):
+    # a ball of water hitting wet stone: a heavy slap, a spray of droplets pattering after it
+    d = 0.9; t = tt(d); x = bp(r.standard_normal(len(t)), 180, 2600) * np.exp(-t * 16) + 0.4 * bp(r.standard_normal(len(t)), 2000, 7000) * np.exp(-t * 30)
+    for k in range(9):
+        t0 = 0.05 + 0.07 * k + r.uniform(0, 0.05); i0 = int(t0 * SR); n = min(len(t) - i0, int(0.03 * SR))
+        x[i0:i0 + n] += (0.35 - 0.03 * k) * bp(r.standard_normal(n), 1500, 6000) * np.exp(-np.arange(n) / SR * 120)
     return norm(x)
 
 def gasp(r, d=0.75):
@@ -141,13 +140,13 @@ m.add(T['BACK'], (fade(rain(bd, rng, 1.0), 0.01, 0.2), fade(rain(bd, np.random.d
 m.add(T['BACK'], fade(patter(bd, rng, 60), 0.01, 0.2), gain=0.18, rev=0.1)
 m.add(T['BACK'], fade(tyres(bd, rng), 0.05, 0.2), gain=0.12, rev=0.3)
 m.add(T['BACK'] + 0.05, gasp(rng), gain=0.3, rev=0.15)
-m.add(T['BACK'] + 0.55, smash(rng), gain=0.22, rev=0.2)   # the cup of tea drops and shatters (off screen)
+m.add(T['BACK'] + 0.55, splash(rng), gain=0.24, rev=0.2)   # the goldfish's ball of water drops and splashes (off screen)
 m.add(T['BACK'] + 1.6, gasp(rng, 0.6), gain=0.18, rev=0.15)
 m.add(T['BACK'], pad([164.81, 196.0, 246.94, 329.63], bd, rng, cutoff=1300, attack=0.4, release=0.6, voices=2, harmonics=10), gain=0.06, rev=0.5)
 m.add(B1 - 0.9, downer(rng, 0.9, 1600, 90), gain=0.14, rev=0.3)
 
 # ---------- the plane gliding on (56 -> 62): wind over the airframe, rain on it, no engines ----------
-G0, G1 = T['RET2'], T['END']; gd = G1 - G0
+G0, G1 = T['RET2'], T['MEME']; gd = G1 - G0
 m.add(G0, boom(rng, 2.0, 56, 26, 1.0, 0.5, 0.7), gain=0.5, rev=0.4)
 wind = sweep_filter(noise(gd, rng, 'pink'), list(zip(np.full(int(gd * SR), 250.0), np.full(int(gd * SR), 1800.0))), 'bandpass')
 m.add(G0, norm(wind) * env_at(tt(gd), [0, 0.3, gd - 0.4, gd], [0, 1, 1, 0]), gain=0.3, rev=0.3)
@@ -157,7 +156,23 @@ m.add(G0, norm(bp(whir, 60, 900)) * env_at(tt(gd), [0, 0.5, gd - 0.4, gd], [0, 1
 m.add(G0, pad([110.0, 130.81, 164.81, 220.0], gd, rng, cutoff=1100, attack=0.8, release=1.0, voices=2, harmonics=10), gain=0.07, rev=0.6)
 m.add(G1 - 0.9, riser(rng, 0.9, 400, 5000, 2.0), gain=0.15, rev=0.3)
 
-# ---------- end card (62 -> 68) ----------
+# ---------- the meme (62 -> 69.6): the Thames drains (a sucking rumble, the rain far off), then on the hit at 65 a wave
+# 400 m tall shoots up: braam, boom and a roar that swells until the hard cut to the end card ----------
+M0, M1, M2 = T['MEME'], T['WAVE'], T['END']; md = M1 - M0; wd = M2 - M1
+m.add(M0, boom(rng, 1.6, 48, 24, 0.8, 0.4, 0.6), gain=0.35, rev=0.4)
+m.add(M0, fade(rain(md, rng, 0.6), 0.3, 0.3), gain=0.1, rev=0.3)
+suck = sweep_filter(noise(md, rng, 'brown'), list(zip(np.linspace(900, 120, int(md * SR)), np.linspace(2200, 400, int(md * SR)))), 'bandpass')
+m.add(M0, norm(suck) * env_at(tt(md), [0, 0.6, md - 0.3, md], [0, 1, 0.8, 0]), gain=0.32, rev=0.35)
+m.add(M0, pad([98.0, 116.54, 146.83], md, rng, cutoff=900, attack=0.8, release=0.3, voices=2, harmonics=10), gain=0.08, rev=0.6)
+m.add(M1 - 1.2, riser(rng, 1.2, 150, 7000, 2.4), gain=0.3, rev=0.3)
+m.add(M1, braam(rng, 3.2, 49.0), gain=0.75, rev=0.45)
+m.add(M1, boom(rng, 2.6, 46, 20, 1.2, 1.0, 1.0), gain=0.9, rev=0.45)
+roar = sweep_filter(noise(wd, rng, 'brown'), list(zip(np.linspace(60, 90, int(wd * SR)), np.linspace(1400, 2600, int(wd * SR)))), 'bandpass')
+m.add(M1, norm(roar) * env_at(tt(wd), [0, 0.15, wd - 0.05, wd], [0, 0.7, 1, 0]), gain=0.55, rev=0.3)
+crash = bp(noise(wd, rng, 'white'), 800, 6000) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.7 * tt(wd)))
+m.add(M1 + 0.2, norm(crash) * env_at(tt(wd), [0, 0.8, wd - 0.25, wd], [0, 0.6, 1, 0])[:len(crash)], gain=0.16, rev=0.3)
+
+# ---------- end card (69.6 -> 75) ----------
 ep_ = pad([164.81, 246.94, 329.63, 392.0], DUR - T['END'] + 0.1, rng, cutoff=1500, attack=1.0, release=2.0, voices=2, harmonics=10)
 m.add(T['END'], (fade(ep_[0], 0.8, 2.2), fade(ep_[1], 0.8, 2.2)), gain=0.08, rev=0.6)
 for j, nn in enumerate(motif[:5]): m.add(T['END'] + 0.4 + j * 0.75, bell(midi(nn), rng, 2.0), gain=0.045, pan=0.3 * np.sin(j * 1.7), rev=0.7)

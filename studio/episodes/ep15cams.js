@@ -4,8 +4,8 @@
 import * as THREE from 'three';
 import { CamPath } from '../engine/core.js';
 
-export const T = { HOOK: 3.6, THICK: 11.0, BRIDGE: 23.0, PLANE: 33.0, SPACE: 44.0, BACK2: 50.0, BACK: 51.0, RET2: 56.0, END: 62.0 };
-export const DUR = 68.0;
+export const T = { HOOK: 3.6, THICK: 11.0, BRIDGE: 23.0, PLANE: 33.0, SPACE: 44.0, BACK2: 50.0, BACK: 51.0, RET2: 56.0, MEME: 62.0, WAVE: 65.0, END: 69.6 };
+export const DUR = 75.0;
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 // the story clock (s since the air turned thick): real time before; slow motion from THICK to BACK (x1/15 at first,
 // x1/2.5 just before the air returns); real time again after
@@ -92,8 +92,16 @@ export const back = new CamPath([
   [50.0, V(8.5, 10.5, HZ(50) + 2.6), V(7.4, 10.62, HZ(50)), 36],
   [56.0, V(8.05, 10.55, HZ(56) + 1.9), V(7.4, 10.64, HZ(56)), 32],
 ], { easeIn: false, easeOut: false, arc: true });
-// the last take (56-62 s): behind and left of the plane as it glides on toward the City and the Shard, engines dead
+// the last take (56-65 s): behind and left of the plane as it glides on toward the City and the Shard, engines dead
 export const glideOn = new PlaneCam([
   [56.0, [36, 8, 14], [-40, -12, -6], 40],
   [62.0, [32, 7, 13], [-44, -13, -6], 38],
+  [65.0, [30, 6.5, 12.5], [-46, -13.5, -6], 37],
 ]);
+// the meme (62-69.6 s): hard cut to Tower Bridge from 500 m up river; the Thames drains (62-65), then on the hit a wall of
+// water 400 m tall shoots up behind it; a slow push, tilting up toward the crest
+export const waveCam = new CamPath([
+  [62.0, V(-530, 22, 72), V(0, 30, 0), 46],
+  [65.0, V(-515, 21, 69), V(0, 40, 0), 47],
+  [69.6, V(-480, 18, 60), V(0, 100, 0), 50],
+], { easeIn: false, easeOut: false, arc: true });

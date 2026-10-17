@@ -63,7 +63,7 @@ export function makeBus() {
   // wheels, skirt, lights
   for (const z of [Lb / 2 - 2.4, -Lb / 2 + 2.6]) for (const s of [-1, 1]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.32, 20), tyre); w.rotation.z = Math.PI / 2; w.position.set(s * (Wb / 2 - 0.15), 0.5, z); g.add(w); }
   const skirt = new THREE.Mesh(new THREE.BoxGeometry(Wb + 0.02, 0.32, Lb - 0.4), black); skirt.position.y = 0.42; g.add(skirt);
-  const hl = new THREE.MeshBasicMaterial({ color: new THREE.Color('#fff6e8').multiplyScalar(6) }), tl = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ff1a12').multiplyScalar(6) });
+  const hl = new THREE.MeshBasicMaterial({ color: new THREE.Color('#fff6e8').multiplyScalar(3.0) }), tl = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ff1a12').multiplyScalar(3.0) });
   for (const s of [-1, 1]) { const h = new THREE.Mesh(new THREE.CircleGeometry(0.11, 14), hl); h.position.set(s * 0.95, 0.75, Lb / 2 + 0.03); g.add(h);
     const t = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.5), tl); t.position.set(s * 1.05, 1.0, -Lb / 2 - 0.03); t.rotation.y = Math.PI; g.add(t); }
   g.userData.L = Lb; g.userData.headlights = [V(-0.95, 0.75, Lb / 2 + 0.1), V(0.95, 0.75, Lb / 2 + 0.1)];
@@ -80,7 +80,7 @@ export function makeCab() {
   const roof = new THREE.Mesh(new RoundedBoxGeometry(1.82, 0.1, 2.9, 3, 0.04), paintM); roof.position.set(0, 1.93, -0.35); g.add(roof);
   const sign = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.13, 0.2), new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffae2a').multiplyScalar(3.2) })); sign.position.set(0, 2.05, 0.7); g.add(sign);
   for (const z of [1.55, -1.45]) for (const s of [-1, 1]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.24, 18), tyre); w.rotation.z = Math.PI / 2; w.position.set(s * 0.86, 0.36, z); g.add(w); }
-  const hl = new THREE.MeshBasicMaterial({ color: new THREE.Color('#fff6e8').multiplyScalar(6) });
+  const hl = new THREE.MeshBasicMaterial({ color: new THREE.Color('#fff6e8').multiplyScalar(3.0) });
   for (const s of [-1, 1]) { const h = new THREE.Mesh(new THREE.CircleGeometry(0.12, 14), hl); h.position.set(s * 0.68, 0.82, 2.43); g.add(h); }
   g.userData.L = 4.85; g.userData.headlights = [V(-0.68, 0.82, 2.5), V(0.68, 0.82, 2.5)];
   return g;
@@ -178,5 +178,64 @@ export function makeGull2() {
   g.userData = { wl, wr };
   g.pose = (a) => { wl.rotation.x = a; wr.rotation.x = -a; wl.userData.hand.rotation.x = a * 0.5 + 0.05; wr.userData.hand.rotation.x = a * 0.5 + 0.05; };
   g.pose(0.1);
+  return g;
+}
+
+// the WTF: a goldfish swimming in a ball of water hanging in mid-air (its bowl is gone; in honey-thick air the water just
+// stays where it was), a few drops frozen round it. g.update(t): the fish swims (tail beat, sway, a slow loop inside the
+// ball) and the ball's skin wobbles, all functions of t. Ball radius 0.15 m; the fish is 9 cm long.
+export function makeGoldfishBall() {
+  const g = new THREE.Group();
+  // the water: a clear glassy skin (lamp glints, a faint tint) plus a fresnel rim, so the ball reads against the night
+  // (transmission rendered it black here)
+  const water = new THREE.MeshPhysicalMaterial({ color: '#cfeff2', transparent: true, opacity: 0.14, roughness: 0.03, clearcoat: 1, clearcoatRoughness: 0.02, specularIntensity: 1, depthWrite: false });
+  const rimM = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: `varying vec3 vN, vV; void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vN = normalize(mat3(modelMatrix) * normal); vV = normalize(cameraPosition - w.xyz); gl_Position = projectionMatrix * viewMatrix * w; }`,
+    fragmentShader: `varying vec3 vN, vV; void main(){ float f = pow(clamp(1.0 - abs(dot(normalize(vN), normalize(vV))), 0.0, 1.0), 2.5); gl_FragColor = vec4(vec3(0.42, 0.62, 0.68) * f * 0.7, 1.0); }` });
+  const ballGeo = new THREE.SphereGeometry(0.15, 64, 40), base = ballGeo.attributes.position.array.slice();
+  const ball = new THREE.Mesh(ballGeo, water); ball.renderOrder = 2; g.add(ball);
+  const rim = new THREE.Mesh(ballGeo, rimM); rim.renderOrder = 3; g.add(rim);
+  // the fish: a lathe body along +x, orange-gold with a pearly belly, translucent fins, a forked tail
+  const fish = new THREE.Group(); g.add(fish);
+  const skin = new THREE.MeshPhysicalMaterial({ color: '#f26a12', roughness: 0.32, clearcoat: 0.8, clearcoatRoughness: 0.15, sheen: 0.6, sheenColor: new THREE.Color('#ffd27a'), sheenRoughness: 0.4 });
+  const prof = [[0, -0.045], [0.006, -0.042], [0.014, -0.032], [0.019, -0.016], [0.02, 0.0], [0.018, 0.016], [0.012, 0.03], [0.006, 0.038], [0.0015, 0.042]].map(([r, h]) => new THREE.Vector2(r, h));
+  const bg = new THREE.LatheGeometry(prof, 24); bg.rotateZ(-Math.PI / 2); bg.scale(1, 1.15, 0.72);
+  // a paler belly (vertex colours)
+  const bc = [], bp = bg.attributes.position; for (let i = 0; i < bp.count; i++) { const k = THREE.MathUtils.smoothstep(-bp.getY(i), 0.004, 0.02); bc.push(1, 1 - 0.25 * k, 1 - 0.55 * k); }
+  bg.setAttribute('color', new THREE.Float32BufferAttribute(bc, 3)); skin.vertexColors = true;
+  const body = new THREE.Mesh(bg, skin); fish.add(body);
+  const fin = new THREE.MeshPhysicalMaterial({ color: '#ff8a2a', roughness: 0.4, transparent: true, opacity: 0.72, side: THREE.DoubleSide, depthWrite: false });
+  const sh = (pts) => new THREE.ShapeGeometry(new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y))));
+  const tail = new THREE.Group(); tail.position.set(-0.042, 0, 0); fish.add(tail);
+  const tg = sh([[0, 0], [-0.02, 0.022], [-0.042, 0.034], [-0.036, 0.012], [-0.03, 0], [-0.036, -0.012], [-0.042, -0.034], [-0.02, -0.022]]); tail.add(new THREE.Mesh(tg, fin));
+  const dors = new THREE.Mesh(sh([[0.012, 0], [0.0, 0.016], [-0.02, 0.012], [-0.026, 0]]), fin); dors.position.set(0, 0.021, 0); fish.add(dors);
+  const anal = new THREE.Mesh(sh([[0, 0], [-0.008, -0.01], [-0.022, -0.008], [-0.024, 0]]), fin); anal.position.set(-0.012, -0.02, 0); fish.add(anal);
+  const pecs = []; for (const s of [1, -1]) { const p = new THREE.Mesh(sh([[0, 0], [-0.006, -0.012], [-0.016, -0.009], [-0.012, 0]]), fin); p.position.set(0.016, -0.008, 0.012 * s); p.rotation.x = 0.9 * s; fish.add(p); pecs.push(p); }
+  const eyeW = new THREE.MeshStandardMaterial({ color: '#e8d27a', roughness: 0.3, metalness: 0.3 }), eyeB = new THREE.MeshPhysicalMaterial({ color: '#050505', roughness: 0.05, clearcoat: 1 });
+  for (const s of [1, -1]) { const e = new THREE.Mesh(new THREE.SphereGeometry(0.0042, 12, 10), eyeW); e.position.set(0.03, 0.006, 0.0118 * s); fish.add(e);
+    const pu = new THREE.Mesh(new THREE.SphereGeometry(0.0028, 10, 8), eyeB); pu.position.set(0.031, 0.006, 0.0142 * s); fish.add(pu); }
+  // a few drops frozen round the ball, two small bubbles inside
+  const dropM = water.clone(); dropM.opacity = 0.3;
+  const R = (i) => { const x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); };
+  for (let i = 0; i < 9; i++) { const dg = new THREE.SphereGeometry(0.006 + 0.01 * R(i), 16, 12), d = new THREE.Mesh(dg, dropM), a = R(i + 20) * 6.28, e = (R(i + 40) - 0.4) * 1.6, r = 0.2 + 0.09 * R(i + 60);
+    d.position.set(Math.cos(a) * Math.cos(e) * r, Math.sin(e) * r, Math.sin(a) * Math.cos(e) * r); d.add(new THREE.Mesh(dg, rimM)); g.add(d); }
+  const bubM = new THREE.MeshPhysicalMaterial({ color: '#ffffff', roughness: 0.0, transparent: true, opacity: 0.45, clearcoat: 1, depthWrite: false });
+  const bubs = [0, 1].map((i) => { const b = new THREE.Mesh(new THREE.SphereGeometry(0.004 + 0.002 * i, 12, 8), bubM); g.add(b); return b; });
+  g.update = (t) => {
+    // the skin: two slow lobes of wobble (a ball of water this size is never quite round)
+    const p = ballGeo.attributes.position;
+    for (let i = 0; i < p.count; i++) { const x = base[i * 3], y = base[i * 3 + 1], z = base[i * 3 + 2];
+      const k = 1 + 0.035 * Math.sin(2.1 * t + 9 * y) * Math.cos(1.7 * t + 7 * x) + 0.02 * Math.sin(1.3 * t + 8 * z) - 0.03 * (y / 0.15) * (y / 0.15) * 0.5;
+      p.setXYZ(i, x * k * 1.02, y * k * 0.97, z * k * 1.02); }
+    p.needsUpdate = true; ballGeo.computeVertexNormals();
+    // the fish loops slowly inside the ball, beating its tail
+    const a = 0.55 * t, rr = 0.05;
+    fish.position.set(Math.cos(a) * rr, 0.012 * Math.sin(0.9 * t), -Math.sin(a) * rr);
+    fish.rotation.set(0.08 * Math.sin(1.3 * t), a + Math.PI / 2 + 0.12 * Math.sin(7.5 * t), 0.05 * Math.sin(0.7 * t));   // heading along the loop, swaying with the beat
+    tail.rotation.y = 0.55 * Math.sin(7.5 * t - 1.0);
+    pecs.forEach((pp, i) => { pp.rotation.y = 0.5 * Math.sin(5.0 * t + i * 3.1); });
+    bubs.forEach((b, i) => { const u = (t * 0.25 + i * 0.5) % 1; b.position.set(0.04 - 0.08 * i, -0.1 + 0.2 * u, 0.03); b.visible = u < 0.95; });
+  };
+  g.update(0);
   return g;
 }

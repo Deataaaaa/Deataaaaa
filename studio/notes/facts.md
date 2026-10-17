@@ -243,3 +243,6 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
 - People: 8.2 billion (UN, 2025–26): "8 billion".
 - Real anchor: British Airways Flight 9, 24 June 1982, Boeing 747-200 "City of Edinburgh": all four engines flamed out in volcanic ash from Mount Galunggung over Java at 37,000 ft. "In 1982, a 747 lost all 4 engines."
 - Tower Bridge: opened 1894; 244 m long; towers 65 m tall; high-level walkways 42 m above high water; central span 61 m; Victorian steel frame clad in Cornish granite and Portland stone; steelwork painted blue and white.
+- Meme ending (62-69.6 s, owner's request, not physics): "River level: −4 m" and "Wave height: ~400 m" are the joke's
+  numbers (the drawback before a tsunami is real; a 400 m wall of water up the Thames is not). For scale: the tallest
+  tsunami run-up ever measured is 524 m (Lituya Bay, Alaska, 9 July 1958, a landslide wave in a fjord).

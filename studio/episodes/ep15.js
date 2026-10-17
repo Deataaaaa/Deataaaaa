@@ -2,10 +2,11 @@
 // Hook (0-3.6): flash-forward into the third second, beside a plane over Tower Bridge, engines dead, the rain hanging.
 // Glide (3.6-11): London at the blue hour in the rain, down to you on the bridge's east pavement; countdown.
 // The thick air, one take (11-33, slow motion): the rain stops dead, you can't breathe in, sound dies; the pigeon, the
-// tea (rule 19's WTF); craning up over the river: every bird hangs, fuel engines choke, cars roll to a stop.
+// goldfish in a floating ball of water (rule 19's WTF); craning up over the river: every bird hangs, fuel engines choke, cars roll to a stop.
 // The plane (33-44): its fans wind down, its landing lights die, the ram air turbine drops out. Space (44-50): Europe at
 // dusk, every plane in the sky a red dot. Second 5 (50-56): the air comes back, the rain falls, you gasp. The last take
-// (56-62): the plane gliding on toward the City with dead engines; BA 9, 1982. Loop end card + Follow for more (62-68).
+// (56-65): the plane gliding on toward the City with dead engines; BA 9, 1982; the rain falls back… (65-69.6) …and a GINORMOUS
+// tsunami appears out of nowhere behind Tower Bridge (the meme). Loop end card + Follow for more (69.6-75).
 import * as THREE from 'three';
 import { createRenderer, Overlay, W, H, rng, smooth, clamp, captionAt, hudK } from '../engine/core.js';
 import { loadTex } from '../engine/assets.js';
@@ -18,11 +19,13 @@ import { walk, cloneAvatar } from '../engine/poses.js';
 import { clone as skClone } from 'three/addons/utils/SkeletonUtils.js';
 import { makeCat } from '../engine/cat.js';
 import { makeGull } from '../engine/beach.js';
+import { S7, makeTsunami } from '../engine/sf7.js';
+import { makeDuskSky } from '../engine/guarapari.js';
 import { LB, makeRainSky, makeThames, makeBanks, makeTowerBridge, makeRiverside, makeTowerOfLondon, makeSkyline, cityLightPoints, setTowerWindows } from '../engine/london.js';
 import { Rain, lightDrop } from '../engine/rain.js';
 import { makeAirliner } from '../engine/airliner.js';
-import { makeUmbrella, makeBus, makeCab, makePigeon, makeTeacup, makeGull2 } from '../engine/props15.js';
-import { T, T_CUT1, DUR, HERO, PLANE_Z, heroZ, heroDist, story, storyRate, planeAt, planePitch, hook, glide, instant, plane as planeCam, back, glideOn } from './ep15cams.js';
+import { makeUmbrella, makeBus, makeCab, makePigeon, makeGoldfishBall, makeGull2 } from '../engine/props15.js';
+import { T, T_CUT1, DUR, HERO, PLANE_Z, heroZ, heroDist, story, storyRate, planeAt, planePitch, hook, glide, instant, plane as planeCam, back, glideOn, waveCam } from './ep15cams.js';
 
 const TITLE = 'What if air became <span class="k">as thick as honey</span> for 5 seconds?';
 const CAPTIONS = [
@@ -43,13 +46,15 @@ const CAPTIONS = [
   [51.0, 54.6, 'Every engine must restart. At once.'],
   [54.7, 58.3, 'In 1982, a 747 lost all 4 engines.'],
   [58.4, 61.95, 'Still want to fly home tonight?'],
+  [62.0, 65.0, 'And then the water falls back…'],
+  [65.05, 69.6, '…and a <span style="color:#ff2e2e">GINORMOUS TSUNAMI</span> appears out of nowhere.'],
 ];
 const fmtT = (s) => { s = Math.max(0, s); const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r.toFixed(3).padStart(6, '0')}`; };
 
 export async function create() {
   const q = new URLSearchParams(location.search);
   globalThis.SSAA = Number(q.get('ssaa') ?? 2); globalThis.MSAA = Number(q.get('msaa') ?? 0);
-  const RK = Number(q.get('rain') ?? 1);                       // rain density (previews can thin it)
+  const RK = 0.7 * Number(q.get('rain') ?? 1);                 // rain density (previews can thin it; 0.7: fewer, softer streaks encode cleanly)
   fadeShadowBorders(0.2);
   THREE.ShaderChunk.opaque_fragment = THREE.ShaderChunk.opaque_fragment.replace('vec4( outgoingLight, diffuseColor.a )', 'vec4( min( outgoingLight, vec3( 20000.0 ) ), diffuseColor.a )');
   const R = createRenderer();
@@ -128,9 +133,9 @@ export async function create() {
   const umb = makeUmbrella(); scene.add(umb);
   // ---- Apple, sitting on the east parapet as you walk past him (glide B, then small behind you on the bridge shots) ----
   const apple = makeCat(); apple.root.position.set(LB.PARA + 0.17, D + 1.21, 57.5); apple.root.rotation.y = -Math.PI * 0.3; scene.add(apple.root);
-  // ---- the WTF: a cup of tea hanging in the air beside you, the tea frozen in a splash ----
-  const tea = makeTeacup(); tea.scale.setScalar(1.3); scene.add(tea);
-  const TEA0 = V(7.85, 10.6, 63.3);              // in the hook's frame, outside the instant take's first frame, 200+ px clear of your face in the orbit
+  // ---- the WTF: a goldfish swimming in a ball of water hanging in the air beside you (where did its bowl go?) ----
+  const fishB = makeGoldfishBall(); fishB.scale.setScalar(0.85); scene.add(fishB);
+  const FISH0 = V(7.85, 10.6, 63.3);             // in the hook's frame, outside the instant take's first frame, 200+ px clear of your face in the orbit
   // ---- the pigeon (over the parapet) and gulls over the river, hanging mid-flap ----
   const pig = makePigeon(); pig.scale.setScalar(1.05); scene.add(pig);
   const PIG0 = V(6.6, 11.0, 61.2);
@@ -211,7 +216,7 @@ export async function create() {
   }
   for (let i = 0; i < Math.round(70000 * RK); i++) {   // heavy rain close round you: bigger drops, the close-ups shimmer
     const a = rr() * 6.283, d = 0.45 + 3.6 * Math.sqrt(rr()), x = HERO.x + Math.cos(a) * d, z = HERO.z + 0.5 + Math.sin(a) * d, y = D + 0.1 + rr() * 3.4;
-    if (shelter(x, y, z) || Math.hypot(x - TEA0.x, y - TEA0.y, z - TEA0.z) < 0.14) continue;
+    if (shelter(x, y, z) || Math.hypot(x - FISH0.x, y - FISH0.y, z - FISH0.z) < 0.22) continue;
     const c = lightDrop(V(x, y, z), lightsForRain, AMB), rad = 0.0009 + 0.0016 * rr() * rr(), gl = 0.5 + 1.8 * Math.pow(rr(), 3);
     rain.set(ri++, x, y, z, D, D + 14, rad, c[0] * gl, c[1] * gl, c[2] * gl, rr());
   }
@@ -231,6 +236,18 @@ export async function create() {
   rain.geo.instanceCount = ri; rain.commit(); scene.add(rain.mesh);
   console.log('rain drops', ri);
   await Promise.all(TEX_PENDING);
+
+  // ---- the meme ending: a wall of water 400 m tall coming up the Thames from the sea, out of nowhere (post 7's tsunami) ----
+  const waveSky = makeDuskSky(V(1, 0.06, 0.1).normalize(), { zen: '#0b1424', hor: '#27324a', belt: '#33384f', shade: '#161d2c', sunCol: '#9fb4d8' });
+  waveSky.material.uniforms.uDisk.value = 0; waveSky.material.uniforms.uSkyI.value = 0.7;
+  waveSky.material.uniforms.uSun.value.set(0, 0.3, 1).normalize();   // no sun at night: the face stays green-black, foam and crest catch the city glow
+  const wave = makeTsunami(waveSky); wave.mesh.visible = false; scene.add(wave.mesh);
+  S7.uFogC.value.set('#1f2533'); S7.uFogD.value = 0.00028; S7.uLevel.value = 0;
+
+  // the camera of every London shot as a function of time; the shot id changes only at the hard cuts
+  const shotId = (tt) => (tt < T.HOOK ? 0 : tt < T_CUT1 ? 1 : tt < T.PLANE ? 2 : tt < T.SPACE ? 3 : tt < T.BACK2 ? 4 : tt < T.RET2 ? 5 : tt < T.MEME ? 6 : 7);
+  const camAt = (c, tt) => { if (tt < T.HOOK) hook.apply(c, tt); else if (tt < T.THICK) glide.apply(c, tt); else if (tt < T.PLANE) instant.apply(c, tt);
+    else if (tt < T.SPACE) planeCam.apply(c, tt); else if (tt < T.RET2) back.apply(c, tt); else if (tt < T.MEME) glideOn.apply(c, tt); else waveCam.apply(c, tt); };
 
   // ---- posing (a pure function of time) ----
   const blinkK = (t, list) => { let k = 0; for (const b0 of list) { const x = (t - b0) / 0.16; if (x > 0 && x < 1) k = Math.max(k, Math.sin(Math.PI * x)); } return k; };
@@ -294,6 +311,7 @@ export async function create() {
     if (t < T.THICK) return { a: 1, k, lab: 'Air turns as thick as honey in', val: fmtT(T.THICK - t), sub: 'Tower Bridge, London · 6:04 pm', sub2: 'Honey ≈ 500,000 × thicker than air' };
     if (t < T.END) {
       const val = ph.toFixed(2) + ' s';
+      if (t >= T.MEME) return { a: 1 - smooth(T.END - 0.3, T.END, t), k, lab: 'Time since the air turned thick', val, sub: t < T.WAVE ? 'The Thames is draining' : 'Out of nowhere', sub2: t < T.WAVE ? 'River level: −4 m' : 'Wave height: ~400 m' };
       if (t >= T.BACK) return { a: 1 - smooth(T.END - 0.3, T.END, t), k, lab: 'Time since the air turned thick', val, sub: t < 54.7 ? 'Second 5: the air is back' : 'British Airways 9 · 24 June 1982', sub2: t < 54.7 ? 'Engines to restart: ~10,000' : 'All 4 engines out in volcanic ash' };
       const sub = t < T.BRIDGE ? 'Raindrops falling at 0.2 mm/s' : t < T.PLANE ? 'Fuel engines: choking' : t < T.SPACE ? '1,250 m over Tower Bridge' : 'Planes in the air: ~10,000';
       return { a: 1, k, lab: 'Time since the air turned thick', val, sub, sub2: 'Second 5: ???' };
@@ -327,24 +345,26 @@ export async function create() {
     } else {
       // ---------------- London ----------------
       const aerial = (t >= T.PLANE && t < T.SPACE) || t >= T.RET2;
-      if (t < T.HOOK) hook.apply(cam, t); else if (t < T.THICK) glide.apply(cam, t); else if (t < T.PLANE) instant.apply(cam, t);
-      else if (t < T.SPACE) planeCam.apply(cam, t); else if (t < T.RET2) back.apply(cam, t); else glideOn.apply(cam, t);
+      camAt(cam, t);
       if (q.get('dcam')) { const c = q.get('dcam').split(',').map(Number); cam.position.set(c[0], c[1], c[2]); cam.lookAt(c[3], c[4], c[5]); cam.fov = c[6] || 40; cam.updateProjectionMatrix(); cam.updateMatrixWorld(); }
       SKY.mesh.position.copy(cam.position);
       // the plane
       const pp = planeAt(ph); AP.position.copy(pp); AP.rotation.set(0, Math.PI, 0); AP.rotateZ(planePitch(ph));
       AP.update(t, { phys: ph, out: 0.02, dt: rate / 30, genOff: 2.05, ratAt: 2.4, tauFan: 1.5 });
-      AP.visible = aerial || t < T.THICK;
+      AP.visible = (aerial && t < T.MEME) || t < T.THICK;
+      // the meme: the Thames drains (the sea pulls back), then the wave shoots up out of nowhere on the hit
+      const drain = t >= T.MEME ? smooth(T.MEME + 0.3, T.WAVE - 0.4, t) : 0; river.mesh.position.y = -4 * drain; river.U.uRefl.value = 1 - 0.45 * drain;
+      wave.mesh.visible = t >= T.WAVE; if (t >= T.WAVE) { const u = t - T.WAVE; S7.uTime.value = t; wave.U.uFront.value = 1050 - 95 * u; wave.U.uH.value = 420 * smooth(0, 0.45, u) + 8 * u; }
       fillUp.position.copy(pp).add(V(-60, 200, 80)); fillUp.target.position.copy(pp); fillDn.position.copy(pp).add(V(40, -300, 60)); fillDn.target.position.copy(pp);
       // the far plane (glide only): landing lights descending toward Heathrow in the west
       AP2.visible = t >= T.HOOK && t < T.THICK; { const u = t - T.HOOK; AP2.position.set(-1500 - 70 * u, 520 - 3.7 * u, -420); AP2.rotation.set(0, Math.PI, 0); AP2.update(t, { phys: -5, out: 1e9 }); apGlow.position.copy(AP2.position).add(V(-18, -1, 0)); apGlow.visible = AP2.visible; }
       poseAll(t, ph);
       faceL.position.set(HERO.x - 0.25, D + 1.15, you.root.position.z + 1.3); faceL.visible = !aerial;
       apple.update(t, { look: cam.position, blinkAt: [7.6, 9.9], earAt: [8.6], pr: R.SSAA }); apple.root.visible = !aerial && t >= T_CUT1;
-      // the tea and the pigeon: hanging, sinking very slowly (Stokes); visible on the bridge shots only
-      const tf = Math.max(0, ph - 5);   // when the air comes back the cup drops (out of the close shot within half a second)
-      tea.position.copy(TEA0).add(V(0, -0.06 * Math.min(Math.max(0, ph), 5) - 4.9 * tf * tf, 0)); tea.rotation.set(0.15 + 2.2 * tf * tf, 0.6 + 0.02 * Math.min(Math.max(0, ph), 5), 0.08 + 1.5 * tf * tf);
-      tea.visible = !aerial && ph > 0 && tea.position.y > D + 0.35;            // (out of frame when it appears at 11.0: shown by the orbit at ~18 s)
+      // the goldfish and the pigeon: hanging, sinking very slowly (Stokes); visible on the bridge shots only
+      const tf = Math.max(0, ph - 5);   // when the air comes back the ball of water drops (out of the close shot within half a second)
+      fishB.position.copy(FISH0).add(V(0, -0.06 * Math.min(Math.max(0, ph), 5) - 4.9 * tf * tf, 0)); fishB.rotation.set(2.2 * tf * tf, 0.6, 1.5 * tf * tf); fishB.update(t);
+      fishB.visible = !aerial && ph > 0 && fishB.position.y > D + 0.35;            // (out of frame when it appears at 11.0: shown by the orbit at ~18 s)
       pig.position.copy(PIG0).add(ph < 0 ? V(-1.5 * ph, 0.3 * ph, 2.0 * ph) : V(0, -0.18 * Math.min(ph, 5), 0)); pig.rotation.set(-0.2, Math.atan2(-1.5, 2.0), 0.1);   // flies in from the river side behind you, freezes mid-flap
       pig.flap(ph <= 0 ? (t * 5.5) % 1 : 0.12 + 0.08 * (1 - Math.exp(-ph * 3))); pig.visible = !aerial && ph > -1.6;
       for (const b of flock) { b.visible = !aerial && t < T.PLANE; flock.at(b, ph, b.position); const tf = Math.min(t, T.THICK), u = b.userData;   // frozen in the pose of the instant the air thickened
@@ -356,7 +376,7 @@ export async function create() {
       VEH.forEach((v, i) => { const zz = vehZ(v, ph); v.m.position.set(v.x, D + 0.01, zz); v.m.rotation.y = v.dir > 0 ? 0 : Math.PI; v.m.visible = !aerial; v.m.updateMatrixWorld(true);
         for (let j = 0; j < 2; j++) { const hp = v.hl[j].clone().applyMatrix4(v.m.matrixWorld), dir = V(0, -0.12, 1).applyQuaternion(v.m.quaternion).normalize();
           const L = headL[i * 2 + j]; L.position.copy(hp); L.target.position.copy(hp).addScaledVector(dir, 10); L.visible = !aerial; L.target.updateMatrixWorld();
-          spots.push({ p: hp, d: dir, col: new THREE.Color(7, 6.6, 6), inner: 0.975, outer: 0.9 }); } });
+          spots.push({ p: hp, d: dir, col: new THREE.Color(3.5, 3.3, 3), inner: 0.975, outer: 0.9 }); } });
       // the plane's landing lights in the aerial shots
       if (aerial) { spots.length = 0; AP.spots(spots); }
       rain.setSpots(spots);
@@ -367,8 +387,8 @@ export async function create() {
       rain.setBoxes(aerial ? [] : boxes);
       // exposure and haze: the street at the blue hour; the aerial shots see the whole city through less haze
       fillUp.visible = fillDn.visible = aerial;
-      if (aerial) { scene.fog.density = 0.00055; scene.fog.color.set('#1f2533'); R.renderer.toneMappingExposure = 1.1; R.bloom.strength = 0.45; R.bloom.radius = 0.6; R.bloom.threshold = 0.95 / 1.1; cityL.points.visible = true; }
-      else { scene.fog.density = 0.0024; scene.fog.color.set('#232b3a'); R.renderer.toneMappingExposure = 1.0; R.bloom.strength = 0.3; R.bloom.radius = 0.5; R.bloom.threshold = 1.1; cityL.points.visible = t < T.THICK && t < 6.5; }
+      if (aerial) { scene.fog.density = 0.00055; scene.fog.color.set('#1f2533'); R.renderer.toneMappingExposure = 1.1; R.bloom.strength = 0.3; R.bloom.radius = 0.6; R.bloom.threshold = 0.95 / 1.1; cityL.points.visible = true; }
+      else { scene.fog.density = 0.0024; scene.fog.color.set('#232b3a'); R.renderer.toneMappingExposure = 1.0; R.bloom.strength = 0.22; R.bloom.radius = 0.5; R.bloom.threshold = 1.1; cityL.points.visible = t < T.THICK && t < 6.5; }
       cityL.update(t, cam, R.SSAA);
       river.U.uFogC.value.copy(scene.fog.color); river.U.uFogD.value = scene.fog.density;
       rain.u.uFogC.value.copy(scene.fog.color); rain.u.uFogD.value = scene.fog.density * 0.8;
@@ -376,18 +396,20 @@ export async function create() {
       // (also on the hook and the descent to you, or the drops falling past the lens are thick white bars)
       let aper = 0, focus = 4; const fHero = cam.position.distanceTo(V(HERO.x, D + 1.6, you.root.position.z));
       if (t < T.HOOK || (t >= T_CUT1 && t < T.BRIDGE + 1)) { focus = fHero; aper = 0.008 * (1 - smooth(T.BRIDGE - 1, T.BRIDGE + 1, t)); }
-      if (t >= T.BACK2 && t < T.RET2) { focus = fHero; aper = 0.007; rain.u.uStreakK.value = 9; } else rain.u.uStreakK.value = 14;
+      if (t >= T.BACK2 && t < T.RET2) { focus = fHero; aper = 0.007; rain.u.uStreakK.value = 2.5; } else rain.u.uStreakK.value = 3.2;
       rain.u.uFocus.value = focus; rain.u.uAper.value = aper;
       // flying cameras: the beads streak past (camera motion blur) and catch the landing lights from tens of metres
-      let camPrev = null; if (aerial) { camPrev = camB; camPrev.copy(cam); (t < T.SPACE ? planeCam : glideOn).apply(camPrev, t - 1 / 60); }   // a 180-degree shutter
+      // every moving shot: drops and beads are drawn from where the camera of the previous frame saw them (a 360-degree
+      // shutter), so nothing jumps across the frame between frames (the flicker check flagged the rain shots without it)
+      let camPrev = null; if (!q.get('dcam') && shotId(t - 1 / 30) === shotId(t)) { camPrev = camB; camPrev.copy(cam); camAt(camPrev, t - 1 / 30); }
       rain.u.uAirK.value = aerial ? 4 : 1; rain.u.uNear.value = aerial ? 2.5 : 0.18; rain.u.uNearFall.value = aerial ? 2.5 : 1.2;   // flying: no long streaks across the lens
       rain.update(ph, cam, R.SSAA, W, H, camPrev);
       if (q.get('raindbg')) rain.u.uGain.value *= Number(q.get('raindbg'));
 
       // lens: a soft punch when the air turns thick (the sound dies), another when it comes back
       const pulse = (x, x0, d) => (x >= x0 && x < x0 + d ? Math.exp(-(x - x0) / (d * 0.35)) : 0);
-      U.uBarrel.value = 0.12 * pulse(t, T.THICK, 0.6) - 0.1 * pulse(t, T.BACK, 0.6);
-      U.uAberr.value = 0.0015 + 0.012 * pulse(t, T.THICK, 0.8) + 0.01 * pulse(t, T.BACK, 0.8) + 0.008 * pulse(t, T.PLANE, 0.6) + 0.008 * pulse(t, T.RET2, 0.6);
+      U.uBarrel.value = 0.12 * pulse(t, T.THICK, 0.6) - 0.1 * pulse(t, T.BACK, 0.6) + 0.1 * pulse(t, T.WAVE, 0.6);
+      U.uAberr.value = 0.0015 + 0.012 * pulse(t, T.THICK, 0.8) + 0.01 * pulse(t, T.BACK, 0.8) + 0.008 * pulse(t, T.PLANE, 0.6) + 0.008 * pulse(t, T.RET2, 0.6) + 0.012 * pulse(t, T.WAVE, 0.8);
       U.uFadeWhite.value = 0.18 * pulse(t, T.PLANE, 0.5) + 0.18 * pulse(t, T.RET2, 0.5);
       if ((t >= T.THICK && t < T.BACK) || t < T.HOOK) { U.uSat.value = 0.98; U.uTint.value.set(0.94, 0.99, 1.07); U.uContrast.value = 1.1; }   // the frozen world, colder
       keyL.shadow.camera.near = 0.5; keyL.shadow.camera.far = 30;

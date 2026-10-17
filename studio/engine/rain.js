@@ -54,7 +54,7 @@ export class Rain {
           for (int i = 0; i < ${MAXBOX}; i++) { vec3 q = abs(p - uBoxC[i]) - uBoxH[i]; if (max(q.x, max(q.y, q.z)) < 0.0) topFade = 0.0; }
           // the streak: from where the drop is now up to where it was a shutter ago (seen by the camera of a frame ago when
           // the camera moves fast: hanging beads streak past a flying camera instead of jumping across the frame)
-          vec3 tail = p + vec3(-uWind.x, vel, -uWind.z) * uShutter * (vel > 0.0 ? 1.0 : 0.0) * (uCamBlur > 0.5 ? 0.5 : 1.0);
+          vec3 tail = p + vec3(-uWind.x, vel, -uWind.z) * uShutter * (vel > 0.0 ? 1.0 : 0.0);
           vec4 cH = projectionMatrix * viewMatrix * vec4(p, 1.0), cT = (uCamBlur > 0.5 ? uPrevVP : projectionMatrix * viewMatrix) * vec4(tail, 1.0);
           float depth = cH.w;
           if (depth < 0.05 || cT.w < 0.05) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
@@ -62,7 +62,7 @@ export class Rain {
           float pxs = uPxScale * uPR;
           float rTrue = r * pxs / depth;                                     // true radius, render px
           float coc = uAper * pxs * abs(1.0 / depth - 1.0 / uFocus) * 0.5;   // depth of field (render px)
-          float rDraw = max(sqrt(rTrue * rTrue + coc * coc), (vel > 0.0 ? 0.5 : 0.7) * uMinPx * uPR);
+          float rDraw = max(sqrt(rTrue * rTrue + coc * coc), (vel > 0.0 ? 0.8 : 0.7) * uMinPx * uPR);   // falling streaks never thinner than 1.3 px
           vec2 dir = sT - sH; float len = length(dir);
           vec2 t = len > 1e-3 ? dir / len : vec2(0.0, 1.0), nrm = vec2(-t.y, t.x);
           vec2 sp = sH + nrm * position.x * rDraw + t * (position.y * (len + 2.0 * rDraw) - rDraw);

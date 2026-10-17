@@ -251,7 +251,8 @@ export function makeBanks(edges) {
   const wallM = stoneMat({ color: '#6d6a64', floodY: -10, flood: 0.0, course: 0.55, block: 1.1 });
   for (const side of [edges.L, edges.R]) {
     const pos = [], idx = [];
-    side.forEach((p, i) => { pos.push(p.x, -0.5, p.y, p.x, LB.STREET, p.y); if (i) { const a = (i - 1) * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } });
+    // (down to -6: the river drains in the meme ending)
+    side.forEach((p, i) => { pos.push(p.x, -6, p.y, p.x, LB.STREET, p.y); if (i) { const a = (i - 1) * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } });
     const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); gg.setIndex(idx); gg.computeVertexNormals();
     const m = new THREE.Mesh(gg, wallM); m.material.side = THREE.DoubleSide; g.add(m);
   }
@@ -281,7 +282,7 @@ export function makeTowerBridge() {
   const blue = paint('#7fa9cf', 0.42), white = paint('#e8ecef', 0.4), dkblue = paint('#2e4a66', 0.5);
   blue.emissive = new THREE.Color('#5d86b8'); blue.emissiveIntensity = 0.55; white.emissive = new THREE.Color('#c8d6e8'); white.emissiveIntensity = 0.35;   // the LED wash
   const glassM = new THREE.MeshStandardMaterial({ color: '#0b1016', roughness: 0.08, metalness: 0.2 });
-  const lampGlass = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffd49a').multiplyScalar(6) });
+  const lampGlass = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffd49a').multiplyScalar(3.2) });
   const ledM = new THREE.MeshBasicMaterial({ color: new THREE.Color('#bcd6ff').multiplyScalar(2.6) });
   const lamps = [], winLit = [];
   // the road deck and pavements, shore to shore (the river is 250 m wide here; the approaches continue onto the banks)
@@ -312,7 +313,7 @@ export function makeTowerBridge() {
   for (const sz of [-1, 1]) {
     const zc = sz * LB.TZ, T = new THREE.Group(); T.position.set(0, 0, zc); g.add(T);
     // the pier (granite, cutwaters up and down stream)
-    const pier = new THREE.Mesh(new THREE.BoxGeometry(2 * LB.THX + 6, D + 0.5, 2 * LB.THZ + 8), stoneDark); pier.position.y = (D + 0.5) / 2 - 0.5; T.add(pier);
+    const pier = new THREE.Mesh(new THREE.BoxGeometry(2 * LB.THX + 6, D + 6, 2 * LB.THZ + 8), stoneDark); pier.position.y = (D + 6) / 2 - 6; T.add(pier);
     for (const sx of [-1, 1]) { const cw = new THREE.Mesh(new THREE.CylinderGeometry(LB.THZ + 4, LB.THZ + 4, D + 0.5, 3, 1), stoneDark); cw.rotation.y = sx > 0 ? 0 : Math.PI; cw.position.set(sx * (LB.THX + 3 + 4), (D + 0.5) / 2 - 0.5, 0); cw.scale.set(0.9, 1, 1); T.add(cw); }
     // the tower body with the road arch: a front shape extruded through the tower (z)
     const H0 = D, H1 = 50;

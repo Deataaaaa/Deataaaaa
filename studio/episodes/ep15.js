@@ -2,7 +2,7 @@
 // Hook (0-3.6): flash-forward into the third second, beside a plane over Tower Bridge, engines dead, the rain hanging.
 // Glide (3.6-11): London at the blue hour in the rain, down to you on the bridge's east pavement; countdown.
 // The thick air, one take (11-33, slow motion): the rain stops dead, you can't breathe in, sound dies; the pigeon, the
-// goldfish in a floating ball of water (rule 19's WTF); craning up over the river: every bird hangs, fuel engines choke, cars roll to a stop.
+// someone in an inflatable T-rex costume frozen mid-jump behind you (rule 19's WTF); craning up over the river: every bird hangs, fuel engines choke, cars roll to a stop.
 // The plane (33-44): its fans wind down, its landing lights die, the ram air turbine drops out. Space (44-50): Europe at
 // dusk, every plane in the sky a red dot. Second 5 (50-56): the air comes back, the rain falls, you gasp. The last take
 // (56-65): the plane gliding on toward the City with dead engines; BA 9, 1982; the rain falls back… (65-69.6) …and a GINORMOUS
@@ -24,8 +24,8 @@ import { makeDuskSky } from '../engine/guarapari.js';
 import { LB, makeRainSky, makeThames, makeBanks, makeTowerBridge, makeRiverside, makeTowerOfLondon, makeSkyline, cityLightPoints, setTowerWindows } from '../engine/london.js';
 import { Rain, lightDrop } from '../engine/rain.js';
 import { makeAirliner } from '../engine/airliner.js';
-import { makeUmbrella, makeBus, makeCab, makePigeon, makeGoldfishBall, makeGull2 } from '../engine/props15.js';
-import { T, T_CUT1, DUR, HERO, PLANE_Z, heroZ, heroDist, story, storyRate, planeAt, planePitch, hook, glide, instant, plane as planeCam, back, glideOn, waveCam } from './ep15cams.js';
+import { makeUmbrella, makeBus, makeCab, makePigeon, makeTrex, makeGull2 } from '../engine/props15.js';
+import { T, T_CUT1, DUR, HERO, PLANE_Z, heroZ, heroDist, story, storyRate, planeAt, planePitch, hook, glide, instant, plane as planeCam, back, glideOn } from './ep15cams.js';
 
 const TITLE = 'What if air became <span class="k">as thick as honey</span> for 5 seconds?';
 const CAPTIONS = [
@@ -46,8 +46,8 @@ const CAPTIONS = [
   [51.0, 54.6, 'Every engine must restart. At once.'],
   [54.7, 58.3, 'In 1982, a 747 lost all 4 engines.'],
   [58.4, 61.95, 'Still want to fly home tonight?'],
-  [62.0, 65.0, 'And then the water falls back…'],
-  [65.05, 69.6, '…and a <span style="color:#ff2e2e">GINORMOUS TSUNAMI</span> appears out of nowhere.'],
+  [62.0, 64.7, 'Then the sea pulls back.'],
+  [65.2, 68.2, 'And comes back.'],
 ];
 const fmtT = (s) => { s = Math.max(0, s); const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r.toFixed(3).padStart(6, '0')}`; };
 
@@ -133,10 +133,13 @@ export async function create() {
   const umb = makeUmbrella(); scene.add(umb);
   // ---- Apple, sitting on the east parapet as you walk past him (glide B, then small behind you on the bridge shots) ----
   const apple = makeCat(); apple.root.position.set(LB.PARA + 0.17, D + 1.21, 57.5); apple.root.rotation.y = -Math.PI * 0.3; scene.add(apple.root);
-  // ---- the WTF: a goldfish swimming in a ball of water hanging in the air beside you (where did its bowl go?) ----
-  const fishB = makeGoldfishBall(); fishB.scale.setScalar(0.7); scene.add(fishB);
-  // it drifts 20 cm while nobody looks (story 0.9-2.4 s): clear of your face during the orbit, beside it in the hook
-  const FISH_A = V(8.05, 10.6, 63.3), FISH0 = V(7.85, 10.6, 63.3), fishAt = (ph) => FISH_A.clone().lerp(FISH0, smooth(0.9, 2.4, ph));             // in the hook's frame, outside the instant take's first frame, 200+ px clear of your face in the orbit
+  // ---- the WTF: an inflatable T-rex costume, mid-jump ----
+  const trex = makeTrex(); scene.add(trex);
+  // behind you on the pavement, hopping along; frozen at the top of a jump when the air thickens, lands at second 5
+  const trexAt = (t, ph) => { const z = (ph <= 0 ? heroZ(Math.min(t, T.THICK)) : HERO.z) - 3.4;
+    const tf = ph <= 0 ? t : ph < 5 ? T.THICK : T.THICK + (ph - 5) * 2.2, f = ((tf - T.THICK) * 1.25 + 0.5) % 1, ff = f < 0 ? f + 1 : f;
+    const air = Math.sin(Math.PI * ff), land = ph >= 5 ? Math.min(1, (ph - 5) * 2.2) : 0;   // (after second 5: one last fall, then standing)
+    const h = land >= 1 ? 0 : air * 0.55; return { pos: V(7.95, D + h, z), hop: land >= 1 ? 0.15 : air, arm: Math.sin(tf * 9.0), tail: Math.sin(tf * 4.0) }; };
   // ---- the pigeon (over the parapet) and gulls over the river, hanging mid-flap ----
   const pig = makePigeon(); pig.scale.setScalar(1.05); scene.add(pig);
   const PIG0 = V(6.6, 11.0, 61.2);
@@ -217,7 +220,7 @@ export async function create() {
   }
   for (let i = 0; i < Math.round(70000 * RK); i++) {   // heavy rain close round you: bigger drops, the close-ups shimmer
     const a = rr() * 6.283, d = 0.45 + 3.6 * Math.sqrt(rr()), x = HERO.x + Math.cos(a) * d, z = HERO.z + 0.5 + Math.sin(a) * d, y = D + 0.1 + rr() * 3.4;
-    if (shelter(x, y, z) || Math.min(Math.hypot(x - FISH0.x, y - FISH0.y, z - FISH0.z), Math.hypot(x - FISH_A.x, y - FISH_A.y, z - FISH_A.z)) < 0.2) continue;
+    if (shelter(x, y, z)) continue;
     const c = lightDrop(V(x, y, z), lightsForRain, AMB), rad = 0.0009 + 0.0016 * rr() * rr(), gl = 0.5 + 1.8 * Math.pow(rr(), 3);
     rain.set(ri++, x, y, z, D, D + 14, rad, c[0] * gl, c[1] * gl, c[2] * gl, rr());
   }
@@ -243,12 +246,24 @@ export async function create() {
   waveSky.material.uniforms.uDisk.value = 0; waveSky.material.uniforms.uSkyI.value = 0.7;
   waveSky.material.uniforms.uSun.value.set(0, 0.3, 1).normalize();   // no sun at night: the face stays green-black, foam and crest catch the city glow
   const wave = makeTsunami(waveSky); wave.mesh.visible = false; scene.add(wave.mesh);
+  // the wave as a function of time: it rises on the horizon 1.7 km down river and comes in at ~175 m/s, growing to 400 m;
+  // its lip passes over you at ~73.2 s
+  const waveW = (t) => Math.max(0, t - T.WAVE), waveF = (t) => 1700 - 175 * waveW(t), waveH = (t) => 50 + 350 * smooth(0, 7.5, waveW(t));
+  // your eyes (POV, 62-74 s): looking down river at the draining Thames, then up at the wave as it comes; you back away, your
+  // breath and hands shaking the view more and more (kept under ~0.5 degrees a frame)
+  const povCam = { apply: (c, t) => {
+    const w = waveW(t), k = smooth(0, 9, w), x = 8.75 - 0.6 * smooth(1, 9, w), y = D + 1.62 + 0.012 * Math.sin(t * 5.6) * (0.3 + k);
+    const p = V(x, y, HERO.z + heroDist(story(t))), crest = Math.atan2(waveH(t) * 0.92 - (y - D) - D, Math.max(40, waveF(t) - x));
+    const pitch = Math.min(0.95, -0.1 + (crest + 0.16) * smooth(0.2, 2.5, w)) + (0.003 + 0.007 * k) * (Math.sin(t * 17.1) + 0.6 * Math.sin(t * 23.3 + 1.0));
+    const yaw = 0.1 - 0.05 * smooth(0, 9, w) + (0.003 + 0.007 * k) * (Math.sin(t * 14.3 + 2.0) + 0.5 * Math.sin(t * 21.7));
+    c.position.copy(p); c.up.set(0, 1, 0); c.lookAt(p.x + Math.cos(pitch) * Math.cos(yaw), p.y + Math.sin(pitch), p.z + Math.cos(pitch) * Math.sin(yaw));
+    c.rotateZ(0.02 * Math.sin(t * 3.1) * k); c.fov = 52 + 6 * k; c.updateProjectionMatrix(); c.updateMatrixWorld(); } };
   S7.uFogC.value.set('#1f2533'); S7.uFogD.value = 0.00028; S7.uLevel.value = 0;
 
   // the camera of every London shot as a function of time; the shot id changes only at the hard cuts
   const shotId = (tt) => (tt < T.HOOK ? 0 : tt < T_CUT1 ? 1 : tt < T.PLANE ? 2 : tt < T.SPACE ? 3 : tt < T.BACK2 ? 4 : tt < T.RET2 ? 5 : tt < T.MEME ? 6 : 7);
   const camAt = (c, tt) => { if (tt < T.HOOK) hook.apply(c, tt); else if (tt < T.THICK) glide.apply(c, tt); else if (tt < T.PLANE) instant.apply(c, tt);
-    else if (tt < T.SPACE) planeCam.apply(c, tt); else if (tt < T.RET2) back.apply(c, tt); else if (tt < T.MEME) glideOn.apply(c, tt); else waveCam.apply(c, tt); };
+    else if (tt < T.SPACE) planeCam.apply(c, tt); else if (tt < T.RET2) back.apply(c, tt); else if (tt < T.MEME) glideOn.apply(c, tt); else povCam.apply(c, tt); };
 
   // ---- posing (a pure function of time) ----
   const blinkK = (t, list) => { let k = 0; for (const b0 of list) { const x = (t - b0) / 0.16; if (x > 0 && x < 1) k = Math.max(k, Math.sin(Math.PI * x)); } return k; };
@@ -257,7 +272,7 @@ export async function create() {
   // your walk slows in the thick air (like wading) and stops; your chest heaves trying to breathe; after second 5 a gasp
   function holdUmbrella(av, u, grip) {
     // the hand: in front of the right shoulder; the umbrella's shaft passes through the fist, tilted back over the head
-    return (sh, fwd, left, up) => ({ hand: sh.clone().addScaledVector(up, -0.3).addScaledVector(fwd, 0.24).addScaledVector(left, 0.07 + grip * 0),
+    return (sh, fwd, left, up) => ({ hand: sh.clone().addScaledVector(up, -0.3).addScaledVector(fwd, 0.26).addScaledVector(left, -0.05 + grip * 0),
       pole: sh.clone().addScaledVector(up, -0.55).addScaledVector(left, -0.45).addScaledVector(fwd, -0.1), curl: 0.82 });
   }
   function placeUmbrella(av, u, side = 'Right') {
@@ -265,8 +280,10 @@ export async function create() {
     const out = tmpA.copy(i1).sub(p1).cross(tmpB.copy(m1).sub(hd)).normalize(); if (side === 'Left') out.negate();
     const fist = tmpC.copy(i1).add(p1).multiplyScalar(0.5).lerp(m1, 0.5).addScaledVector(out, -0.035).addScaledVector(tmpD.copy(m1).sub(hd).normalize(), 0.015);
     // axis: up, leaning back toward the body and in toward the head
-    const fwd = V(0, 0, 1).applyQuaternion(av.root.quaternion), axis = V(0, 1, 0).addScaledVector(fwd, -0.2).normalize();
-    u.position.copy(fist).addScaledVector(axis, -0.08);
+    // (the shaft leans out to the side and only a little back, so it passes clear of the head)
+    const fwd = V(0, 0, 1).applyQuaternion(av.root.quaternion), lft = V(1, 0, 0).applyQuaternion(av.root.quaternion).multiplyScalar(side === 'Left' ? 1 : -1);
+    const axis = V(0, 1, 0).addScaledVector(fwd, -0.1).addScaledVector(lft, 0.16).normalize();
+    u.position.copy(fist).addScaledVector(axis, -0.1);
     u.quaternion.setFromUnitVectors(V(0, 1, 0), axis);
     u.updateMatrixWorld(true);
   }
@@ -286,6 +303,9 @@ export async function create() {
     if (you.blink) you.blink(blinkK(t, [5.0, 8.4, 10.3, 52.8, 55.1]) * (ph > 0.1 && ph < 5 ? 0 : 1));
     you.root.updateMatrixWorld(true);
     placeUmbrella(you, umb);
+    if (q.get('umbdbg')) { const hp = wp(you.bones.Head).add(V(0, 0.08, 0.02)), a = V(0, 1, 0).applyQuaternion(umb.quaternion), d = hp.clone().sub(umb.position), along = d.dot(a);
+      const fist = wp(you.bones.RightHandMiddle1 || you.bones.RightHand);
+      console.log('umbdbg', t.toFixed(2), 'head-shaft', d.addScaledVector(a, -along).length().toFixed(3), 'fist-shaft', (() => { const e = fist.clone().sub(umb.position); return e.addScaledVector(a, -e.dot(a)).length().toFixed(3); })()); }
     // the others: walking until the air thickens, then slowing to a stop (breathing hard)
     for (const p of peds) {
       const s = ph <= 0 ? p.v * ph : p.v * (1 - Math.exp(-1.6 * ph)) / 1.6, zz = p.z0 + p.dir * s;
@@ -312,7 +332,7 @@ export async function create() {
     if (t < T.THICK) return { a: 1, k, lab: 'Air turns as thick as honey in', val: fmtT(T.THICK - t), sub: 'Tower Bridge, London · 6:04 pm', sub2: 'Honey ≈ 500,000 × thicker than air' };
     if (t < T.END) {
       const val = ph.toFixed(2) + ' s';
-      if (t >= T.MEME) return { a: 1 - smooth(T.END - 0.3, T.END, t), k, lab: 'Time since the air turned thick', val, sub: t < T.WAVE ? 'The Thames is draining' : 'Out of nowhere', sub2: t < T.WAVE ? 'River level: −4 m' : 'Wave height: ~400 m' };
+      if (t >= T.MEME) return { a: 1 - smooth(T.END - 0.3, T.END, t), k, lab: 'Time since the air turned thick', val, sub: t < T.WAVE ? 'The Thames is draining' : 'Wave height: ~' + (Math.round(waveH(t) / 10) * 10) + ' m', sub2: t < T.WAVE ? 'River level: −4 m' : 'Distance: ' + Math.max(0, Math.round((waveF(t) - 7) / 10) * 10) + ' m' };
       if (t >= T.BACK) return { a: 1 - smooth(T.END - 0.3, T.END, t), k, lab: 'Time since the air turned thick', val, sub: t < 54.7 ? 'Second 5: the air is back' : 'British Airways 9 · 24 June 1982', sub2: t < 54.7 ? 'Engines to restart: ~10,000' : 'All 4 engines out in volcanic ash' };
       const sub = t < T.BRIDGE ? 'Raindrops falling at 0.2 mm/s' : t < T.PLANE ? 'Fuel engines: choking' : t < T.SPACE ? '1,250 m over Tower Bridge' : 'Planes in the air: ~10,000';
       return { a: 1, k, lab: 'Time since the air turned thick', val, sub, sub2: 'Second 5: ???' };
@@ -345,7 +365,7 @@ export async function create() {
       U.uFadeWhite.value = 0.25 * Math.exp(-(t - T.SPACE) * 5);
     } else {
       // ---------------- London ----------------
-      const aerial = (t >= T.PLANE && t < T.SPACE) || t >= T.RET2;
+      const aerial = (t >= T.PLANE && t < T.SPACE) || (t >= T.RET2 && t < T.MEME), pov = t >= T.MEME;
       camAt(cam, t);
       if (q.get('dcam')) { const c = q.get('dcam').split(',').map(Number); cam.position.set(c[0], c[1], c[2]); cam.lookAt(c[3], c[4], c[5]); cam.fov = c[6] || 40; cam.updateProjectionMatrix(); cam.updateMatrixWorld(); }
       SKY.mesh.position.copy(cam.position);
@@ -355,17 +375,15 @@ export async function create() {
       AP.visible = (aerial && t < T.MEME) || t < T.THICK;
       // the meme: the Thames drains (the sea pulls back), then the wave shoots up out of nowhere on the hit
       const drain = t >= T.MEME ? smooth(T.MEME + 0.3, T.WAVE - 0.4, t) : 0; river.mesh.position.y = -4 * drain; river.U.uRefl.value = 1 - 0.45 * drain;
-      wave.mesh.visible = t >= T.WAVE; if (t >= T.WAVE) { const u = t - T.WAVE; S7.uTime.value = t; wave.U.uFront.value = 1050 - 95 * u; wave.U.uH.value = 420 * smooth(0, 0.45, u) + 8 * u; }
+      wave.mesh.visible = t >= T.WAVE; if (t >= T.WAVE) { S7.uTime.value = t; wave.U.uFront.value = waveF(t); wave.U.uH.value = waveH(t); }
       fillUp.position.copy(pp).add(V(-60, 200, 80)); fillUp.target.position.copy(pp); fillDn.position.copy(pp).add(V(40, -300, 60)); fillDn.target.position.copy(pp);
       // the far plane (glide only): landing lights descending toward Heathrow in the west
       AP2.visible = t >= T.HOOK && t < T.THICK; { const u = t - T.HOOK; AP2.position.set(-1500 - 70 * u, 520 - 3.7 * u, -420); AP2.rotation.set(0, Math.PI, 0); AP2.update(t, { phys: -5, out: 1e9 }); apGlow.position.copy(AP2.position).add(V(-18, -1, 0)); apGlow.visible = AP2.visible; }
       poseAll(t, ph);
       faceL.position.set(HERO.x - 0.25, D + 1.15, you.root.position.z + 1.3); faceL.visible = !aerial;
       apple.update(t, { look: cam.position, blinkAt: [7.6, 9.9], earAt: [8.6], pr: R.SSAA }); apple.root.visible = !aerial && t >= T_CUT1;
-      // the goldfish and the pigeon: hanging, sinking very slowly (Stokes); visible on the bridge shots only
-      const tf = Math.max(0, ph - 5);   // when the air comes back the ball of water drops (out of the close shot within half a second)
-      fishB.position.copy(fishAt(ph)).add(V(0, -0.06 * Math.min(Math.max(0, ph), 5) - 4.9 * tf * tf, 0)); fishB.rotation.set(2.2 * tf * tf, 0.6, 1.5 * tf * tf); fishB.update(t);
-      fishB.visible = !aerial && ph > 0 && fishB.position.y > D + 0.35;            // (out of frame when it appears at 11.0: shown by the orbit at ~18 s)
+      // the T-rex costume and the pigeon (hanging, sinking very slowly; visible on the bridge shots only)
+      { const r = trexAt(t, ph); trex.position.copy(r.pos); trex.pose(r.hop, r.arm, r.tail); trex.visible = !aerial && t < T.MEME; }
       pig.position.copy(PIG0).add(ph < 0 ? V(-1.5 * ph, 0.3 * ph, 2.0 * ph) : V(0, -0.18 * Math.min(ph, 5), 0)); pig.rotation.set(-0.2, Math.atan2(-1.5, 2.0), 0.1);   // flies in from the river side behind you, freezes mid-flap
       pig.flap(ph <= 0 ? (t * 5.5) % 1 : 0.12 + 0.08 * (1 - Math.exp(-ph * 3))); pig.visible = !aerial && ph > -1.6;
       for (const b of flock) { b.visible = !aerial && t < T.PLANE; flock.at(b, ph, b.position); const tf = Math.min(t, T.THICK), u = b.userData;   // frozen in the pose of the instant the air thickened
@@ -382,7 +400,7 @@ export async function create() {
       if (aerial) { spots.length = 0; AP.spots(spots); }
       rain.setSpots(spots);
       spray.update(ph < 0 ? ph : ph < 5 ? 0 : ph - 5, cam, R.SSAA); spray.points.visible = !aerial;
-      const boxes = [{ c: V(HERO.x, D + 1.15, you.root.position.z + 0.05), h: V(0.6, 1.2, 0.6) }];
+      const boxes = [{ c: V(HERO.x, D + 1.15, you.root.position.z + 0.05), h: V(0.6, 1.2, 0.6) }]; boxes.push({ c: trex.position.clone().add(V(0, 1.2, 0)), h: V(0.6, 1.2, 0.9) });
       for (const v of VEH) boxes.push({ c: v.m.position.clone().add(V(0, v.m === bus ? 2.2 : 1.0, 0)), h: v.m === bus ? V(1.35, 2.25, 5.7) : V(1.0, 1.05, 2.5) });
       for (const p of peds) if (boxes.length < 6 && Math.abs(p.av.root.position.z - HERO.z) < 30) boxes.push({ c: p.av.root.position.clone().add(V(0, 1.1, 0)), h: V(p.u ? 0.6 : 0.3, 1.15, p.u ? 0.6 : 0.3) });
       rain.setBoxes(aerial ? [] : boxes);
@@ -390,6 +408,8 @@ export async function create() {
       fillUp.visible = fillDn.visible = aerial;
       if (aerial) { scene.fog.density = 0.00055; scene.fog.color.set('#1f2533'); R.renderer.toneMappingExposure = 1.1; R.bloom.strength = 0.3; R.bloom.radius = 0.6; R.bloom.threshold = 0.95 / 1.1; cityL.points.visible = true; }
       else { scene.fog.density = 0.0024; scene.fog.color.set('#232b3a'); R.renderer.toneMappingExposure = 1.0; R.bloom.strength = 0.22; R.bloom.radius = 0.5; R.bloom.threshold = 1.1; cityL.points.visible = t < T.THICK && t < 6.5; }
+      you.root.visible = umb.visible = !pov;
+      if (pov) R.renderer.toneMappingExposure = 1.0 - 0.9 * smooth(T.END - 0.9, T.END, t);   // the lip closes over you: dark, then the cut
       cityL.update(t, cam, R.SSAA);
       river.U.uFogC.value.copy(scene.fog.color); river.U.uFogD.value = scene.fog.density;
       rain.u.uFogC.value.copy(scene.fog.color); rain.u.uFogD.value = scene.fog.density * 0.8;

@@ -239,3 +239,48 @@ export function makeGoldfishBall() {
   g.update(0);
   return g;
 }
+
+// the WTF (v4): someone in an inflatable T-rex costume, mid-jump. Shiny green vinyl (a paler belly), a big head with a felt
+// grin and teeth, tiny arms, a tail; the wearer's jeans and white trainers stick out below. Feet on y = 0, facing +z, 2.3 m
+// tall. g.pose(hop 0..1 = crouch..airborne, arms -1..1): legs tuck, arms flail, the tail swings.
+export function makeTrex() {
+  const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
+  const vinyl = new THREE.MeshPhysicalMaterial({ color: '#4c9a2c', roughness: 0.34, clearcoat: 0.7, clearcoatRoughness: 0.25, sheen: 0.4, sheenColor: new THREE.Color('#c8f08a') });
+  const belly = new THREE.MeshPhysicalMaterial({ color: '#b9c97a', roughness: 0.4, clearcoat: 0.5 });
+  const white = new THREE.MeshStandardMaterial({ color: '#f4f1e6', roughness: 0.5 }), black = new THREE.MeshPhysicalMaterial({ color: '#0b0b0b', roughness: 0.15, clearcoat: 1 });
+  const denim = new THREE.MeshStandardMaterial({ color: '#2d4060', roughness: 0.85 }), shoe = new THREE.MeshStandardMaterial({ color: '#efefef', roughness: 0.6 });
+  const blob = (m, r, sx, sy, sz, x, y, z, seg = 32) => { const o = new THREE.Mesh(new THREE.SphereGeometry(r, seg, Math.round(seg * 0.7)), m); o.scale.set(sx, sy, sz); o.position.set(x, y, z); o.castShadow = true; return o; };
+  body.add(blob(vinyl, 0.5, 1.05, 1.25, 1.0, 0, 1.15, 0));                       // torso (the air-filled pear)
+  body.add(blob(belly, 0.42, 0.95, 1.15, 0.55, 0, 1.08, 0.3));                   // belly panel
+  const neck = blob(vinyl, 0.26, 1, 1.2, 1, 0, 1.78, 0.18); body.add(neck);
+  const head = new THREE.Group(); head.position.set(0, 2.02, 0.32); body.add(head);
+  head.add(blob(vinyl, 0.24, 1.0, 0.85, 1.6, 0, 0.02, 0.12));                    // skull + snout
+  const jaw = new THREE.Group(); jaw.position.set(0, -0.08, -0.05); head.add(jaw);
+  jaw.add(blob(belly, 0.2, 0.95, 0.45, 1.6, 0, -0.04, 0.17));
+  for (let i = 0; i < 9; i++) { const a = (i / 8 - 0.5) * 2.2, tt = new THREE.Mesh(new THREE.ConeGeometry(0.018, 0.05, 6), white);
+    tt.position.set(Math.sin(a) * 0.19, -0.075, 0.17 + Math.cos(a) * 0.3); tt.rotation.x = Math.PI; head.add(tt); }
+  for (const s of [1, -1]) { head.add(blob(white, 0.05, 1, 1, 0.7, 0.15 * s, 0.13, 0.1, 16)); head.add(blob(black, 0.028, 1, 1, 0.7, 0.165 * s, 0.135, 0.13, 12));
+    head.add(blob(black, 0.012, 1, 1, 1, 0.06 * s, 0.07, 0.49, 8)); }               // eyes, nostrils
+  const win = new THREE.Mesh(new THREE.CircleGeometry(0.1, 24), new THREE.MeshPhysicalMaterial({ color: '#111418', roughness: 0.05, clearcoat: 1, transparent: true, opacity: 0.85 }));
+  win.position.set(0, 1.72, 0.43); win.rotation.x = -0.15; body.add(win);       // the wearer's mesh window in the neck
+  const arms = [1, -1].map((s) => { const a = new THREE.Group(); a.position.set(0.3 * s, 1.45, 0.38); body.add(a);
+    a.add(blob(vinyl, 0.07, 1, 1.8, 1, 0, -0.1, 0.03, 16)); a.add(blob(vinyl, 0.05, 1, 1, 1.4, 0, -0.22, 0.08, 12)); return a; });
+  const tail = []; let prev = body; for (let i = 0; i < 6; i++) { const seg = new THREE.Group(); seg.position.set(0, i ? -0.03 : 0.8, i ? -0.2 : -0.35); prev.add(seg);
+    seg.add(blob(vinyl, 0.24 * (1 - i * 0.14), 1, 0.9, 1.3, 0, 0, -0.08, 20)); tail.push(seg); prev = seg; }
+  // the costume's thighs and the wearer's legs below
+  const legs = [1, -1].map((s) => { const L = new THREE.Group(); L.position.set(0.24 * s, 0.62, 0); g.add(L);
+    L.add(blob(vinyl, 0.2, 1, 1.3, 1.05, 0, 0.05, 0, 24));
+    const shin = new THREE.Group(); shin.position.set(0, -0.2, 0); L.add(shin);
+    const jean = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.06, 0.36, 14), denim); jean.position.y = -0.18; shin.add(jean);
+    const sh = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.08, 0.27), shoe); sh.position.set(0, -0.38, 0.05); shin.add(sh);
+    return { L, shin }; });
+  g.pose = (hop, armK = 0, tailK = 0) => {
+    legs.forEach(({ L, shin }, i) => { L.rotation.x = -0.9 * hop; shin.rotation.x = 1.5 * hop; });
+    body.position.y = -0.12 * (1 - hop); body.rotation.x = 0.12 * hop;
+    arms.forEach((a, i) => { a.rotation.x = -0.6 - 0.9 * armK * (i ? 1 : 0.7); a.rotation.z = (i ? -1 : 1) * 0.4 * armK; });
+    tail.forEach((s, i) => { s.rotation.y = 0.12 * tailK; s.rotation.x = 0.06 + 0.05 * hop; });
+    jaw.rotation.x = 0.25 + 0.15 * hop; head.rotation.x = -0.1 * hop;
+  };
+  g.pose(0.5);
+  return g;
+}

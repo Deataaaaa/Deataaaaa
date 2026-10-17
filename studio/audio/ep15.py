@@ -9,8 +9,8 @@ import sys
 import numpy as np
 from synth import *
 
-DUR = 75.0
-T = dict(HOOK=3.6, CUT1=7.0, THICK=11.0, BRIDGE=23.0, PLANE=33.0, SPACE=44.0, BACK2=50.0, BACK=51.0, RET2=56.0, MEME=62.0, WAVE=65.0, END=69.6)
+DUR = 79.0
+T = dict(HOOK=3.6, CUT1=7.0, THICK=11.0, BRIDGE=23.0, PLANE=33.0, SPACE=44.0, BACK2=50.0, BACK=51.0, RET2=56.0, MEME=62.0, WAVE=64.5, END=74.0)
 m = Mix(DUR, seed=15)
 rng = np.random.default_rng(1515)
 def midi(n): return 440.0 * 2 ** ((n - 69) / 12)
@@ -156,23 +156,27 @@ m.add(G0, norm(bp(whir, 60, 900)) * env_at(tt(gd), [0, 0.5, gd - 0.4, gd], [0, 1
 m.add(G0, pad([110.0, 130.81, 164.81, 220.0], gd, rng, cutoff=1100, attack=0.8, release=1.0, voices=2, harmonics=10), gain=0.07, rev=0.6)
 m.add(G1 - 0.9, riser(rng, 0.9, 400, 5000, 2.0), gain=0.15, rev=0.3)
 
-# ---------- the meme (62 -> 69.6): the Thames drains (a sucking rumble, the rain far off), then on the hit at 65 a wave
-# 400 m tall shoots up: braam, boom and a roar that swells until the hard cut to the end card ----------
+# ---------- the meme (62 -> 74), your ears: the Thames drains (a sucking rumble, rain far off), the wave rises at 64.5 and
+# comes in for 9.5 s: a growing roar, your panicked breathing and a racing heartbeat, until the hard cut to the end card ----------
 M0, M1, M2 = T['MEME'], T['WAVE'], T['END']; md = M1 - M0; wd = M2 - M1
 m.add(M0, boom(rng, 1.6, 48, 24, 0.8, 0.4, 0.6), gain=0.35, rev=0.4)
-m.add(M0, fade(rain(md, rng, 0.6), 0.3, 0.3), gain=0.1, rev=0.3)
+m.add(M0, fade(rain(md + wd, rng, 0.6), 0.3, 0.3), gain=0.1, rev=0.3)
 suck = sweep_filter(noise(md, rng, 'brown'), list(zip(np.linspace(900, 120, int(md * SR)), np.linspace(2200, 400, int(md * SR)))), 'bandpass')
 m.add(M0, norm(suck) * env_at(tt(md), [0, 0.6, md - 0.3, md], [0, 1, 0.8, 0]), gain=0.32, rev=0.35)
-m.add(M0, pad([98.0, 116.54, 146.83], md, rng, cutoff=900, attack=0.8, release=0.3, voices=2, harmonics=10), gain=0.08, rev=0.6)
-m.add(M1 - 1.2, riser(rng, 1.2, 150, 7000, 2.4), gain=0.3, rev=0.3)
-m.add(M1, braam(rng, 3.2, 49.0), gain=0.75, rev=0.45)
-m.add(M1, boom(rng, 2.6, 46, 20, 1.2, 1.0, 1.0), gain=0.9, rev=0.45)
-roar = sweep_filter(noise(wd, rng, 'brown'), list(zip(np.linspace(60, 90, int(wd * SR)), np.linspace(1400, 2600, int(wd * SR)))), 'bandpass')
-m.add(M1, norm(roar) * env_at(tt(wd), [0, 0.15, wd - 0.05, wd], [0, 0.7, 1, 0]), gain=0.55, rev=0.3)
-crash = bp(noise(wd, rng, 'white'), 800, 6000) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.7 * tt(wd)))
-m.add(M1 + 0.2, norm(crash) * env_at(tt(wd), [0, 0.8, wd - 0.25, wd], [0, 0.6, 1, 0])[:len(crash)], gain=0.16, rev=0.3)
+m.add(M0, pad([98.0, 116.54, 146.83], md + wd, rng, cutoff=900, attack=0.8, release=0.1, voices=2, harmonics=10), gain=0.08, rev=0.6)
+m.add(M1, braam(rng, 3.2, 49.0), gain=0.6, rev=0.45)
+roar = sweep_filter(noise(wd, rng, 'brown'), list(zip(np.linspace(40, 70, int(wd * SR)), np.linspace(500, 3000, int(wd * SR)))), 'bandpass')
+m.add(M1, norm(roar) * env_at(tt(wd), [0, 2.0, wd - 0.05, wd], [0.05, 0.4, 1, 0]) ** 1.5, gain=0.75, rev=0.3)
+crash = bp(noise(wd, rng, 'white'), 600, 6000) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.7 * tt(wd)))
+m.add(M1, norm(crash) * env_at(tt(wd), [0, 4.0, wd - 0.05, wd], [0, 0.3, 1, 0])[:len(crash)], gain=0.2, rev=0.3)
+tb = 0.0                                                          # the heartbeat, from 80 to 170 bpm
+while tb < wd - 0.2:
+    bpm = 80 + 90 * (tb / wd); m.add(M1 + tb, clunk(rng, 55.0), gain=0.32, rev=0.05); m.add(M1 + tb + 0.16, clunk(rng, 48.0), gain=0.22, rev=0.05); tb += 60.0 / bpm
+tb = 0.6                                                          # breathing faster and faster (gasps)
+while tb < wd - 0.4:
+    m.add(M1 + tb, gasp(rng, 0.35), gain=0.12 + 0.1 * tb / wd, rev=0.1); tb += 0.9 - 0.5 * tb / wd
 
-# ---------- end card (69.6 -> 75) ----------
+# ---------- end card (74 -> 79) ----------
 ep_ = pad([164.81, 246.94, 329.63, 392.0], DUR - T['END'] + 0.1, rng, cutoff=1500, attack=1.0, release=2.0, voices=2, harmonics=10)
 m.add(T['END'], (fade(ep_[0], 0.8, 2.2), fade(ep_[1], 0.8, 2.2)), gain=0.08, rev=0.6)
 for j, nn in enumerate(motif[:5]): m.add(T['END'] + 0.4 + j * 0.75, bell(midi(nn), rng, 2.0), gain=0.045, pan=0.3 * np.sin(j * 1.7), rev=0.7)

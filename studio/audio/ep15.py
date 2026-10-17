@@ -48,6 +48,15 @@ def spool_down(dur, r, f0=1400.0, f1=60.0, tau=1.6):
 def clunk(r, f=180.0):
     d = 0.45; t = tt(d); x = np.sin(2 * np.pi * f * t) * np.exp(-t * 18) + 0.5 * bp(r.standard_normal(len(t)), 300, 2500) * np.exp(-t * 40)
     return norm(x)
+def smash(r):
+    # a china cup and saucer hitting wet stone: a bright crack, ringing shards, a few bouncing fragments
+    d = 0.9; t = tt(d); x = bp(r.standard_normal(len(t)), 2500, 9000) * np.exp(-t * 30)
+    for f in (3150.0, 4420.0, 5870.0, 7310.0): x += 0.25 * np.sin(2 * np.pi * f * t + r.uniform(0, 6)) * np.exp(-t * (14 + f / 900))
+    for k in range(5):
+        t0 = 0.08 + 0.11 * k + r.uniform(0, 0.04); i0 = int(t0 * SR); n = min(len(t) - i0, int(0.05 * SR))
+        x[i0:i0 + n] += (0.5 - 0.08 * k) * bp(r.standard_normal(n), 3000, 9000) * np.exp(-np.arange(n) / SR * 90)
+    return norm(x)
+
 def gasp(r, d=0.75):
     """a sharp breath in: band-passed noise, rising then cut"""
     t = tt(d); fc = 900 + 1500 * (t / d); x = sweep_filter(noise(d, r, 'white'), list(zip(fc * 0.5, fc * 1.8)), 'bandpass')
@@ -132,6 +141,7 @@ m.add(T['BACK'], (fade(rain(bd, rng, 1.0), 0.01, 0.2), fade(rain(bd, np.random.d
 m.add(T['BACK'], fade(patter(bd, rng, 60), 0.01, 0.2), gain=0.18, rev=0.1)
 m.add(T['BACK'], fade(tyres(bd, rng), 0.05, 0.2), gain=0.12, rev=0.3)
 m.add(T['BACK'] + 0.05, gasp(rng), gain=0.3, rev=0.15)
+m.add(T['BACK'] + 0.55, smash(rng), gain=0.22, rev=0.2)   # the cup of tea drops and shatters (off screen)
 m.add(T['BACK'] + 1.6, gasp(rng, 0.6), gain=0.18, rev=0.15)
 m.add(T['BACK'], pad([164.81, 196.0, 246.94, 329.63], bd, rng, cutoff=1300, attack=0.4, release=0.6, voices=2, harmonics=10), gain=0.06, rev=0.5)
 m.add(B1 - 0.9, downer(rng, 0.9, 1600, 90), gain=0.14, rev=0.3)

@@ -342,7 +342,9 @@ export async function create() {
       faceL.position.set(HERO.x - 0.25, D + 1.15, you.root.position.z + 1.3); faceL.visible = !aerial;
       apple.update(t, { look: cam.position, blinkAt: [7.6, 9.9], earAt: [8.6], pr: R.SSAA }); apple.root.visible = !aerial && t >= T_CUT1;
       // the tea and the pigeon: hanging, sinking very slowly (Stokes); visible on the bridge shots only
-      tea.position.copy(TEA0).add(V(0, -0.3 * Math.max(0, ph) * 0.2, 0)); tea.rotation.set(0.15, 0.6 + 0.02 * Math.max(0, ph), 0.08); tea.visible = !aerial && ph > 0;            // (out of frame when it appears at 11.0: shown by the orbit at ~18 s)
+      const tf = Math.max(0, ph - 5);   // when the air comes back the cup drops (out of the close shot within half a second)
+      tea.position.copy(TEA0).add(V(0, -0.06 * Math.min(Math.max(0, ph), 5) - 4.9 * tf * tf, 0)); tea.rotation.set(0.15 + 2.2 * tf * tf, 0.6 + 0.02 * Math.min(Math.max(0, ph), 5), 0.08 + 1.5 * tf * tf);
+      tea.visible = !aerial && ph > 0 && tea.position.y > D + 0.35;            // (out of frame when it appears at 11.0: shown by the orbit at ~18 s)
       pig.position.copy(PIG0).add(ph < 0 ? V(-1.5 * ph, 0.3 * ph, 2.0 * ph) : V(0, -0.18 * Math.min(ph, 5), 0)); pig.rotation.set(-0.2, Math.atan2(-1.5, 2.0), 0.1);   // flies in from the river side behind you, freezes mid-flap
       pig.flap(ph <= 0 ? (t * 5.5) % 1 : 0.12 + 0.08 * (1 - Math.exp(-ph * 3))); pig.visible = !aerial && ph > -1.6;
       for (const b of flock) { b.visible = !aerial && t < T.PLANE; flock.at(b, ph, b.position); const tf = Math.min(t, T.THICK), u = b.userData;   // frozen in the pose of the instant the air thickened
@@ -378,7 +380,7 @@ export async function create() {
       rain.u.uFocus.value = focus; rain.u.uAper.value = aper;
       // flying cameras: the beads streak past (camera motion blur) and catch the landing lights from tens of metres
       let camPrev = null; if (aerial) { camPrev = camB; camPrev.copy(cam); (t < T.SPACE ? planeCam : glideOn).apply(camPrev, t - 1 / 60); }   // a 180-degree shutter
-      rain.u.uAirK.value = aerial ? 4 : 1;
+      rain.u.uAirK.value = aerial ? 4 : 1; rain.u.uNear.value = aerial ? 2.5 : 0.18; rain.u.uNearFall.value = aerial ? 2.5 : 1.2;   // flying: no long streaks across the lens
       rain.update(ph, cam, R.SSAA, W, H, camPrev);
       if (q.get('raindbg')) rain.u.uGain.value *= Number(q.get('raindbg'));
 

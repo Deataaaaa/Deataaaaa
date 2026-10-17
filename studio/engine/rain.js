@@ -28,14 +28,14 @@ export class Rain {
       uGain: { value: 1 }, uNear: { value: near }, uFocus: { value: 4 }, uAper: { value: 0 }, uWind: { value: new THREE.Vector3(0.6, 0, 0.3) },
       uRes: { value: new THREE.Vector2(1080, 1920) }, uStreakK: { value: 18 }, uBeadK: { value: 3 }, uFogC: { value: new THREE.Color('#2a3140') }, uFogD: { value: 0.002 }, uFade: { value: 1 },
       uSpotP: { value: spots.map((v) => v.clone()) }, uSpotD: { value: spots.map((v) => v.clone().set(0, -1, 0)) }, uSpotC: { value: spots.map((v) => v.clone().set(0, 0, 0)) },
-      uSpotCos: { value: spots.map(() => new THREE.Vector2(0.9, 0.8)) }, uPrevVP: { value: new THREE.Matrix4() }, uCamBlur: { value: 0 }, uAirK: { value: 1 }, uNearFall: { value: 1.2 },
+      uSpotCos: { value: spots.map(() => new THREE.Vector2(0.9, 0.8)) }, uPrevVP: { value: new THREE.Matrix4() }, uCamBlur: { value: 0 }, uAirK: { value: 1 }, uNearFall: { value: 1.2 }, uLenFade: { value: 0 },
       uBoxC: { value: [...Array(MAXBOX)].map(() => new THREE.Vector3(0, -1e5, 0)) }, uBoxH: { value: [...Array(MAXBOX)].map(() => new THREE.Vector3(0, 0, 0)) }, uLight: { value: new THREE.Vector3(-0.4, 0.8, 0.4).normalize() },
     };
     const mat = new THREE.ShaderMaterial({
       uniforms: this.u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,   // screen-space quads: winding flips
       vertexShader: /* glsl */`
         attribute vec3 aP, aCol; attribute vec4 aPrm;                // aPrm: ybot, ytop, radius (m), seed
-        uniform float uT, uTf, uTb, uPxScale, uPR, uMinPx, uShutter, uGain, uNear, uFocus, uAper, uFogD, uFade, uStreakK, uBeadK, uCamBlur, uAirK, uNearFall; uniform mat4 uPrevVP;
+        uniform float uT, uTf, uTb, uPxScale, uPR, uMinPx, uShutter, uGain, uNear, uFocus, uAper, uFogD, uFade, uStreakK, uBeadK, uCamBlur, uAirK, uNearFall, uLenFade; uniform mat4 uPrevVP;
         uniform vec3 uWind; uniform vec2 uRes;
         uniform vec3 uSpotP[${MAXSPOT}], uSpotD[${MAXSPOT}], uSpotC[${MAXSPOT}]; uniform vec2 uSpotCos[${MAXSPOT}];
         uniform vec3 uBoxC[${MAXBOX}], uBoxH[${MAXBOX}];
@@ -82,6 +82,9 @@ export class Rain {
           float fog = exp(-uFogD * depth);
           float nr = vel > 0.0 ? uNearFall : uNear;                          // falling drops near the lens are thick bars: fade them sooner
           vA = energy * spread * topFade * smoothstep(nr, nr * 2.2, depth) * fog * uFade;
+          // hanging beads swept into thin streaks by a moving camera (much longer than they are wide) read as falling rain and
+          // turn into noise the encoder cannot hold: they fade out; soft bokeh discs and the slow, far beads stay
+          if (vel == 0.0) vA *= 1.0 - uLenFade * smoothstep(2.0, 6.0, len / rDraw);
           vC = c * uGain * (aPrm.w > 1.5 ? uAirK : 1.0);   // aerial drops: catch the landing lights from tens of metres
         }`,
       fragmentShader: /* glsl */`
@@ -92,16 +95,12 @@ export class Rain {
           vec2 d = vec2(vQ.x * vRpx, vQ.y - along) / vRpx;
           float rr = length(d);
           if (rr > 1.0) discard;
-          float a;
-          if (vLen < vRpx * 0.5) {
-            // a hanging drop: a little lens, brighter at its rim, with a glint toward the light
-            float rim = smoothstep(0.35, 0.92, rr) * (1.0 - smoothstep(0.92, 1.0, rr));
-            float glint = exp(-dot(d - vec2(-0.32, 0.38), d - vec2(-0.32, 0.38)) * 28.0);
-            float lens = mix(1.0 - smoothstep(0.6, 1.0, rr), 0.35 + 0.9 * rim + 1.6 * glint, smoothstep(2.5, 6.0, vRpx));
-            a = lens;
-          } else {
-            a = 1.0 - smoothstep(0.35, 1.0, rr);
-          }
+          // a hanging drop: a little lens, brighter at its rim, with a glint toward the light; blends into a soft streak as
+          // it moves (no switch between the two looks from one frame to the next)
+          float rim = smoothstep(0.35, 0.92, rr) * (1.0 - smoothstep(0.92, 1.0, rr));
+          float glint = exp(-dot(d - vec2(-0.32, 0.38), d - vec2(-0.32, 0.38)) * 28.0);
+          float lens = mix(1.0 - smoothstep(0.6, 1.0, rr), 0.35 + 0.9 * rim + 1.6 * glint, smoothstep(2.5, 6.0, vRpx));
+          float a = mix(lens, 1.0 - smoothstep(0.35, 1.0, rr), smoothstep(0.25, 1.0, vLen / vRpx));
           gl_FragColor = vec4(vC * a * vA, 1.0);
         }`,
     });

@@ -134,8 +134,9 @@ export async function create() {
   // ---- Apple, sitting on the east parapet as you walk past him (glide B, then small behind you on the bridge shots) ----
   const apple = makeCat(); apple.root.position.set(LB.PARA + 0.17, D + 1.21, 57.5); apple.root.rotation.y = -Math.PI * 0.3; scene.add(apple.root);
   // ---- the WTF: a goldfish swimming in a ball of water hanging in the air beside you (where did its bowl go?) ----
-  const fishB = makeGoldfishBall(); fishB.scale.setScalar(0.85); scene.add(fishB);
-  const FISH0 = V(7.85, 10.6, 63.3);             // in the hook's frame, outside the instant take's first frame, 200+ px clear of your face in the orbit
+  const fishB = makeGoldfishBall(); fishB.scale.setScalar(0.7); scene.add(fishB);
+  // it drifts 20 cm while nobody looks (story 0.9-2.4 s): clear of your face during the orbit, beside it in the hook
+  const FISH_A = V(8.05, 10.6, 63.3), FISH0 = V(7.85, 10.6, 63.3), fishAt = (ph) => FISH_A.clone().lerp(FISH0, smooth(0.9, 2.4, ph));             // in the hook's frame, outside the instant take's first frame, 200+ px clear of your face in the orbit
   // ---- the pigeon (over the parapet) and gulls over the river, hanging mid-flap ----
   const pig = makePigeon(); pig.scale.setScalar(1.05); scene.add(pig);
   const PIG0 = V(6.6, 11.0, 61.2);
@@ -216,7 +217,7 @@ export async function create() {
   }
   for (let i = 0; i < Math.round(70000 * RK); i++) {   // heavy rain close round you: bigger drops, the close-ups shimmer
     const a = rr() * 6.283, d = 0.45 + 3.6 * Math.sqrt(rr()), x = HERO.x + Math.cos(a) * d, z = HERO.z + 0.5 + Math.sin(a) * d, y = D + 0.1 + rr() * 3.4;
-    if (shelter(x, y, z) || Math.hypot(x - FISH0.x, y - FISH0.y, z - FISH0.z) < 0.22) continue;
+    if (shelter(x, y, z) || Math.min(Math.hypot(x - FISH0.x, y - FISH0.y, z - FISH0.z), Math.hypot(x - FISH_A.x, y - FISH_A.y, z - FISH_A.z)) < 0.2) continue;
     const c = lightDrop(V(x, y, z), lightsForRain, AMB), rad = 0.0009 + 0.0016 * rr() * rr(), gl = 0.5 + 1.8 * Math.pow(rr(), 3);
     rain.set(ri++, x, y, z, D, D + 14, rad, c[0] * gl, c[1] * gl, c[2] * gl, rr());
   }
@@ -363,7 +364,7 @@ export async function create() {
       apple.update(t, { look: cam.position, blinkAt: [7.6, 9.9], earAt: [8.6], pr: R.SSAA }); apple.root.visible = !aerial && t >= T_CUT1;
       // the goldfish and the pigeon: hanging, sinking very slowly (Stokes); visible on the bridge shots only
       const tf = Math.max(0, ph - 5);   // when the air comes back the ball of water drops (out of the close shot within half a second)
-      fishB.position.copy(FISH0).add(V(0, -0.06 * Math.min(Math.max(0, ph), 5) - 4.9 * tf * tf, 0)); fishB.rotation.set(2.2 * tf * tf, 0.6, 1.5 * tf * tf); fishB.update(t);
+      fishB.position.copy(fishAt(ph)).add(V(0, -0.06 * Math.min(Math.max(0, ph), 5) - 4.9 * tf * tf, 0)); fishB.rotation.set(2.2 * tf * tf, 0.6, 1.5 * tf * tf); fishB.update(t);
       fishB.visible = !aerial && ph > 0 && fishB.position.y > D + 0.35;            // (out of frame when it appears at 11.0: shown by the orbit at ~18 s)
       pig.position.copy(PIG0).add(ph < 0 ? V(-1.5 * ph, 0.3 * ph, 2.0 * ph) : V(0, -0.18 * Math.min(ph, 5), 0)); pig.rotation.set(-0.2, Math.atan2(-1.5, 2.0), 0.1);   // flies in from the river side behind you, freezes mid-flap
       pig.flap(ph <= 0 ? (t * 5.5) % 1 : 0.12 + 0.08 * (1 - Math.exp(-ph * 3))); pig.visible = !aerial && ph > -1.6;
@@ -402,7 +403,7 @@ export async function create() {
       // every moving shot: drops and beads are drawn from where the camera of the previous frame saw them (a 360-degree
       // shutter), so nothing jumps across the frame between frames (the flicker check flagged the rain shots without it)
       let camPrev = null; if (!q.get('dcam') && shotId(t - 1 / 30) === shotId(t)) { camPrev = camB; camPrev.copy(cam); camAt(camPrev, t - 1 / 30); }
-      rain.u.uAirK.value = aerial ? 4 : 1; rain.u.uNear.value = aerial ? 2.5 : 0.18; rain.u.uNearFall.value = aerial ? 2.5 : 1.2;   // flying: no long streaks across the lens
+      rain.u.uAirK.value = aerial ? 4 : 1; rain.u.uLenFade.value = aerial ? 0 : 1; rain.u.uNear.value = aerial ? 2.5 : 0.18; rain.u.uNearFall.value = aerial ? 2.5 : 1.2;   // flying: no long streaks across the lens
       rain.update(ph, cam, R.SSAA, W, H, camPrev);
       if (q.get('raindbg')) rain.u.uGain.value *= Number(q.get('raindbg'));
 

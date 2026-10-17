@@ -177,7 +177,7 @@ export async function create() {
   const vehZ = (v, ph) => { if (ph <= 0) return v.z0 + v.dir * v.v0 * ph; const tb = 0.7, a = 2.6;   // coasting, then braking
     const s = ph < tb ? v.v0 * ph - 0.15 * ph * ph : v.v0 * tb - 0.15 * tb * tb + (v.v0 * (ph - tb) - 0.5 * a * (ph - tb) ** 2);
     const tStop = tb + v.v0 / a, sMax = v.v0 * tb - 0.15 * tb * tb + v.v0 * v.v0 / (2 * a); return v.z0 + v.dir * (ph >= tStop ? sMax : s); };
-  const headL = []; for (let i = 0; i < 6; i++) { const l = new THREE.SpotLight('#fff3e0', 40, 45, 0.45, 0.5, 2); scene.add(l, l.target); headL.push(l); }
+  const headL = []; for (let i = 0; i < 6; i++) { const l = new THREE.SpotLight('#fff3e0', 22, 45, 0.45, 0.5, 2); scene.add(l, l.target); headL.push(l); }
 
   // ---- frozen spray (extra visual): tyre spray thrown up behind the traffic and splash crowns round your feet. Sparks on
   // the story clock, held still while the air is thick (their clock: ph before, 0 during, ph - 5 after), so the spray
@@ -377,7 +377,7 @@ export async function create() {
       VEH.forEach((v, i) => { const zz = vehZ(v, ph); v.m.position.set(v.x, D + 0.01, zz); v.m.rotation.y = v.dir > 0 ? 0 : Math.PI; v.m.visible = !aerial; v.m.updateMatrixWorld(true);
         for (let j = 0; j < 2; j++) { const hp = v.hl[j].clone().applyMatrix4(v.m.matrixWorld), dir = V(0, -0.12, 1).applyQuaternion(v.m.quaternion).normalize();
           const L = headL[i * 2 + j]; L.position.copy(hp); L.target.position.copy(hp).addScaledVector(dir, 10); L.visible = !aerial; L.target.updateMatrixWorld();
-          spots.push({ p: hp, d: dir, col: new THREE.Color(3.5, 3.3, 3), inner: 0.975, outer: 0.9 }); } });
+          spots.push({ p: hp, d: dir, col: new THREE.Color(3.5, 3.3, 3).multiplyScalar(t >= T.BACK2 && t < T.RET2 ? 0.35 : 1), inner: 0.975, outer: 0.9 }); } });   // (close on you: less glare off the rain)
       // the plane's landing lights in the aerial shots
       if (aerial) { spots.length = 0; AP.spots(spots); }
       rain.setSpots(spots);

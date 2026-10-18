@@ -295,12 +295,15 @@ export async function create() {
   function holdUmbrella(av, u, grip) {
     // the hand: in front of the right shoulder; the umbrella's shaft passes through the fist, tilted back over the head
     return (sh, fwd, left, up) => ({ hand: sh.clone().addScaledVector(up, -0.17).addScaledVector(fwd, 0.26).addScaledVector(left, -0.06 + grip * 0),
-      pole: sh.clone().addScaledVector(up, -0.55).addScaledVector(left, -0.45).addScaledVector(fwd, -0.1), curl: 0.82 });
+      pole: sh.clone().addScaledVector(up, -0.55).addScaledVector(left, -0.45).addScaledVector(fwd, -0.1), curl: 0.82,
+      F: fwd.clone().addScaledVector(left, 0.25), N: left.clone().addScaledVector(fwd, -0.2) });   // thumb up, fingers forward, palm in
   }
   function placeUmbrella(av, u, side = 'Right') {
     const B = av.bones, i1 = wp(B[side + 'HandIndex1'] || B[side + 'Hand']), p1 = wp(B[side + 'HandPinky1'] || B[side + 'Hand']), m1 = wp(B[side + 'HandMiddle1'] || B[side + 'Hand']), hd = wp(B[side + 'Hand']);
     const out = tmpA.copy(i1).sub(p1).cross(tmpB.copy(m1).sub(hd)).normalize(); if (side === 'Left') out.negate();
-    const fist = tmpC.copy(i1).add(p1).multiplyScalar(0.5).lerp(m1, 0.5).addScaledVector(out, -0.035).addScaledVector(tmpD.copy(m1).sub(hd).normalize(), 0.015);
+    // the grip: on the knuckle line, just in front of the palm (where the curled fingers close round the shaft)
+    const palmN = V(1, 0, 0).applyQuaternion(av.root.quaternion).multiplyScalar(side === 'Left' ? -1 : 1);
+    const fist = tmpC.copy(i1).add(p1).multiplyScalar(0.5).addScaledVector(palmN, 0.03);
     // axis: up, leaning back toward the body and in toward the head
     // the shaft stands upright through the fist (in front of and beside the head, ~35 cm from it), its canopy rim 8 cm above
     // the top of the head; the fist grips it between the handle and the runner
@@ -326,7 +329,7 @@ export async function create() {
     you.root.updateMatrixWorld(true);
     placeUmbrella(you, umb);
     if (q.get('umbdbg')) { const hd = wp(you.bones.Head), f = wp(you.bones.RightHandMiddle1 || you.bones.RightHand), o = umb.position;
-      console.log('umbdbg', t.toFixed(2), 'head-shaft', Math.hypot(hd.x - o.x, hd.z - o.z).toFixed(3), 'fist-shaft', Math.hypot(f.x - o.x, f.z - o.z).toFixed(3), 'rim-headtop', (o.y + 0.66 - hd.y - 0.2).toFixed(3), 'fist-above-handle', (f.y - o.y).toFixed(3)); }
+      console.log('umbdbg', t.toFixed(2), 'head-shaft', Math.hypot(hd.x - o.x, hd.z - o.z).toFixed(3), 'fist-shaft', Math.hypot(f.x - o.x, f.z - o.z).toFixed(3), 'rim-headtop', (o.y + 0.66 - hd.y - 0.2).toFixed(3), 'fist-above-handle', (f.y - o.y).toFixed(3), 'fist', f.x.toFixed(2), f.y.toFixed(2), f.z.toFixed(2), 'sh', wp(you.bones.RightArm).toArray().map((v) => v.toFixed(2)).join(','), 'umb', o.x.toFixed(2), o.y.toFixed(2), o.z.toFixed(2), 'umbVis', umb.visible, umb.parent === scene); }
     // the others: walking until the air thickens, then slowing to a stop (breathing hard)
     for (const p of peds) {
       const s = ph <= 0 ? p.v * ph : p.v * (1 - Math.exp(-1.6 * ph)) / 1.6, zz = p.z0 + p.dir * s;

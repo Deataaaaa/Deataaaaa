@@ -10,8 +10,8 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 export function makeUmbrella() {
   const g = new THREE.Group();
   const nylon = new THREE.MeshPhysicalMaterial({ color: '#101113', roughness: 0.38, metalness: 0, sheen: 0.4, sheenColor: new THREE.Color('#4a5060'), side: THREE.DoubleSide, clearcoat: 0.5, clearcoatRoughness: 0.25 });
-  const steel = new THREE.MeshStandardMaterial({ color: '#8d9196', roughness: 0.3, metalness: 1 });
-  const wood = new THREE.MeshStandardMaterial({ color: '#3a2416', roughness: 0.45 });
+  const steel = new THREE.MeshStandardMaterial({ color: '#b4b8bd', roughness: 0.32, metalness: 0.55 });
+  const wood = new THREE.MeshStandardMaterial({ color: '#6b4428', roughness: 0.4 });
   const top = 0.98, R = 0.52, nr = 8, ns = 10, na = 6, pos = [], idx = [];
   // canopy: for each panel, a grid from the tip (s = 0) to the edge (s = 1) and across between two ribs (a = 0..1)
   for (let p = 0; p < nr; p++) for (let i = 0; i <= ns; i++) for (let j = 0; j <= na; j++) {

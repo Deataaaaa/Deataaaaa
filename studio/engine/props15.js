@@ -63,7 +63,7 @@ export function makeBus() {
   // wheels, skirt, lights
   for (const z of [Lb / 2 - 2.4, -Lb / 2 + 2.6]) for (const s of [-1, 1]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.32, 20), tyre); w.rotation.z = Math.PI / 2; w.position.set(s * (Wb / 2 - 0.15), 0.5, z); g.add(w); }
   const skirt = new THREE.Mesh(new THREE.BoxGeometry(Wb + 0.02, 0.32, Lb - 0.4), black); skirt.position.y = 0.42; g.add(skirt);
-  const hl = new THREE.MeshBasicMaterial({ color: new THREE.Color('#fff6e8').multiplyScalar(3.0) }), tl = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ff1a12').multiplyScalar(3.0) });
+  const hl = new THREE.MeshBasicMaterial({ color: new THREE.Color('#fff6e8').multiplyScalar(1.6) }), tl = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ff1a12').multiplyScalar(1.8) });
   for (const s of [-1, 1]) { const h = new THREE.Mesh(new THREE.CircleGeometry(0.11, 14), hl); h.position.set(s * 0.95, 0.75, Lb / 2 + 0.03); g.add(h);
     const t = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.5), tl); t.position.set(s * 1.05, 1.0, -Lb / 2 - 0.03); t.rotation.y = Math.PI; g.add(t); }
   g.userData.L = Lb; g.userData.headlights = [V(-0.95, 0.75, Lb / 2 + 0.1), V(0.95, 0.75, Lb / 2 + 0.1)];
@@ -80,7 +80,7 @@ export function makeCab() {
   const roof = new THREE.Mesh(new RoundedBoxGeometry(1.82, 0.1, 2.9, 3, 0.04), paintM); roof.position.set(0, 1.93, -0.35); g.add(roof);
   const sign = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.13, 0.2), new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffae2a').multiplyScalar(3.2) })); sign.position.set(0, 2.05, 0.7); g.add(sign);
   for (const z of [1.55, -1.45]) for (const s of [-1, 1]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.24, 18), tyre); w.rotation.z = Math.PI / 2; w.position.set(s * 0.86, 0.36, z); g.add(w); }
-  const hl = new THREE.MeshBasicMaterial({ color: new THREE.Color('#fff6e8').multiplyScalar(3.0) });
+  const hl = new THREE.MeshBasicMaterial({ color: new THREE.Color('#fff6e8').multiplyScalar(1.6) });
   for (const s of [-1, 1]) { const h = new THREE.Mesh(new THREE.CircleGeometry(0.12, 14), hl); h.position.set(s * 0.68, 0.82, 2.43); g.add(h); }
   g.userData.L = 4.85; g.userData.headlights = [V(-0.68, 0.82, 2.5), V(0.68, 0.82, 2.5)];
   return g;
@@ -282,5 +282,20 @@ export function makeTrex() {
     jaw.rotation.x = 0.25 + 0.15 * hop; head.rotation.x = -0.1 * hop;
   };
   g.pose(0.5);
+  return g;
+}
+
+// the WTF (v5): a yellow rubber duck hanging in the air beside you, 11 cm long, glossy vinyl, faces +x
+export function makeRubberDuck() {
+  const g = new THREE.Group();
+  const vinyl = new THREE.MeshPhysicalMaterial({ color: '#ffcf1a', roughness: 0.26, clearcoat: 0.9, clearcoatRoughness: 0.12, sheen: 0.3, sheenColor: new THREE.Color('#fff2a0') });
+  const orange = new THREE.MeshPhysicalMaterial({ color: '#ff7a10', roughness: 0.3, clearcoat: 0.8 });
+  const black = new THREE.MeshPhysicalMaterial({ color: '#080808', roughness: 0.08, clearcoat: 1 });
+  const blob = (m, r, sx, sy, sz, x, y, z) => { const o = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 22), m); o.scale.set(sx, sy, sz); o.position.set(x, y, z); o.castShadow = true; g.add(o); return o; };
+  blob(vinyl, 0.045, 1.25, 0.8, 0.95, 0, 0, 0);                  // body
+  blob(vinyl, 0.022, 1.2, 1.1, 1, -0.05, 0.016, 0).rotation.z = 0.6;   // tail flick
+  blob(vinyl, 0.03, 1, 1, 1, 0.032, 0.044, 0);                   // head
+  blob(orange, 0.016, 1.3, 0.45, 1.1, 0.062, 0.038, 0);          // beak
+  for (const s of [1, -1]) { blob(black, 0.0055, 1, 1.2, 0.8, 0.05, 0.055, 0.019 * s); blob(vinyl, 0.012, 1.4, 0.5, 1, -0.005, 0.012, 0.038 * s); }   // eyes, wings
   return g;
 }

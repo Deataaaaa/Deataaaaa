@@ -91,7 +91,7 @@ export function windowMat({ base = '#3b4048', lit = 0.45, floorH = 3.6, bayW = 1
       float on = step(1.0 - ${lit.toFixed(2)}, hs2(vec3(c, floor(vWP.x * 0.013 + vWP.z * 0.017))));
       vec3 wc = mix(vec3(0.75, 0.85, 1.0), vec3(1.0, 0.78, 0.5), step(1.0 - ${warm.toFixed(2)}, hs2(vec3(c.yx, 3.0))));
       float lvl = 0.6 + 0.8 * hs2(vec3(c, 7.0));
-      float far = smoothstep(0.35, 0.9, max(fw.x, fw.y));                       // finer than a pixel: the average
+      float far = smoothstep(0.12, 0.4, max(fw.x, fw.y));                       // windows under ~8 px: their average (no shimmer)
       vec3 e = mix(wm * on * lvl * wc, vec3(0.55, 0.62, 0.68) * ${lit.toFixed(2)} * 0.3 * lvl, far);
       totalEmissiveRadiance += e * wall * ${gain.toFixed(2)};
       diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.03, 0.035, 0.04), wm * ${glass.toFixed(2)} * wall * (1.0 - far));`)
@@ -283,7 +283,7 @@ export function makeTowerBridge() {
   blue.emissive = new THREE.Color('#5d86b8'); blue.emissiveIntensity = 0.55; white.emissive = new THREE.Color('#c8d6e8'); white.emissiveIntensity = 0.35;   // the LED wash
   const glassM = new THREE.MeshStandardMaterial({ color: '#0b1016', roughness: 0.08, metalness: 0.2 });
   const lampGlass = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffd49a').multiplyScalar(3.2) });
-  const ledM = new THREE.MeshBasicMaterial({ color: new THREE.Color('#bcd6ff').multiplyScalar(2.6) });
+  const ledM = new THREE.MeshBasicMaterial({ color: new THREE.Color('#bcd6ff').multiplyScalar(1.3) });
   const lamps = [], winLit = [];
   // the road deck and pavements, shore to shore (the river is 250 m wide here; the approaches continue onto the banks)
   const road = new THREE.Mesh(new THREE.BoxGeometry(2 * LB.ROAD, 0.6, 2 * LB.SHORE + 60), wetGroundMat({ color: '#25262a', lanes: true }));
@@ -397,7 +397,7 @@ function lancet(hw, h) {
     geo = new THREE.ShapeGeometry(s, 6); geo.translate(0, -h / 2, 0.04); lancetGeo.set(key, geo); }
   return new THREE.Mesh(geo, lancetMat);
 }
-const lancetMat = new THREE.MeshStandardMaterial({ color: '#0a0d12', roughness: 0.1, metalness: 0.3, emissive: new THREE.Color('#ffb46a'), emissiveIntensity: 0.0 });
+const lancetMat = new THREE.MeshStandardMaterial({ color: '#0a0d12', roughness: 0.55, metalness: 0.1, emissive: new THREE.Color('#ffb46a'), emissiveIntensity: 0.0 });
 export function setTowerWindows(k) { lancetMat.emissiveIntensity = k; }
 // the parapet's arcade: painted steel with a Gothic blind arcade in shading (normals bent at the arch edges)
 function arcadeMat(c) {

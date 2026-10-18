@@ -2,7 +2,7 @@
 // Hook (0-3.6): flash-forward into the third second, beside a plane over Tower Bridge, engines dead, the rain hanging.
 // Glide (3.6-11): London at the blue hour in the rain, down to you on the bridge's east pavement; countdown.
 // The thick air, one take (11-33, slow motion): the rain stops dead, you can't breathe in, sound dies; the pigeon, the
-// someone in an inflatable T-rex costume frozen mid-jump behind you (rule 19's WTF); craning up over the river: every bird hangs, fuel engines choke, cars roll to a stop.
+// a yellow rubber duck hanging in the air beside you (rule 19's WTF); craning up over the river: every bird hangs, fuel engines choke, cars roll to a stop.
 // The plane (33-44): its fans wind down, its landing lights die, the ram air turbine drops out. Space (44-50): Europe at
 // dusk, every plane in the sky a red dot. Second 5 (50-56): the air comes back, the rain falls, you gasp. The last take
 // (56-65): the plane gliding on toward the City with dead engines; BA 9, 1982; the rain falls back… (65-69.6) …and a GINORMOUS
@@ -21,10 +21,10 @@ import { makeCat } from '../engine/cat.js';
 import { makeGull } from '../engine/beach.js';
 import { S7, makeTsunami } from '../engine/sf7.js';
 import { makeDuskSky } from '../engine/guarapari.js';
-import { LB, makeRainSky, makeThames, makeBanks, makeTowerBridge, makeRiverside, makeTowerOfLondon, makeSkyline, cityLightPoints, setTowerWindows } from '../engine/london.js';
+import { LB, makeRainSky, makeThames, makeBanks, makeTowerBridge, makeRiverside, makeTowerOfLondon, makeSkyline, cityLightPoints, setTowerWindows, windowMat } from '../engine/london.js';
 import { Rain, lightDrop } from '../engine/rain.js';
 import { makeAirliner } from '../engine/airliner.js';
-import { makeUmbrella, makeBus, makeCab, makePigeon, makeTrex, makeGull2 } from '../engine/props15.js';
+import { makeUmbrella, makeBus, makeCab, makePigeon, makeRubberDuck, makeGull2 } from '../engine/props15.js';
 import { T, T_CUT1, DUR, HERO, PLANE_Z, heroZ, heroDist, story, storyRate, planeAt, planePitch, hook, glide, instant, plane as planeCam, back, glideOn } from './ep15cams.js';
 
 const TITLE = 'What if air became <span class="k">as thick as honey</span> for 5 seconds?';
@@ -133,13 +133,10 @@ export async function create() {
   const umb = makeUmbrella(); scene.add(umb);
   // ---- Apple, sitting on the east parapet as you walk past him (glide B, then small behind you on the bridge shots) ----
   const apple = makeCat(); apple.root.position.set(LB.PARA + 0.17, D + 1.21, 57.5); apple.root.rotation.y = -Math.PI * 0.3; scene.add(apple.root);
-  // ---- the WTF: an inflatable T-rex costume, mid-jump ----
-  const trex = makeTrex(); scene.add(trex);
-  // behind you on the pavement, hopping along; frozen at the top of a jump when the air thickens, lands at second 5
-  const trexAt = (t, ph) => { const z = (ph <= 0 ? heroZ(Math.min(t, T.THICK)) : HERO.z) - 3.4;
-    const tf = ph <= 0 ? t : ph < 5 ? T.THICK : T.THICK + (ph - 5) * 2.2, f = ((tf - T.THICK) * 1.25 + 0.5) % 1, ff = f < 0 ? f + 1 : f;
-    const air = Math.sin(Math.PI * ff), land = ph >= 5 ? Math.min(1, (ph - 5) * 2.2) : 0;   // (after second 5: one last fall, then standing)
-    const h = land >= 1 ? 0 : air * 0.55; return { pos: V(7.95, D + h, z), hop: land >= 1 ? 0.15 : air, arm: Math.sin(tf * 9.0), tail: Math.sin(tf * 4.0) }; };
+  // ---- the WTF: a rubber duck hanging in the air ----
+  const duck = makeRubberDuck(); duck.scale.setScalar(1.15); scene.add(duck);
+  // it drifts 20 cm while nobody looks (story 0.9-2.4 s): clear of your face during the orbit, beside it in the hook
+  const DUCK_A = V(8.05, 10.62, 63.3), DUCK0 = V(7.82, 10.6, 63.3), duckAt = (ph) => DUCK_A.clone().lerp(DUCK0, smooth(0.9, 2.4, ph));
   // ---- the pigeon (over the parapet) and gulls over the river, hanging mid-flap ----
   const pig = makePigeon(); pig.scale.setScalar(1.05); scene.add(pig);
   const PIG0 = V(6.6, 11.0, 61.2);
@@ -243,12 +240,37 @@ export async function create() {
 
   // ---- the meme ending: a wall of water 400 m tall coming up the Thames from the sea, out of nowhere (post 7's tsunami) ----
   const waveSky = makeDuskSky(V(1, 0.06, 0.1).normalize(), { zen: '#0b1424', hor: '#27324a', belt: '#33384f', shade: '#161d2c', sunCol: '#9fb4d8' });
-  waveSky.material.uniforms.uDisk.value = 0; waveSky.material.uniforms.uSkyI.value = 0.7;
+  waveSky.material.uniforms.uDisk.value = 0; waveSky.material.uniforms.uSkyI.value = 1.2;
   waveSky.material.uniforms.uSun.value.set(0, 0.3, 1).normalize();   // no sun at night: the face stays green-black, foam and crest catch the city glow
   const wave = makeTsunami(waveSky); wave.mesh.visible = false; scene.add(wave.mesh);
   // the wave as a function of time: it rises on the horizon 1.7 km down river and comes in at ~175 m/s, growing to 400 m;
   // its lip passes over you at ~73.2 s
   const waveW = (t) => Math.max(0, t - T.WAVE), waveF = (t) => 1700 - 175 * waveW(t), waveH = (t) => 50 + 350 * smooth(0, 7.5, waveW(t));
+  // the city along both banks down river (POV only): blocks that topple back toward you and sink, bursting into spray, as
+  // the wave's toe reaches each one (hit times from the same maths as the wave)
+  const toeAt = (t) => waveF(t) - 0.24 * waveH(t);
+  const hitT = (bx) => { for (let t = T.WAVE; t < T.END + 2; t += 0.01) if (toeAt(t) <= bx) return t; return 1e9; };
+  const cmats = [windowMat({ base: '#4a4e55', lit: 0.5, seed: 21, gain: 1.0 }), windowMat({ base: '#5a3b2e', lit: 0.4, floorH: 3.3, bayW: 1.8, warm: 0.85, seed: 22, gain: 0.9 }),
+    windowMat({ base: '#3a4350', lit: 0.6, floorH: 4.0, bayW: 1.5, warm: 0.3, glass: 0.8, seed: 23, gain: 1.1 })];
+  const city = [], cityG = new THREE.Group(); cityG.visible = false; scene.add(cityG);
+  { const cr = rng(4242);
+    for (const side of [1, -1]) for (const row of [0, 1, 2]) { let x = 30 + cr() * 20;
+      while (x < 1750) { const w = 14 + 18 * cr(), d = 14 + 14 * cr(), far = x > 900, h = (far && cr() < 0.25 ? 70 + 90 * cr() : 12 + 34 * cr()) * (1 + 0.3 * row);
+        const geo = new THREE.BoxGeometry(w, h, d); geo.translate(w / 2, h / 2, 0);
+        const m = new THREE.Mesh(geo, cmats[Math.floor(cr() * 3)]); const z = side * (150 + row * 42 + cr() * 16);
+        m.position.set(x, LB.STREET, z); m.castShadow = false; cityG.add(m);
+        city.push({ m, x, z, w, h, d, th: hitT(x), tilt: 0.7 + 0.5 * cr(), roll: (cr() - 0.5) * 0.4 }); x += w + 4 + 10 * cr(); } } }
+  // the spray thrown up as they go
+  const SPC = 60 * city.length, cspray = new Sparks(SPC, { minPx: 1.6, maxPx: 70, near: 3, additive: true }); scene.add(cspray.points);
+  { const cr = rng(4343); let n = 0;
+    for (const b of city) for (let k = 0; k < 60; k++) { const yy = b.h * cr(), c = 0.75 + 0.5 * cr();
+      cspray.set(n++, b.x + b.w * cr(), LB.STREET + yy, b.z + (cr() - 0.5) * b.d, -(8 + 22 * cr()), 6 + 26 * cr() * (0.4 + yy / b.h), (cr() - 0.5) * 14,
+        0.85 * c, 0.9 * c, 0.95 * c, 2 + 4 * cr(), b.th - 0.2 + 0.7 * cr(), 2.2 + 1.6 * cr(), cr()); }
+    cspray.commit(); cspray.u.uAcc.value.set(0, -9, 0); cspray.u.uAccT0.value = 0; }
+  // lightning over the estuary (lights the wave and the city in flashes)
+  const BOLTS = [66.1, 68.7, 70.9, 72.6], bolt = (t) => BOLTS.reduce((a, b) => a + (t >= b ? Math.exp(-(t - b) / 0.09) + 0.5 * (t >= b + 0.12 ? Math.exp(-(t - b - 0.12) / 0.07) : 0) : 0), 0);
+  const boltL = new THREE.DirectionalLight('#c8d8ff', 0); boltL.position.set(800, 900, 200); scene.add(boltL, boltL.target);
+
   // your eyes (POV, 62-74 s): looking down river at the draining Thames, then up at the wave as it comes; you back away, your
   // breath and hands shaking the view more and more (kept under ~0.5 degrees a frame)
   const povCam = { apply: (c, t) => {
@@ -272,7 +294,7 @@ export async function create() {
   // your walk slows in the thick air (like wading) and stops; your chest heaves trying to breathe; after second 5 a gasp
   function holdUmbrella(av, u, grip) {
     // the hand: in front of the right shoulder; the umbrella's shaft passes through the fist, tilted back over the head
-    return (sh, fwd, left, up) => ({ hand: sh.clone().addScaledVector(up, -0.3).addScaledVector(fwd, 0.26).addScaledVector(left, -0.05 + grip * 0),
+    return (sh, fwd, left, up) => ({ hand: sh.clone().addScaledVector(up, -0.17).addScaledVector(fwd, 0.26).addScaledVector(left, -0.06 + grip * 0),
       pole: sh.clone().addScaledVector(up, -0.55).addScaledVector(left, -0.45).addScaledVector(fwd, -0.1), curl: 0.82 });
   }
   function placeUmbrella(av, u, side = 'Right') {
@@ -280,11 +302,11 @@ export async function create() {
     const out = tmpA.copy(i1).sub(p1).cross(tmpB.copy(m1).sub(hd)).normalize(); if (side === 'Left') out.negate();
     const fist = tmpC.copy(i1).add(p1).multiplyScalar(0.5).lerp(m1, 0.5).addScaledVector(out, -0.035).addScaledVector(tmpD.copy(m1).sub(hd).normalize(), 0.015);
     // axis: up, leaning back toward the body and in toward the head
-    // (the shaft leans out to the side and only a little back, so it passes clear of the head)
-    const fwd = V(0, 0, 1).applyQuaternion(av.root.quaternion), lft = V(1, 0, 0).applyQuaternion(av.root.quaternion).multiplyScalar(side === 'Left' ? 1 : -1);
-    const axis = V(0, 1, 0).addScaledVector(fwd, -0.1).addScaledVector(lft, 0.16).normalize();
-    u.position.copy(fist).addScaledVector(axis, -0.1);
-    u.quaternion.setFromUnitVectors(V(0, 1, 0), axis);
+    // the shaft stands upright through the fist (in front of and beside the head, ~35 cm from it), its canopy rim 8 cm above
+    // the top of the head; the fist grips it between the handle and the runner
+    const headTop = wp(av.bones.Head).y + 0.2;
+    u.position.set(fist.x, Math.min(headTop + 0.08 - 0.66, fist.y - 0.06), fist.z);
+    u.quaternion.identity(); u.rotation.y = av.root.rotation.y;
     u.updateMatrixWorld(true);
   }
   function poseAll(t, ph) {
@@ -303,9 +325,8 @@ export async function create() {
     if (you.blink) you.blink(blinkK(t, [5.0, 8.4, 10.3, 52.8, 55.1]) * (ph > 0.1 && ph < 5 ? 0 : 1));
     you.root.updateMatrixWorld(true);
     placeUmbrella(you, umb);
-    if (q.get('umbdbg')) { const hp = wp(you.bones.Head).add(V(0, 0.08, 0.02)), a = V(0, 1, 0).applyQuaternion(umb.quaternion), d = hp.clone().sub(umb.position), along = d.dot(a);
-      const fist = wp(you.bones.RightHandMiddle1 || you.bones.RightHand);
-      console.log('umbdbg', t.toFixed(2), 'head-shaft', d.addScaledVector(a, -along).length().toFixed(3), 'fist-shaft', (() => { const e = fist.clone().sub(umb.position); return e.addScaledVector(a, -e.dot(a)).length().toFixed(3); })()); }
+    if (q.get('umbdbg')) { const hd = wp(you.bones.Head), f = wp(you.bones.RightHandMiddle1 || you.bones.RightHand), o = umb.position;
+      console.log('umbdbg', t.toFixed(2), 'head-shaft', Math.hypot(hd.x - o.x, hd.z - o.z).toFixed(3), 'fist-shaft', Math.hypot(f.x - o.x, f.z - o.z).toFixed(3), 'rim-headtop', (o.y + 0.66 - hd.y - 0.2).toFixed(3), 'fist-above-handle', (f.y - o.y).toFixed(3)); }
     // the others: walking until the air thickens, then slowing to a stop (breathing hard)
     for (const p of peds) {
       const s = ph <= 0 ? p.v * ph : p.v * (1 - Math.exp(-1.6 * ph)) / 1.6, zz = p.z0 + p.dir * s;
@@ -326,6 +347,8 @@ export async function create() {
       for (let j = 0; j < n && si < SPN; j++) { const c = 1.6 + 1.2 * sr(); spray.set(si++, tip.x + (sr() - 0.5) * 0.01, tip.y - 0.012 - j * gap * (1 + 0.25 * j), tip.z + (sr() - 0.5) * 0.01, 0, 0, 0, c, c * 0.97, c * 0.92, 0.0018 + 0.0012 * sr(), -1e6, 1e7, sr()); } } }
   spray.geo.setDrawRange(0, si); spray.commit(); spray.u.uDrag.value = 1.2; spray.u.uAcc.value.set(0, -9.8, 0); spray.u.uAccT0.value = -1e9; spray.u.uAccVar.value = 0;
   scene.add(spray.points);
+  // the headlights' glow as soft points (never under 1.6 px), so the small lamp meshes cannot twinkle as the cars recede
+  const carGlow = new Sparks(6, { minPx: 1.6, maxPx: 60, near: 0.5, additive: true }); scene.add(carGlow.points);
 
   function hudAt(t, ph) {
     const k = hudK(t, T.THICK);
@@ -376,14 +399,20 @@ export async function create() {
       // the meme: the Thames drains (the sea pulls back), then the wave shoots up out of nowhere on the hit
       const drain = t >= T.MEME ? smooth(T.MEME + 0.3, T.WAVE - 0.4, t) : 0; river.mesh.position.y = -4 * drain; river.U.uRefl.value = 1 - 0.45 * drain;
       wave.mesh.visible = t >= T.WAVE; if (t >= T.WAVE) { S7.uTime.value = t; wave.U.uFront.value = waveF(t); wave.U.uH.value = waveH(t); }
+      cityG.visible = cspray.points.visible = pov; RS.group.visible = SKL.visible = !pov;
+      const fl = pov ? bolt(t) : 0; waveSky.material.uniforms.uSkyI.value = 1.2 + 3.0 * fl; boltL.intensity = 5 * fl;
+      if (pov) { for (const b of city) { const k = smooth(b.th - 0.3, b.th + 1.6, t), sk = smooth(b.th, b.th + 2.4, t);
+          b.m.rotation.set(b.roll * k, 0, b.tilt * k); b.m.position.set(b.x - 25 * k, LB.STREET - 0.6 * b.h * sk, b.z); b.m.visible = sk < 0.999; }
+        cspray.update(t, cam, R.SSAA); }
       fillUp.position.copy(pp).add(V(-60, 200, 80)); fillUp.target.position.copy(pp); fillDn.position.copy(pp).add(V(40, -300, 60)); fillDn.target.position.copy(pp);
       // the far plane (glide only): landing lights descending toward Heathrow in the west
       AP2.visible = t >= T.HOOK && t < T.THICK; { const u = t - T.HOOK; AP2.position.set(-1500 - 70 * u, 520 - 3.7 * u, -420); AP2.rotation.set(0, Math.PI, 0); AP2.update(t, { phys: -5, out: 1e9 }); apGlow.position.copy(AP2.position).add(V(-18, -1, 0)); apGlow.visible = AP2.visible; }
       poseAll(t, ph);
       faceL.position.set(HERO.x - 0.25, D + 1.15, you.root.position.z + 1.3); faceL.visible = !aerial;
       apple.update(t, { look: cam.position, blinkAt: [7.6, 9.9], earAt: [8.6], pr: R.SSAA }); apple.root.visible = !aerial && t >= T_CUT1;
-      // the T-rex costume and the pigeon (hanging, sinking very slowly; visible on the bridge shots only)
-      { const r = trexAt(t, ph); trex.position.copy(r.pos); trex.pose(r.hop, r.arm, r.tail); trex.visible = !aerial && t < T.MEME; }
+      // the rubber duck and the pigeon: hanging, sinking very slowly; the duck drops when the air comes back
+      { const tf = Math.max(0, ph - 5); duck.position.copy(duckAt(ph)).add(V(0, -0.04 * Math.min(Math.max(0, ph), 5) - 4.9 * tf * tf, 0));
+        duck.rotation.set(0.25 + 2.5 * tf * tf, -0.9 + 0.03 * Math.min(Math.max(0, ph), 5), 0.18 + 1.8 * tf * tf); duck.visible = !aerial && !pov && ph > 0 && duck.position.y > D + 0.3; }
       pig.position.copy(PIG0).add(ph < 0 ? V(-1.5 * ph, 0.3 * ph, 2.0 * ph) : V(0, -0.18 * Math.min(ph, 5), 0)); pig.rotation.set(-0.2, Math.atan2(-1.5, 2.0), 0.1);   // flies in from the river side behind you, freezes mid-flap
       pig.flap(ph <= 0 ? (t * 5.5) % 1 : 0.12 + 0.08 * (1 - Math.exp(-ph * 3))); pig.visible = !aerial && ph > -1.6;
       for (const b of flock) { b.visible = !aerial && t < T.PLANE; flock.at(b, ph, b.position); const tf = Math.min(t, T.THICK), u = b.userData;   // frozen in the pose of the instant the air thickened
@@ -395,12 +424,14 @@ export async function create() {
       VEH.forEach((v, i) => { const zz = vehZ(v, ph); v.m.position.set(v.x, D + 0.01, zz); v.m.rotation.y = v.dir > 0 ? 0 : Math.PI; v.m.visible = !aerial; v.m.updateMatrixWorld(true);
         for (let j = 0; j < 2; j++) { const hp = v.hl[j].clone().applyMatrix4(v.m.matrixWorld), dir = V(0, -0.12, 1).applyQuaternion(v.m.quaternion).normalize();
           const L = headL[i * 2 + j]; L.position.copy(hp); L.target.position.copy(hp).addScaledVector(dir, 10); L.visible = !aerial; L.target.updateMatrixWorld();
+          carGlow.set(i * 2 + j, hp.x, hp.y, hp.z, 0, 0, 0, 2.0, 1.9, 1.7, 0.3, -1e6, 1e7, 0);
           spots.push({ p: hp, d: dir, col: new THREE.Color(3.5, 3.3, 3).multiplyScalar(t >= T.BACK2 && t < T.RET2 ? 0.35 : 1), inner: 0.975, outer: 0.9 }); } });   // (close on you: less glare off the rain)
       // the plane's landing lights in the aerial shots
       if (aerial) { spots.length = 0; AP.spots(spots); }
       rain.setSpots(spots);
       spray.update(ph < 0 ? ph : ph < 5 ? 0 : ph - 5, cam, R.SSAA); spray.points.visible = !aerial;
-      const boxes = [{ c: V(HERO.x, D + 1.15, you.root.position.z + 0.05), h: V(0.6, 1.2, 0.6) }]; boxes.push({ c: trex.position.clone().add(V(0, 1.2, 0)), h: V(0.6, 1.2, 0.9) });
+      carGlow.commit(); carGlow.update(t, cam, R.SSAA); carGlow.points.visible = !aerial && !pov;
+      const boxes = [{ c: V(HERO.x, D + 1.15, you.root.position.z + 0.05), h: V(0.6, 1.2, 0.6) }];
       for (const v of VEH) boxes.push({ c: v.m.position.clone().add(V(0, v.m === bus ? 2.2 : 1.0, 0)), h: v.m === bus ? V(1.35, 2.25, 5.7) : V(1.0, 1.05, 2.5) });
       for (const p of peds) if (boxes.length < 6 && Math.abs(p.av.root.position.z - HERO.z) < 30) boxes.push({ c: p.av.root.position.clone().add(V(0, 1.1, 0)), h: V(p.u ? 0.6 : 0.3, 1.15, p.u ? 0.6 : 0.3) });
       rain.setBoxes(aerial ? [] : boxes);
@@ -409,7 +440,7 @@ export async function create() {
       if (aerial) { scene.fog.density = 0.00055; scene.fog.color.set('#1f2533'); R.renderer.toneMappingExposure = 1.1; R.bloom.strength = 0.3; R.bloom.radius = 0.6; R.bloom.threshold = 0.95 / 1.1; cityL.points.visible = true; }
       else { scene.fog.density = 0.0024; scene.fog.color.set('#232b3a'); R.renderer.toneMappingExposure = 1.0; R.bloom.strength = 0.22; R.bloom.radius = 0.5; R.bloom.threshold = 1.1; cityL.points.visible = t < T.THICK && t < 6.5; }
       you.root.visible = umb.visible = !pov;
-      if (pov) R.renderer.toneMappingExposure = 1.0 - 0.9 * smooth(T.END - 0.9, T.END, t);   // the lip closes over you: dark, then the cut
+      if (pov) { R.renderer.toneMappingExposure = 1.15 * (1.0 - 0.9 * smooth(T.END - 0.9, T.END, t)); }   // the lip closes over you: dark, then the cut
       cityL.update(t, cam, R.SSAA);
       river.U.uFogC.value.copy(scene.fog.color); river.U.uFogD.value = scene.fog.density;
       rain.u.uFogC.value.copy(scene.fog.color); rain.u.uFogD.value = scene.fog.density * 0.8;
@@ -431,7 +462,7 @@ export async function create() {
       const pulse = (x, x0, d) => (x >= x0 && x < x0 + d ? Math.exp(-(x - x0) / (d * 0.35)) : 0);
       U.uBarrel.value = 0.12 * pulse(t, T.THICK, 0.6) - 0.1 * pulse(t, T.BACK, 0.6) + 0.1 * pulse(t, T.WAVE, 0.6);
       U.uAberr.value = 0.0015 + 0.012 * pulse(t, T.THICK, 0.8) + 0.01 * pulse(t, T.BACK, 0.8) + 0.008 * pulse(t, T.PLANE, 0.6) + 0.008 * pulse(t, T.RET2, 0.6) + 0.012 * pulse(t, T.WAVE, 0.8);
-      U.uFadeWhite.value = 0.18 * pulse(t, T.PLANE, 0.5) + 0.18 * pulse(t, T.RET2, 0.5);
+      U.uFadeWhite.value = 0.1 * (pov ? bolt(t) : 0) + 0.18 * pulse(t, T.PLANE, 0.5) + 0.18 * pulse(t, T.RET2, 0.5);
       if ((t >= T.THICK && t < T.BACK) || t < T.HOOK) { U.uSat.value = 0.98; U.uTint.value.set(0.94, 0.99, 1.07); U.uContrast.value = 1.1; }   // the frozen world, colder
       keyL.shadow.camera.near = 0.5; keyL.shadow.camera.far = 30;
     }

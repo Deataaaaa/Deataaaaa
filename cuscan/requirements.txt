@@ -1,0 +1,5 @@
+anthropic>=1.15
+streamlit>=1.40
+requests>=2.31
+pillow>=10.0
+pytest>=8.0

@@ -1,0 +1,4 @@
+__pycache__/
+.pytest_cache/
+data/historique.db
+data/price_cache.json

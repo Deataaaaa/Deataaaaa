@@ -1,0 +1,149 @@
+{
+  "_avertissement": "Valeurs indicatives de départ, à calibrer avec vos propres pesées et les tickets de vos ferrailleurs. rachat_pct = part du cours du cuivre qu'un ferrailleur paie pour le cuivre contenu dans ce grade.",
+  "grades": {
+    "cuivre_nu_brillant": {
+      "label": "Cuivre nu brillant (millberry)",
+      "rachat_pct": 0.90
+    },
+    "cuivre_mele": {
+      "label": "Cuivre mêlé (tuyaux, cuivre oxydé, étamé, soudé)",
+      "rachat_pct": 0.85
+    },
+    "cable_isole": {
+      "label": "Câble isolé",
+      "rachat_pct": 0.80
+    },
+    "laiton": {
+      "label": "Laiton",
+      "rachat_pct": 0.85
+    },
+    "radiateur": {
+      "label": "Radiateurs cuivre/laiton ou cuivre/alu",
+      "rachat_pct": 0.75
+    },
+    "mixte_bas": {
+      "label": "Mixte bas de gamme (moteurs, compresseurs, électronique)",
+      "rachat_pct": 0.55
+    }
+  },
+  "materials": {
+    "fil_cuivre_nu": {
+      "label": "Fil de cuivre nu (déjà dénudé)",
+      "copper_pct_min": 0.98,
+      "copper_pct_max": 1.0,
+      "grade": "cuivre_nu_brillant",
+      "notes": "Le grade le mieux payé. Il doit être propre, brillant, sans vernis, étain ni soudure."
+    },
+    "tuyau_cuivre": {
+      "label": "Tuyau de cuivre (plomberie, chauffage)",
+      "copper_pct_min": 0.94,
+      "copper_pct_max": 0.99,
+      "grade": "cuivre_mele",
+      "notes": "Couper les raccords en laiton et retirer la soudure et l'isolant pour rester en cuivre mêlé."
+    },
+    "cable_domestique": {
+      "label": "Câble électrique domestique (R2V, H07, 1,5 à 6 mm²)",
+      "copper_pct_min": 0.35,
+      "copper_pct_max": 0.6,
+      "grade": "cable_isole",
+      "notes": "La teneur dépend de la section et de l'épaisseur de la gaine.",
+      "valorisation": {
+        "action": "Dénuder",
+        "grade": "cuivre_nu_brillant",
+        "kg_objet_par_heure": 4
+      }
+    },
+    "cable_gros": {
+      "label": "Gros câble d'alimentation (16 mm² et plus)",
+      "copper_pct_min": 0.55,
+      "copper_pct_max": 0.8,
+      "grade": "cable_isole",
+      "notes": "Vérifier que l'âme est en cuivre et pas en aluminium (couleur argentée, plus léger).",
+      "valorisation": {
+        "action": "Dénuder (couteau à câble)",
+        "grade": "cuivre_nu_brillant",
+        "kg_objet_par_heure": 10
+      }
+    },
+    "cable_fin": {
+      "label": "Câble fin (réseau, USB, téléphone, rallonges)",
+      "copper_pct_min": 0.1,
+      "copper_pct_max": 0.35,
+      "grade": "cable_isole",
+      "notes": "Trop fin pour être dénudé de façon rentable : à vendre tel quel en câble bas de gamme."
+    },
+    "moteur_electrique": {
+      "label": "Moteur électrique (électroménager, outillage)",
+      "copper_pct_min": 0.08,
+      "copper_pct_max": 0.2,
+      "grade": "mixte_bas",
+      "notes": "Certains moteurs bon marché ont des bobinages en aluminium.",
+      "valorisation": {
+        "action": "Démonter et extraire le bobinage",
+        "grade": "cuivre_mele",
+        "kg_objet_par_heure": 6
+      }
+    },
+    "demarreur_alternateur": {
+      "label": "Démarreur ou alternateur automobile",
+      "copper_pct_min": 0.08,
+      "copper_pct_max": 0.2,
+      "grade": "mixte_bas",
+      "notes": "Souvent racheté au kilo comme lot dédié chez les ferrailleurs."
+    },
+    "transformateur": {
+      "label": "Transformateur (micro-ondes, alimentation, poste)",
+      "copper_pct_min": 0.1,
+      "copper_pct_max": 0.3,
+      "grade": "mixte_bas",
+      "notes": "Vérifier que les bobinages sont en cuivre (rouge) et pas en aluminium.",
+      "valorisation": {
+        "action": "Découper les tôles et extraire le bobinage",
+        "grade": "cuivre_mele",
+        "kg_objet_par_heure": 5
+      }
+    },
+    "compresseur": {
+      "label": "Compresseur (frigo, clim, congélateur)",
+      "copper_pct_min": 0.05,
+      "copper_pct_max": 0.12,
+      "grade": "mixte_bas",
+      "notes": "Le fluide frigorigène doit être récupéré par un professionnel. Ne jamais le dégazer soi-même."
+    },
+    "radiateur_auto": {
+      "label": "Radiateur automobile cuivre/laiton",
+      "copper_pct_min": 0.45,
+      "copper_pct_max": 0.65,
+      "grade": "radiateur",
+      "notes": "Les radiateurs récents sont souvent en aluminium avec du plastique : aucun intérêt pour le cuivre."
+    },
+    "echangeur_clim": {
+      "label": "Échangeur de clim ou condenseur cuivre/alu",
+      "copper_pct_min": 0.3,
+      "copper_pct_max": 0.5,
+      "grade": "radiateur",
+      "notes": "Retirer le cadre en acier pour éviter la décote."
+    },
+    "laiton_robinetterie": {
+      "label": "Laiton (robinets, raccords, vannes)",
+      "copper_pct_min": 0.57,
+      "copper_pct_max": 0.7,
+      "grade": "laiton",
+      "notes": "Retirer les pièces en acier et en plastique. Un aimant ne colle pas au laiton."
+    },
+    "carte_electronique": {
+      "label": "Carte électronique",
+      "copper_pct_min": 0.1,
+      "copper_pct_max": 0.25,
+      "grade": "mixte_bas",
+      "notes": "Elle est surtout valorisée par les métaux précieux et achetée par des recycleurs spécialisés, pas au cours du cuivre."
+    },
+    "unite_centrale": {
+      "label": "Unité centrale ou petit électroménager entier",
+      "copper_pct_min": 0.02,
+      "copper_pct_max": 0.06,
+      "grade": "mixte_bas",
+      "notes": "Peu de cuivre au kilo : rentable seulement après démontage (câbles, alimentation, ventilateurs)."
+    }
+  }
+}

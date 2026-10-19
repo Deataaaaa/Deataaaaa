@@ -246,3 +246,43 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
 - Meme ending (62-69.6 s, owner's request, not physics): "River level: −4 m" and "Wave height: ~400 m" are the joke's
   numbers (the drawback before a tsunami is real; a 400 m wall of water up the Thames is not). For scale: the tallest
   tsunami run-up ever measured is 524 m (Lituya Bay, Alaska, 9 July 1958, a landslide wave in a fjord).
+
+## EP16 (post 10): What if Earth's magnetic field flipped in 5 seconds? (Giza at night)
+- Premise: the field everywhere reverses in 5 s, smoothly (B(t) = B0·cos(π t / 5)). Real reversals take ~1,000–10,000 years
+  (Clement 2004, Nature 428: ~7,000 yr on average); the last one, Brunhes–Matuyama, was ~780,000 years ago (773 ka, Singer et al.
+  2019). End card: "The field last flipped 780,000 years ago".
+- "Giza, Egypt · 8:40 pm", 19 Oct 2026: Egypt is UTC+3 → 17:40 UTC; the Sun is 2.7 h below the western horizon (night). The Milky
+  Way's band runs from the south-west through the zenith to the north-east at that hour (gN/gC vectors in ep16.js).
+- "Field here: 43 µT, pointing north": NOAA WMM2025 at Giza (29.98° N, 31.13° E): total intensity ≈ 43.3 µT, horizontal ≈ 31 µT,
+  inclination ≈ 44° down, declination ≈ +5° (east). Compass readout: you face the pyramids, ~40° east of magnetic north ("40° NE");
+  after the flip the same needle says you face ~220° ("SW").
+- HUD during the flip: the signed field along the old north (43 → 0 → −43 µT), zero at 2.5 s.
+- "Every long wire becomes a generator" / "Induced: ~80,000 V per km of wire": for a dipole the induced electric field around a
+  (geomagnetic) latitude circle is E = −∂A/∂t with A = H·R at the surface (Faraday's law over the cap: EMF = d/dt(2π R² B0 sin²θ),
+  divided by the circle 2π R sinθ). R = 6,371 km, H ≈ 31 µT reversing in 5 s → mean dH/dt = 12.4 µT/s → E ≈ 79 V/m ≈ 80,000 V/km
+  (east–west wires; north–south wires see far less); peak (cosine profile) ≈ 124 V/m. Severe real storms: ~1–10 V/km.
+- "A 50 km line: ~4 million volts": 80 V/m × 50 km = 4.0 MV (a 400 kV line's insulators are built for ~1.4 MV lightning impulses).
+- "Transformers blow across Cairo": quasi-DC currents through grounded transformer neutrals saturate the cores → overheating,
+  harmonics, relays trip (1989: Salem nuclear plant's step-up transformer in New Jersey was destroyed). Flash timings: 44 events
+  (audio/ep16_events.json).
+- "Greater Cairo: 22 million people" / "22 million people, in the dark": UN World Urbanization Prospects, Cairo agglomeration
+  ≈ 22.6 million (2023), ~23 million (2025).
+- "Stars visible: ~2,500 (was ~100)": ~9,100 stars down to magnitude 6.5 over the whole sky (Yale Bright Star Catalogue); about half
+  are above the horizon and extinction dims those near it → ~2,500 at a dark site. A big-city sky (limiting magnitude ~3.5–4) has
+  ~300–500 stars over the whole sky → ~100 above the horizon.
+- "The radiation belts rain down" / "Radiation belts: falling into the air": trapped particles stay trapped only while the field
+  changes slowly compared with their gyration, bounce and drift (adiabatic invariants); a field that goes through zero in seconds
+  cannot hold them, so they precipitate. The inner belt's field lines (L ≈ 1.2–2) come down at geomagnetic latitudes ~24–45°;
+  Giza is at ~27° (L ≈ 1.26), right under it. Outer belt (L ≈ 3–7): ~55–68°. That is why the space shot shows two rings per
+  hemisphere ("Auroras circle the whole planet").
+- "Aurora: 100–300 km up": green oxygen line 557.7 nm, mostly 100–150 km; red oxygen line 630.0 nm, 200–300+ km (NOAA SWPC).
+- "Every power grid on Earth: down": E ∝ sin(geomagnetic colatitude): tens of V/m everywhere except near the geomagnetic poles,
+  thousands of times what took down Hydro-Québec.
+- "~7.5 billion people, no power": 8.2 billion people (UN, 2025) minus ~0.7 billion without any electricity access (IEA 2024: ~730 M).
+- "In 1989, a far weaker storm hit Quebec" / "Quebec · 13 March 1989" / "The grid collapsed in 90 seconds": at 2:44 a.m. EST on
+  13 March 1989 the Hydro-Québec grid collapsed within about 90 seconds; ~6 million people were without power for ~9 hours
+  (NASA, "The Day the Sun Brought Darkness", 2009; Boteler 2019, Space Weather, doi:10.1029/2019SW002278; Wikipedia, March 1989
+  geomagnetic storm).
+- "Field change ~150× smaller, over hours" / end card "A storm 150× weaker": the storm's Dst minimum was −589 nT (14 March,
+  02 UT), built up over hours; the flip changes the field at Giza by 86,000 nT (43 → −43 µT) in 5 s: 86,000 / 589 ≈ 146.
+- "Big transformers: years to replace": large power transformer lead times ~2–4 years (US DOE, 2024 supply-chain report: 120–210 weeks).

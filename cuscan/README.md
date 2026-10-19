@@ -55,6 +55,8 @@ Variables d'environnement : `ANTHROPIC_API_KEY`, `CUSCAN_MODEL` (par défaut `cl
 
 `web/cuscan.html` est une page autonome publiée comme Artifact claude.ai, utilisable depuis un téléphone. Une photo suffit : Claude identifie l'objet et estime son poids, sa teneur en cuivre et le prix s'il est visible. La page applique le cours du jour, choisit entre vendre en l'état ou dénuder/démonter, puis donne le verdict (« Oui, ça vaut le coup », « Risqué », « Non… ») ou, sans prix connu, le prix maximum à payer. Chaque scan est enregistré dans l'historique privé de l'utilisateur.
 
+La page couvre aussi la suite du parcours : l'onglet **Stock** range les objets retenus par lot de vente et enregistre les ventes (montant du ticket, poids, temps, frais) ; à chaque vente, le taux de rachat du lot est recalé sur ce que le ferrailleur a réellement payé. L'onglet **Gains** donne le bénéfice du mois, les six derniers mois et un export CSV. L'onglet **Guide** classe les objets par valeur au kilo et rappelle où trouver des objets légalement.
+
 ## Tests
 
 ```bash

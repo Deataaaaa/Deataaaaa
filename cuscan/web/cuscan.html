@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Layout : une colonne pensée pour le téléphone (max 640px). Un gros bouton de scan, puis le verdict en grand ; le détail chiffré prend la forme d'un ticket de pesée. */
+/* Layout : une colonne pensée pour le téléphone (max 640px), quatre onglets collants (Scanner, Stock, Gains, Guide). Le verdict s'affiche en grand ; le détail chiffré prend la forme d'un ticket de pesée. */
 :root {
   --bg: #eceff0;
   --surface: #ffffff;
@@ -43,11 +43,14 @@ body {
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 20px 48px;
 }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
 .wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
-h1, h2 { font-family: var(--f-display); font-weight: 700; letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+.view, .stack { display: flex; flex-direction: column; gap: 16px; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 700; letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
 h1 { font-size: 2.4rem; line-height: 1; }
 h1 span { color: var(--copper); }
 h2 { font-size: 1.3rem; text-transform: uppercase; letter-spacing: 0.06em; }
+h3 { font-size: 1.2rem; letter-spacing: 0.02em; }
 p { margin: 0; }
 .muted { color: var(--muted); }
 .small { font-size: 0.875rem; }
@@ -58,7 +61,12 @@ header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content:
 .price-chip strong { font-size: 1.2rem; color: var(--copper); }
 .price-chip small { font-family: var(--f-body); color: var(--muted); font-size: 0.8rem; }
 
-section.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding-block: 8px; border-bottom: 1px solid var(--line); }
+.tabs button { min-height: 44px; padding: 6px 4px; border: 1px solid transparent; background: none; color: var(--muted); font-family: var(--f-display); font-weight: 600; font-size: 1.05rem; letter-spacing: 0.04em; text-transform: uppercase; border-radius: 8px; gap: 6px; }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--copper); border-color: var(--line); }
+.badge { font-family: var(--f-mono); font-size: 0.72rem; font-weight: 600; background: var(--copper); color: var(--copper-ink); border-radius: 999px; padding: 1px 7px; letter-spacing: 0; }
+
+section.card { --state: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 
 label { display: flex; flex-direction: column; gap: 4px; font-weight: 500; font-size: 0.95rem; min-width: 0; }
 label .hint { font-weight: 400; color: var(--muted); font-size: 0.82rem; }
@@ -80,12 +88,14 @@ button, .filebtn {
 }
 button.primary, .filebtn.primary { background: var(--copper); border-color: var(--copper); color: var(--copper-ink); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
+button.link { background: none; border: none; padding: 0; min-height: 0; color: var(--copper); text-decoration: underline; text-underline-offset: 3px; font-weight: 500; display: inline; }
 .filebtn { flex-direction: row; }
 .filebtn input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .scan-btn { min-height: 64px; font-family: var(--f-display); font-size: 1.45rem; letter-spacing: 0.05em; text-transform: uppercase; }
 .scan-btn svg { width: 28px; height: 28px; flex: none; }
 .filebtn.quiet { border: none; background: none; color: var(--copper); text-decoration: underline; text-underline-offset: 3px; font-weight: 500; min-height: 40px; padding: 6px 0; align-self: center; }
 .row { display: flex; flex-wrap: wrap; gap: 10px; }
+.row > button { flex: 1 1 160px; }
 
 .thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
 .thumbs:empty { display: none; }
@@ -96,7 +106,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 @keyframes pulse { 0%, 100% { opacity: 0.25; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.1); } }
 
 /* Verdict */
-.verdict-card { --state: var(--muted); background: var(--surface); background: color-mix(in srgb, var(--state) 9%, var(--surface)); border-color: var(--line); border-color: color-mix(in srgb, var(--state) 45%, var(--line)); border-width: 1.5px; transition: opacity 0.2s; scroll-margin-top: 12px; }
+.verdict-card { background: var(--surface); background: color-mix(in srgb, var(--state) 9%, var(--surface)); border-color: var(--line); border-color: color-mix(in srgb, var(--state) 45%, var(--line)); border-width: 1.5px; transition: opacity 0.2s; scroll-margin-top: 72px; }
 .verdict-card[data-state="good"] { --state: var(--good); }
 .verdict-card[data-state="warn"] { --state: var(--warn); }
 .verdict-card[data-state="bad"] { --state: var(--bad); }
@@ -108,17 +118,18 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .v-reason { font-size: 1.05rem; }
 .figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px 16px; padding-block: 12px; border-block: 1px solid var(--line); border-color: color-mix(in srgb, var(--state) 25%, var(--line)); }
 .fig { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.fig .k { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.fig .k, .kpi .k { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 .fig .v { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 1.1rem; font-weight: 600; overflow-wrap: anywhere; }
-.fig .v.pos { color: var(--good); }
-.fig .v.neg { color: var(--bad); }
+.v.pos { color: var(--good); }
+.v.neg { color: var(--bad); }
 .v-object { font-size: 0.92rem; color: var(--muted); overflow-wrap: anywhere; }
 .v-note { font-size: 0.92rem; font-weight: 500; color: var(--warn); }
 .check { flex-direction: row; align-items: center; gap: 10px; min-height: 44px; }
 .check input { width: 22px; height: 22px; accent-color: var(--copper); flex: none; }
 
-ul.advice { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+ul.advice, ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
 ul.advice li.lead { font-weight: 600; }
+ul.plain strong { font-weight: 600; }
 
 details > summary { cursor: pointer; font-weight: 600; min-height: 32px; display: flex; align-items: center; }
 details[open] > summary { margin-bottom: 12px; }
@@ -142,18 +153,39 @@ details .body { display: flex; flex-direction: column; gap: 12px; }
 .ticket dd.pos { color: var(--good); }
 .ticket dd.neg { color: var(--bad); }
 
-/* Historique */
-.hist { display: flex; flex-direction: column; }
-.hist-row { display: flex; flex-direction: column; gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--line); }
-.hist-top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: center; }
-.hist-row .desc { overflow-wrap: anywhere; }
-.hist-row .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 0.9rem; }
-.hist-row .actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
-.hist-row .actions button { min-height: 36px; padding: 6px 12px; font-size: 0.85rem; }
+/* Listes */
+.list { display: flex; flex-direction: column; }
+.list-row { display: flex; flex-direction: column; gap: 4px; padding: 12px 0; border-top: 1px solid var(--line); }
+.list-top { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+.list-row .desc { min-width: 0; overflow-wrap: anywhere; font-weight: 500; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.list-row .num { font-size: 0.9rem; }
+.actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; align-items: center; }
+.actions button { min-height: 36px; padding: 6px 12px; font-size: 0.85rem; }
 .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; border: 1.5px solid currentColor; color: var(--muted); }
 .pill.good { color: var(--good); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); }
-.total { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-weight: 600; }
 .status { min-height: 1.2em; }
+
+/* Stock */
+.group-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.sale-form { display: flex; flex-direction: column; gap: 12px; padding: 12px; border-radius: 8px; background: var(--bg); border: 1px dashed var(--line); }
+.checks { display: flex; flex-direction: column; }
+.checks .check { min-height: 40px; font-weight: 400; overflow-wrap: anywhere; }
+
+/* Gains */
+.month-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.month-nav button { min-width: 44px; padding: 8px 12px; }
+.month-nav h2 { text-align: center; }
+.kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.kpi { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kpi.main { grid-column: 1 / -1; }
+.kpi .v { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 1.2rem; font-weight: 600; overflow-wrap: anywhere; }
+.kpi.main .v { font-size: 2rem; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+td.num, th.num { text-align: right; white-space: nowrap; }
 footer { font-size: 0.85rem; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
@@ -172,115 +204,228 @@ footer { font-size: 0.85rem; color: var(--muted); display: flex; flex-direction:
     </div>
   </header>
 
-  <section class="card" aria-labelledby="h-scan">
-    <h2 id="h-scan" class="sr-only">Scanner un objet</h2>
-    <label class="filebtn primary scan-btn" for="camInput">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
-      Scanner un objet
-      <input id="camInput" type="file" accept="image/*" capture="environment">
-    </label>
-    <label class="filebtn quiet" for="galInput">ou choisir des photos dans la galerie
-      <input id="galInput" type="file" accept="image/*" multiple>
-    </label>
-    <div class="thumbs" id="thumbs"></div>
-    <div class="busy-row" id="busyRow" hidden>
-      <span class="pulse" aria-hidden="true"></span>
-      <span id="busyText">Claude analyse la photo…</span>
-      <button id="stopBtn" type="button">Arrêter</button>
-    </div>
-    <p class="muted small status" id="scanStatus" aria-live="polite">Prends l'objet en photo : CuScan l'identifie, estime son poids et son cuivre, applique le cours du jour et te dit si ça vaut le coup. Chaque analyse utilise ton compte Claude.</p>
-  </section>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
+    <button type="button" role="tab" id="tab-scan" aria-controls="view-scan" aria-selected="true">Scanner</button>
+    <button type="button" role="tab" id="tab-stock" aria-controls="view-stock" aria-selected="false" tabindex="-1">Stock<span class="badge" id="stockBadge" hidden></span></button>
+    <button type="button" role="tab" id="tab-gains" aria-controls="view-gains" aria-selected="false" tabindex="-1">Gains</button>
+    <button type="button" role="tab" id="tab-guide" aria-controls="view-guide" aria-selected="false" tabindex="-1">Guide</button>
+  </nav>
 
-  <section class="card verdict-card" id="verdictCard" data-state="good" aria-labelledby="vTitleText">
-    <div class="vc-head">
-      <span class="eyebrow" id="vEyebrow">Exemple</span>
-      <span class="muted small" id="vDate"></span>
-    </div>
-    <p class="verdict-title" aria-live="polite"><span id="vIcon"></span><span id="vTitleText">Oui, ça vaut le coup</span></p>
-    <p class="v-reason" id="vReason"></p>
-    <div class="figs" id="figs"></div>
-    <p class="v-object" id="vObject"></p>
-    <p class="v-note" id="vNote" hidden></p>
-    <div class="grid2">
-      <label for="poidsPese">Poids pesé (kg) <span class="hint" id="poidsHint">vide = estimé sur la photo</span>
-        <input id="poidsPese" type="number" inputmode="decimal" min="0" step="0.1" placeholder="estimé">
+  <!-- Scanner -->
+  <div class="view" id="view-scan" role="tabpanel" aria-labelledby="tab-scan">
+    <section class="card" aria-labelledby="h-scan">
+      <h2 id="h-scan" class="sr-only">Scanner un objet</h2>
+      <label class="filebtn primary scan-btn" for="camInput">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        Scanner un objet
+        <input id="camInput" type="file" accept="image/*" capture="environment">
       </label>
-      <label for="prix">Prix demandé (€) <span class="hint" id="prixHint">vide = inconnu</span>
-        <input id="prix" type="number" inputmode="decimal" min="0" step="1" placeholder="inconnu">
+      <label class="filebtn quiet" for="galInput">ou choisir des photos dans la galerie
+        <input id="galInput" type="file" accept="image/*" multiple>
       </label>
-    </div>
-    <label class="check" for="deja"><input id="deja" type="checkbox"> Je l'ai déjà (il ne me coûte rien)</label>
-    <div class="row" id="saveRow" hidden><button id="saveBtn" type="button">Enregistrer dans mes scans</button></div>
-    <p class="muted small status" id="saveStatus"></p>
-  </section>
+      <div class="thumbs" id="thumbs"></div>
+      <div class="busy-row" id="busyRow" hidden>
+        <span class="pulse" aria-hidden="true"></span>
+        <span id="busyText">Claude analyse la photo…</span>
+        <button id="stopBtn" type="button">Arrêter</button>
+      </div>
+      <p class="muted small status" id="scanStatus" aria-live="polite">Prends l'objet en photo : CuScan l'identifie, estime son poids et son cuivre, applique le cours du jour et te dit si ça vaut le coup. Chaque analyse utilise ton compte Claude.</p>
+    </section>
 
-  <section class="card" aria-labelledby="h-adv">
-    <h2 id="h-adv">Pour le revendre vite</h2>
-    <ul class="advice" id="advice"></ul>
-  </section>
-
-  <section class="card">
-    <details id="corrDetails">
-      <summary>Corriger l'estimation</summary>
-      <div class="body">
-        <label for="cat">Catégorie
-          <select id="cat"></select>
+    <section class="card verdict-card" id="verdictCard" data-state="good" aria-labelledby="vTitleText">
+      <div class="vc-head">
+        <span class="eyebrow" id="vEyebrow">Exemple</span>
+        <span class="muted small" id="vDate"></span>
+      </div>
+      <p class="verdict-title" aria-live="polite"><span id="vIcon"></span><span id="vTitleText">Oui, ça vaut le coup</span></p>
+      <p class="v-reason" id="vReason"></p>
+      <div class="figs" id="figs"></div>
+      <p class="v-object" id="vObject"></p>
+      <p class="v-note" id="vNote" hidden></p>
+      <div class="grid2">
+        <label for="poidsPese">Poids pesé (kg) <span class="hint" id="poidsHint">vide = estimé sur la photo</span>
+          <input id="poidsPese" type="number" inputmode="decimal" min="0" step="0.1" placeholder="estimé">
         </label>
-        <label for="gradeSel" id="gradeWrap" hidden>Grade de revente
-          <select id="gradeSel"></select>
-        </label>
-        <div class="grid2">
-          <label for="tmin">Teneur cuivre min (%)
-            <input id="tmin" type="number" inputmode="decimal" min="0" max="100" step="1">
-          </label>
-          <label for="tmax">Teneur cuivre max (%)
-            <input id="tmax" type="number" inputmode="decimal" min="0" max="100" step="1">
-          </label>
-        </div>
-        <label for="rachat"><span id="rachatLabel">Rachat ferrailleur (% du cours)</span>
-          <input id="rachat" type="number" inputmode="decimal" min="0" max="100" step="1">
+        <label for="prix">Prix demandé (€) <span class="hint" id="prixHint">vide = inconnu</span>
+          <input id="prix" type="number" inputmode="decimal" min="0" step="1" placeholder="inconnu">
         </label>
       </div>
-    </details>
-    <details>
-      <summary>Détail du calcul</summary>
-      <div class="ticket" id="ticket"></div>
-    </details>
-  </section>
+      <label class="check" for="deja"><input id="deja" type="checkbox"> C'est gratuit (don, ou déjà à moi)</label>
+      <div class="row" id="actionRow" hidden><button id="takeBtn" type="button" class="primary">Je le prends</button></div>
+      <p class="muted small status" id="saveStatus"></p>
+      <p class="muted small" id="vSettings"></p>
+    </section>
 
-  <section class="card" aria-labelledby="h-hist">
-    <h2 id="h-hist">Mes scans</h2>
-    <p class="muted small" id="histEmpty">Chaque analyse s'enregistre ici automatiquement. Tes scans sont privés : toi seul les vois.</p>
-    <p class="total" id="histTotal" hidden></p>
-    <div class="hist" id="hist"></div>
-    <div class="row" id="histActions" hidden><button id="csvBtn" type="button">Copier en CSV</button></div>
-    <p class="muted small status" id="histStatus"></p>
-  </section>
+    <section class="card" aria-labelledby="h-adv">
+      <h2 id="h-adv">Pour le revendre vite</h2>
+      <ul class="advice" id="advice"></ul>
+    </section>
 
-  <section class="card">
-    <details>
-      <summary>Réglages</summary>
-      <div class="body">
-        <div class="grid2">
-          <label for="gainMin">Gain minimum (€) <span class="hint">en dessous, ça ne vaut pas le coup</span>
-            <input id="gainMin" type="number" inputmode="decimal" min="0" step="1" value="10">
+    <section class="card">
+      <details id="corrDetails">
+        <summary>Corriger l'estimation</summary>
+        <div class="body">
+          <label for="cat">Catégorie
+            <select id="cat"></select>
           </label>
-          <label for="coursManuel">Cours à la main (€/kg) <span class="hint">vide = cours publié</span>
-            <input id="coursManuel" type="number" inputmode="decimal" min="0" step="0.1" placeholder="12,91">
+          <label for="gradeSel" id="gradeWrap" hidden>Grade de revente
+            <select id="gradeSel"></select>
           </label>
-          <label for="fraisFixes">Frais fixes (€) <span class="hint">transport, essence</span>
-            <input id="fraisFixes" type="number" inputmode="decimal" min="0" step="1" value="0">
+          <div class="grid2">
+            <label for="tmin">Teneur cuivre min (%)
+              <input id="tmin" type="number" inputmode="decimal" min="0" max="100" step="1">
+            </label>
+            <label for="tmax">Teneur cuivre max (%)
+              <input id="tmax" type="number" inputmode="decimal" min="0" max="100" step="1">
+            </label>
+          </div>
+          <label for="rachat"><span id="rachatLabel">Rachat ferrailleur (% du cours)</span> <span class="hint" id="rachatHint"></span>
+            <input id="rachat" type="number" inputmode="decimal" min="0" max="100" step="1">
           </label>
-          <label for="fraisPct">Frais (% de la valeur) <span class="hint">commission, décote</span>
-            <input id="fraisPct" type="number" inputmode="decimal" min="0" max="90" step="1" value="0">
-          </label>
-          <label for="tauxH">Ton heure de travail (€/h) <span class="hint">pour dénuder ou démonter</span>
-            <input id="tauxH" type="number" inputmode="decimal" min="0" step="1" value="15">
-          </label>
+          <label class="check" for="suspectChk"><input id="suspectChk" type="checkbox"> Provenance douteuse (matériel de réseau)</label>
+          <p class="muted small">Ne décoche que si tu as une preuve d'origine : facture, accord écrit du propriétaire.</p>
         </div>
+      </details>
+      <details>
+        <summary>Détail du calcul</summary>
+        <div class="ticket" id="ticket"></div>
+      </details>
+    </section>
+
+    <section class="card" aria-labelledby="h-recent">
+      <h2 id="h-recent">Derniers scans</h2>
+      <p class="muted small" id="recentEmpty">Chaque analyse s'enregistre ici automatiquement, même si tu ne prends pas l'objet. Tes données sont privées : toi seul les vois.</p>
+      <div class="list" id="recent"></div>
+    </section>
+  </div>
+
+  <!-- Stock -->
+  <div class="view" id="view-stock" role="tabpanel" aria-labelledby="tab-stock" hidden>
+    <section class="card" aria-labelledby="h-stock">
+      <h2 id="h-stock">Mon stock</h2>
+      <p class="muted small" id="stockEmpty">Ton stock est vide. Scanne un objet et appuie sur « Je le prends » : il apparaîtra ici, rangé par lot de vente.</p>
+      <div class="figs" id="stockFigs" hidden></div>
+      <p id="stockReady" hidden></p>
+      <p class="muted small status" id="stockStatus" aria-live="polite"></p>
+    </section>
+    <div class="stack" id="stockGroups"></div>
+  </div>
+
+  <!-- Gains -->
+  <div class="view" id="view-gains" role="tabpanel" aria-labelledby="tab-gains" hidden>
+    <section class="card" aria-labelledby="monthLabel">
+      <div class="month-nav">
+        <button type="button" id="monthPrev" aria-label="Mois précédent">‹</button>
+        <h2 id="monthLabel">Ce mois-ci</h2>
+        <button type="button" id="monthNext" aria-label="Mois suivant">›</button>
       </div>
-    </details>
-  </section>
+      <div class="kpis">
+        <div class="kpi main"><span class="k">Bénéfice du mois</span><span class="v" id="kBenef">0,00 €</span><span class="muted small" id="kSub"></span></div>
+        <div class="kpi"><span class="k">Reçu des ferrailleurs</span><span class="v" id="kRecu">0,00 €</span></div>
+        <div class="kpi"><span class="k">Achats et frais</span><span class="v" id="kAchats">0,00 €</span></div>
+        <div class="kpi"><span class="k">Par heure</span><span class="v" id="kHeure">—</span></div>
+        <div class="kpi"><span class="k">Depuis le début</span><span class="v" id="kTotal">0,00 €</span></div>
+      </div>
+      <p class="muted small" id="ventesEmpty">Aucune vente ce mois-ci. Quand tu vends un lot, appuie sur « J'ai vendu ce lot » dans l'onglet Stock et recopie le ticket du ferrailleur.</p>
+      <div class="list" id="ventesList"></div>
+      <p class="muted small status" id="gainsStatus" aria-live="polite"></p>
+    </section>
+
+    <section class="card" aria-labelledby="h-months">
+      <h2 id="h-months">Six derniers mois</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mois</th><th class="num">Ventes</th><th class="num">Bénéfice</th></tr></thead>
+          <tbody id="monthsBody"></tbody>
+        </table>
+      </div>
+      <div class="row"><button id="csvBtn" type="button">Copier toutes mes ventes en CSV</button></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-cal">
+      <h2 id="h-cal">Ce que paie ton ferrailleur</h2>
+      <p class="muted small">À chaque vente, CuScan compare ce que tu as reçu au cuivre estimé du lot, et ajuste le taux de rachat de ce lot. Les estimations suivantes collent ainsi aux prix de ton ferrailleur.</p>
+      <p class="muted small" id="calEmpty">Aucune vente enregistrée pour l'instant : les taux par défaut s'appliquent.</p>
+      <div class="list" id="calList"></div>
+    </section>
+  </div>
+
+  <!-- Guide -->
+  <div class="view" id="view-guide" role="tabpanel" aria-labelledby="tab-guide" hidden>
+    <section class="card" aria-labelledby="h-rank">
+      <h2 id="h-rank">Ce qui rapporte le plus au kilo</h2>
+      <p class="muted small" id="rankCaption"></p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Objet</th><th class="num">En l'état</th><th class="num">Dénudé ou démonté</th></tr></thead>
+          <tbody id="rankBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="h-find">
+      <h2 id="h-find">Où trouver des objets</h2>
+      <ul class="plain">
+        <li><strong>Ton entourage</strong> : caves, garages et greniers de la famille, des amis et des voisins. Propose de les débarrasser gratuitement.</li>
+        <li><strong>Les dons en ligne</strong> : rubrique « Dons » de Leboncoin, Geev, groupes « Je donne » de ta ville.</li>
+        <li><strong>Les artisans</strong> : électriciens, plombiers, chauffagistes et frigoristes ont des chutes de câble et de tuyau. Propose de passer les récupérer, avec leur accord écrit (un SMS suffit).</li>
+        <li><strong>Les débarras</strong> : vide-maisons, déménagements, successions. Propose ton aide et garde les métaux.</li>
+        <li><strong>Brocantes et vide-greniers</strong> : rallonges, vieux outils, appareils hors service à petit prix. Le verdict « ne le paie pas plus de… » sert à négocier.</li>
+      </ul>
+    </section>
+
+    <section class="card" aria-labelledby="h-forbid">
+      <h2 id="h-forbid">Interdit ou risqué</h2>
+      <ul class="plain">
+        <li><strong>Les bennes de déchetterie</strong> : ce qui y est déposé ne t'appartient plus. Se servir est interdit et peut être poursuivi comme un vol.</li>
+        <li><strong>Les encombrants sur le trottoir</strong> : beaucoup de communes interdisent de les fouiller. Renseigne-toi auprès de ta mairie.</li>
+        <li><strong>Chantiers, bennes d'entreprise, câbles en place</strong> : c'est du vol, même si ça semble abandonné.</li>
+        <li><strong>Brûler les gaines</strong> : interdit (fumées toxiques, amende), et le cuivre brûlé est moins bien payé.</li>
+        <li><strong>Vider un frigo ou une clim</strong> : le gaz doit être récupéré par un professionnel.</li>
+      </ul>
+    </section>
+
+    <section class="card" aria-labelledby="h-more">
+      <h2 id="h-more">Pour gagner plus</h2>
+      <ul class="plain">
+        <li><strong>Vise ce qui est riche en cuivre</strong> : tuyaux, gros câbles, fil nu, laiton, radiateurs en cuivre. Le petit électroménager rapporte peu au kilo (voir le tableau).</li>
+        <li><strong>Trie par lot</strong> : un lot mélangé est payé au prix de sa moins bonne partie. L'onglet Stock range tes objets par lot.</li>
+        <li><strong>Ne dénude que ce qui vaut le coup</strong> : à la main, le câble domestique rapporte peu par heure. Une dénudeuse manuelle (quelques dizaines d'euros) devient rentable si tu traites beaucoup de câble épais.</li>
+        <li><strong>Regroupe tes ventes</strong> : un trajet pour un gros lot plutôt que plusieurs petits.</li>
+        <li><strong>Appelle avant d'y aller</strong> : les prix des ferrailleurs suivent le cours et changent souvent.</li>
+        <li><strong>Le test de l'aimant</strong> : s'il colle, c'est du fer, pas du cuivre ni du laiton.</li>
+        <li><strong>Côté papiers</strong> : le ferrailleur paie par virement ou chèque, jamais en espèces, et relève ta pièce d'identité. Si ça devient régulier, tes revenus doivent être déclarés : renseigne-toi sur le statut de micro-entrepreneur. L'onglet Gains garde la trace de tes ventes.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <details id="settingsDetails">
+        <summary>Réglages</summary>
+        <div class="body">
+          <div class="grid2">
+            <label for="gainMin">Gain minimum (€) <span class="hint">en dessous, ça ne vaut pas le coup</span>
+              <input id="gainMin" type="number" inputmode="decimal" min="0" step="1" value="10">
+            </label>
+            <label for="seuilVente">Seuil de vente (€) <span class="hint">valeur de stock qui vaut le trajet</span>
+              <input id="seuilVente" type="number" inputmode="decimal" min="0" step="5" value="50">
+            </label>
+            <label for="fraisFixes">Frais de trajet (€) <span class="hint">essence, par vente</span>
+              <input id="fraisFixes" type="number" inputmode="decimal" min="0" step="1" value="0">
+            </label>
+            <label for="fraisPct">Frais (% de la valeur) <span class="hint">commission, décote</span>
+              <input id="fraisPct" type="number" inputmode="decimal" min="0" max="90" step="1" value="0">
+            </label>
+            <label for="tauxH">Ton heure de travail (€/h) <span class="hint">pour dénuder ou démonter</span>
+              <input id="tauxH" type="number" inputmode="decimal" min="0" step="1" value="15">
+            </label>
+            <label for="coursManuel">Cours à la main (€/kg) <span class="hint">vide = cours publié</span>
+              <input id="coursManuel" type="number" inputmode="decimal" min="0" step="0.1" placeholder="12,91">
+            </label>
+          </div>
+        </div>
+      </details>
+    </section>
+  </div>
 
   <footer>
     <p>Toutes les valeurs sont indicatives : le poids estimé sur photo est la principale source d'erreur. Pèse l'objet pour un verdict fiable.</p>
@@ -301,12 +446,12 @@ const CATALOG = {
   materials: {
     fil_cuivre_nu: { label: "Fil de cuivre nu (déjà dénudé)", min: 0.98, max: 1.0, grade: "cuivre_nu_brillant", notes: "Le grade le mieux payé. Il doit être propre, brillant, sans vernis, étain ni soudure." },
     tuyau_cuivre: { label: "Tuyau de cuivre (plomberie, chauffage)", min: 0.94, max: 0.99, grade: "cuivre_mele", notes: "Coupe les raccords en laiton et retire la soudure et l'isolant pour rester en cuivre mêlé." },
-    cable_domestique: { label: "Câble électrique domestique (1,5 à 6 mm²)", min: 0.35, max: 0.6, grade: "cable_isole", notes: "La teneur dépend de la section et de l'épaisseur de la gaine.", val: { faire: "Dénude-le", inf: "le dénuder", apres: "une fois dénudé", grade: "cuivre_nu_brillant", kgh: 4 } },
-    cable_gros: { label: "Gros câble d'alimentation (16 mm² et plus)", min: 0.55, max: 0.8, grade: "cable_isole", notes: "Vérifie que l'âme est en cuivre et pas en aluminium (argentée, plus légère).", val: { faire: "Dénude-le au couteau à câble", inf: "le dénuder", apres: "une fois dénudé", grade: "cuivre_nu_brillant", kgh: 10 } },
+    cable_domestique: { label: "Câble électrique domestique (1,5 à 6 mm²)", min: 0.35, max: 0.6, grade: "cable_isole", notes: "La teneur dépend de la section et de l'épaisseur de la gaine.", val: { faire: "Dénude-le", inf: "le dénuder", apres: "une fois dénudé", fait: "Câble déjà dénudé", fini: "Je l'ai dénudé", grade: "cuivre_nu_brillant", kgh: 4 } },
+    cable_gros: { label: "Gros câble d'alimentation (16 mm² et plus)", min: 0.55, max: 0.8, grade: "cable_isole", notes: "Vérifie que l'âme est en cuivre et pas en aluminium (argentée, plus légère).", val: { faire: "Dénude-le au couteau à câble", inf: "le dénuder", apres: "une fois dénudé", fait: "Câble déjà dénudé", fini: "Je l'ai dénudé", grade: "cuivre_nu_brillant", kgh: 10 } },
     cable_fin: { label: "Câble fin (réseau, USB, rallonges)", min: 0.1, max: 0.35, grade: "cable_isole", notes: "Trop fin pour être dénudé de façon rentable : vends-le tel quel." },
-    moteur_electrique: { label: "Moteur électrique (électroménager, outillage)", min: 0.08, max: 0.2, grade: "mixte_bas", notes: "Certains moteurs bon marché ont des bobinages en aluminium.", val: { faire: "Démonte-le et extrais le bobinage", inf: "extraire le bobinage", apres: "une fois le bobinage extrait", grade: "cuivre_mele", kgh: 6 } },
+    moteur_electrique: { label: "Moteur électrique (électroménager, outillage)", min: 0.08, max: 0.2, grade: "mixte_bas", notes: "Certains moteurs bon marché ont des bobinages en aluminium.", val: { faire: "Démonte-le et extrais le bobinage", inf: "extraire le bobinage", apres: "une fois le bobinage extrait", fait: "Bobinage déjà extrait", fini: "Bobinage extrait", grade: "cuivre_mele", kgh: 6 } },
     demarreur_alternateur: { label: "Démarreur ou alternateur auto", min: 0.08, max: 0.2, grade: "mixte_bas", notes: "Souvent racheté au kilo comme lot dédié chez les ferrailleurs." },
-    transformateur: { label: "Transformateur (micro-ondes, alimentation)", min: 0.1, max: 0.3, grade: "mixte_bas", notes: "Vérifie que les bobinages sont en cuivre (rouge) et pas en aluminium.", val: { faire: "Découpe les tôles et extrais le bobinage", inf: "extraire le bobinage", apres: "une fois le bobinage extrait", grade: "cuivre_mele", kgh: 5 } },
+    transformateur: { label: "Transformateur (micro-ondes, alimentation)", min: 0.1, max: 0.3, grade: "mixte_bas", notes: "Vérifie que les bobinages sont en cuivre (rouge) et pas en aluminium.", val: { faire: "Découpe les tôles et extrais le bobinage", inf: "extraire le bobinage", apres: "une fois le bobinage extrait", fait: "Bobinage déjà extrait", fini: "Bobinage extrait", grade: "cuivre_mele", kgh: 5 } },
     compresseur: { label: "Compresseur (frigo, clim)", min: 0.05, max: 0.12, grade: "mixte_bas", notes: "Le fluide frigorigène doit être récupéré par un professionnel. Ne le dégaze jamais toi-même." },
     radiateur_auto: { label: "Radiateur auto cuivre/laiton", min: 0.45, max: 0.65, grade: "radiateur", notes: "Les radiateurs récents sont souvent en aluminium et plastique : sans intérêt pour le cuivre." },
     echangeur_clim: { label: "Échangeur de clim cuivre/alu", min: 0.3, max: 0.5, grade: "radiateur", notes: "Retire le cadre en acier pour éviter la décote." },
@@ -329,7 +474,7 @@ const EXAMPLE = {
     "Un rouleau de 3G2,5 se revend bien entier : inutile de le couper si tu le vends en l'état.",
     "Sépare les chutes de gaine et les étiquettes : le ferrailleur décote un lot mélangé."
   ],
-  suspect: false, raison: "", ts: Date.now()
+  suspect: false, raison: "", ts: Date.now(), statut: "scan", traite: false
 };
 
 const ICONS = {
@@ -345,31 +490,53 @@ const nf1 = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });
 const nf2 = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const money = (x) => (Math.abs(x) < 10 ? nf1.format(x) : nf0.format(x));
 const signedMoney = (x) => (x > 0 ? "+" : "") + money(x);
+const eur2 = (x) => nf2.format(x) + " €";
+const signedEur2 = (x) => (x > 0 ? "+" : "") + nf2.format(x) + " €";
 const kgFmt = (x) => (x < 1 ? nf2.format(x) : nf1.format(x));
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const frDate = (iso) => { const [y, m, d] = String(iso).slice(0, 10).split("-"); return d && m && y ? `${d}/${m}/${y}` : String(iso); };
+const todayIso = () => new Date().toISOString().slice(0, 10);
 function rng(a, b, fmt, unit) {
   const lo = Math.min(a, b), hi = Math.max(a, b);
   const A = fmt(lo), B = fmt(hi);
   return (A === B ? A : `${A} – ${B}`) + unit;
 }
 function num(el, fallback = 0) { const v = parseFloat(String(el.value).replace(",", ".")); return Number.isFinite(v) ? v : fallback; }
+function parseNum(str) { const v = parseFloat(String(str ?? "").replace(",", ".")); return Number.isFinite(v) ? v : NaN; }
 function store(key, value) { try { localStorage.setItem("cuscan:" + key, value); } catch (e) {} }
 function load(key) { try { return localStorage.getItem("cuscan:" + key); } catch (e) { return null; } }
 const reducedMotion = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function btn(text, onClick, cls) { const b = el("button", cls || null, text); b.type = "button"; b.addEventListener("click", onClick); return b; }
+function confirmBtn(text, action, onError) {
+  const b = btn(text, async () => {
+    if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Confirmer"; return; }
+    b.disabled = true;
+    try { await action(); } catch (e) { b.disabled = false; b.dataset.armed = ""; b.textContent = text; if (onError) onError(e); }
+  });
+  return b;
+}
+function fig(k, v, cls) { const d = el("div", "fig"); d.append(el("span", "k", k), el("span", "v" + (cls ? " " + cls : ""), v)); return d; }
+const monthKey = (ts) => { const d = new Date(ts); return d.getFullYear() * 12 + d.getMonth(); };
+const monthName = (key) => cap(new Date(Math.floor(key / 12), key % 12, 1).toLocaleDateString("fr-FR", { month: "long", year: "numeric" }));
 
 // ---- État ----
 let scan = { ...EXAMPLE };
 let source = "example"; // example | ai | manual | saved
 let savedId = null;
-let col = null, histRows = [], saving = false, dirty = false, saveTimer = null;
+let col = null, profilRef = null, ventesCol = null;
+let stockRows = [], recentRows = [], ventes = [], profil = { calibrage: {} };
+let saving = false, dirty = false, pendingMsg = null, saveTimer = null, pruning = false;
+let saleDraft = null, selling = false;
+let gainsMonth = monthKey(Date.now());
 
 function settings() {
   return {
     fraisFixes: Math.max(0, num($("fraisFixes"))),
     fraisPct: Math.min(0.9, Math.max(0, num($("fraisPct")) / 100)),
     tauxH: Math.max(0, num($("tauxH"), 15)),
-    gainMin: Math.max(0, num($("gainMin"), 10))
+    gainMin: Math.max(0, num($("gainMin"), 10)),
+    seuilVente: Math.max(0, num($("seuilVente"), 50))
   };
 }
 function currentPrice() {
@@ -383,13 +550,32 @@ function gradeOf(s) {
   if (mat) return mat.grade;
   return CATALOG.grades[s.grade] ? s.grade : "mixte_bas";
 }
+function rachatFor(gKey) {
+  const cal = profil.calibrage && profil.calibrage[gKey];
+  return cal && cal.pct > 0 ? cal.pct : CATALOG.grades[gKey].rachat_pct;
+}
+const labelOf = (s) => (CATALOG.materials[s.material_key] ? CATALOG.materials[s.material_key].label : "Objet non reconnu");
+
+function scanFromDoc(r) {
+  const n = (x, d) => (x !== null && x !== undefined && x !== "" && Number.isFinite(Number(x)) ? Number(x) : d);
+  return {
+    description: String(r.description || ""), material_key: String(r.material_key || UNKNOWN), grade: String(r.grade || "mixte_bas"),
+    confiance: n(r.confiance, 1),
+    poids_min: n(r.poids_min, 0), poids_max: n(r.poids_max, 0), poids_pese: n(r.poids_pese, null),
+    teneur_min: n(r.teneur_min, 0), teneur_max: n(r.teneur_max, 0), rachat: n(r.rachat, null),
+    prix: n(r.prix, null), deja: !!r.deja, prix_lu: n(r.prix_lu, 0),
+    conseils: Array.isArray(r.conseils) ? r.conseils.map(String) : [],
+    suspect: !!r.suspect, raison: String(r.raison || ""), ts: n(r.ts, Date.now()),
+    statut: r.statut === "stock" ? "stock" : "scan", traite: !!r.traite
+  };
+}
 
 // ---- Calcul ----
-// Mêmes formules que cuscan/calc.py, étendues aux fourchettes de poids et à la meilleure façon de revendre.
+// Mêmes formules que cuscan/calc.py, étendues aux fourchettes de poids, à la meilleure façon de revendre et aux taux appris des ventes.
 function compute(s, cfg, cours) {
   const mat = CATALOG.materials[s.material_key] || null;
   const gKey = gradeOf(s), grade = CATALOG.grades[gKey];
-  const rachat = s.rachat != null ? s.rachat : grade.rachat_pct;
+  const rachat = s.rachat != null ? s.rachat : rachatFor(gKey);
   const weighed = s.poids_pese != null && s.poids_pese > 0;
   const pLo = weighed ? s.poids_pese : Math.min(s.poids_min, s.poids_max);
   const pHi = weighed ? s.poids_pese : Math.max(s.poids_min, s.poids_max);
@@ -406,8 +592,9 @@ function compute(s, cfg, cours) {
   const asIs = { key: "asis", grade, ...strat(rachat, 0) };
   let up = null, best = asIs;
   if (mat && mat.val) {
-    up = { key: "up", grade: CATALOG.grades[mat.val.grade], val: mat.val, ...strat(CATALOG.grades[mat.val.grade].rachat_pct, mat.val.kgh) };
-    if (up.mid > asIs.mid) best = up;
+    const ug = CATALOG.grades[mat.val.grade], ur = rachatFor(mat.val.grade);
+    if (s.traite) { up = { key: "done", grade: ug, val: mat.val, ...strat(ur, 0) }; best = up; }
+    else { up = { key: "up", grade: ug, val: mat.val, ...strat(ur, mat.val.kgh) }; if (up.mid > asIs.mid) best = up; }
   }
   const P = s.deja ? 0 : (s.prix != null && s.prix >= 0 ? s.prix : null);
   return { mat, gKey, grade, rachat, weighed, pLo, pHi, tLo, tHi, mLo, mHi, asIs, up, best, P, cours, cfg };
@@ -418,7 +605,7 @@ function verdict(s, c) {
   const { lo, hi } = c.best;
   const maxSafe = Math.floor(lo - G), maxRisky = Math.floor(hi - G);
   const rev = rng(lo, hi, money, " €");
-  const base = `Il se revend ${rev}${c.best.key === "up" ? " " + c.best.val.apres : ""}`;
+  const base = `Il se revend ${rev}${c.best.key !== "asis" ? " " + c.best.val.apres : ""}`;
 
   if (s.suspect) return { state: "bad", title: "Non : provenance douteuse", reason: `${s.raison || "Cet objet ressemble à du matériel de réseau public ou d'entreprise."} Ne l'achète pas et ne le revends pas sans preuve d'origine.` };
   if (!(c.pHi > 0)) return { state: "pending", title: "Pèse l'objet", reason: "Le poids n'a pas pu être estimé sur la photo. Indique le poids pesé pour avoir le verdict." };
@@ -455,7 +642,9 @@ function verdict(s, c) {
 function advice(s, c) {
   const out = [];
   if (s.suspect) out.push({ lead: true, text: "Ne transporte pas et ne revends pas cet objet sans facture ou preuve d'origine." });
-  if (c.up) {
+  if (c.up && c.up.key === "done") {
+    out.push({ lead: true, text: `${c.up.val.fait} : vends-le en « ${c.up.grade.label} ».` });
+  } else if (c.up) {
     const u = c.up, g0 = u.lo - c.asIs.lo, g1 = u.hi - c.asIs.hi;
     const gLo = Math.min(g0, g1), gHi = Math.max(g0, g1);
     const hours = rng(u.hLo, u.hHi, nf1.format, " h");
@@ -468,16 +657,62 @@ function advice(s, c) {
   for (const t of s.conseils || []) out.push({ text: t });
   if (c.mat && c.mat.notes) out.push({ text: c.mat.notes });
   if (!c.weighed) out.push({ text: "Pèse-le avant de partir : le poids estimé sur photo est la principale source d'erreur." });
-  out.push({ text: "Appelle 2 ou 3 ferrailleurs avant de te déplacer : le prix au kilo d'un même grade varie beaucoup d'un site à l'autre." });
-  out.push({ text: "Prends ta pièce d'identité : le ferrailleur la relève et paie par virement ou chèque, jamais en espèces." });
+  out.push({ text: "Range-le dans ton stock avec les objets du même lot, et vends quand le lot vaut le trajet." });
+  out.push({ text: "Appelle 2 ou 3 ferrailleurs avant de te déplacer : le prix au kilo d'un même lot varie beaucoup d'un site à l'autre." });
   return out;
 }
 
-// ---- Affichage ----
+// ---- Stock et ventes (fonctions pures) ----
+function stockValue(s, cfg, cours) {
+  // Valeur si vendu dans un lot : sans frais de trajet (comptés une fois par vente) ni temps de travail.
+  const c = compute(s, { ...cfg, fraisFixes: 0 }, cours);
+  const done = c.best.key === "done";
+  const v = done ? c.best : c.asIs;
+  return {
+    c, done, gKey: done ? c.mat.val.grade : c.gKey, lo: v.lo, hi: v.hi,
+    wLo: done ? c.mLo : c.pLo, wHi: done ? c.mHi : c.pHi,
+    cuMid: (c.mLo + c.mHi) / 2, paid: s.deja ? 0 : (s.prix || 0)
+  };
+}
+function groupStock(rows, cfg, cours) {
+  const groups = new Map();
+  const tot = { n: 0, lo: 0, hi: 0, paid: 0 };
+  for (const r of rows) {
+    const s = scanFromDoc(r), v = stockValue(s, cfg, cours);
+    let g = groups.get(v.gKey);
+    if (!g) { g = { gKey: v.gKey, items: [], lo: 0, hi: 0, wLo: 0, wHi: 0, paid: 0 }; groups.set(v.gKey, g); }
+    g.items.push({ id: r.id, r, s, v });
+    g.lo += v.lo; g.hi += v.hi; g.wLo += v.wLo; g.wHi += v.wHi; g.paid += v.paid;
+    tot.n++; tot.lo += v.lo; tot.hi += v.hi; tot.paid += v.paid;
+  }
+  return { list: [...groups.values()].sort((a, b) => b.hi - a.hi), tot };
+}
+function saleSummary(items, montant, cours) {
+  let cuMid = 0, cout = 0;
+  const objets = [];
+  for (const it of items) {
+    cuMid += it.v.cuMid; cout += it.v.paid;
+    objets.push({ d: it.s.description || labelOf(it.s), p: Math.round(((it.v.wLo + it.v.wHi) / 2) * 100) / 100, a: it.v.paid });
+  }
+  const calPct = cuMid >= 0.2 && cours > 0 && montant > 0 ? Math.min(1, Math.max(0.05, montant / (cuMid * cours))) : null;
+  return { cuMid, cout, objets: objets.slice(0, 60), calPct };
+}
+function monthStats(list, key) {
+  const st = { n: 0, recu: 0, achats: 0, frais: 0, heures: 0 };
+  for (const v of list) {
+    if (key !== null && monthKey(v.ts) !== key) continue;
+    st.n++; st.recu += Number(v.montant) || 0; st.achats += Number(v.cout_achat) || 0; st.frais += Number(v.frais) || 0; st.heures += Number(v.heures) || 0;
+  }
+  st.benef = st.recu - st.achats - st.frais;
+  st.parHeure = st.heures > 0 ? st.benef / st.heures : null;
+  return st;
+}
+
+// ---- Scanner ----
 const catSel = $("cat"), gradeSel = $("gradeSel");
-for (const [k, m] of Object.entries(CATALOG.materials)) { const o = document.createElement("option"); o.value = k; o.textContent = m.label; catSel.append(o); }
-{ const o = document.createElement("option"); o.value = UNKNOWN; o.textContent = "Autre / non reconnu"; catSel.append(o); }
-for (const [k, g] of Object.entries(CATALOG.grades)) { const o = document.createElement("option"); o.value = k; o.textContent = g.label; gradeSel.append(o); }
+for (const [k, m] of Object.entries(CATALOG.materials)) { const o = el("option", null, m.label); o.value = k; catSel.append(o); }
+{ const o = el("option", null, "Autre / non reconnu"); o.value = UNKNOWN; catSel.append(o); }
+for (const [k, g] of Object.entries(CATALOG.grades)) { const o = el("option", null, g.label); o.value = k; gradeSel.append(o); }
 
 function syncInputs() {
   catSel.value = CATALOG.materials[scan.material_key] ? scan.material_key : UNKNOWN;
@@ -485,11 +720,12 @@ function syncInputs() {
   $("gradeWrap").hidden = catSel.value !== UNKNOWN;
   $("tmin").value = Math.round(scan.teneur_min * 100);
   $("tmax").value = Math.round(scan.teneur_max * 100);
-  $("rachat").value = Math.round((scan.rachat != null ? scan.rachat : CATALOG.grades[gradeOf(scan)].rachat_pct) * 100);
+  $("rachat").value = Math.round((scan.rachat != null ? scan.rachat : rachatFor(gradeOf(scan))) * 100);
   $("poidsPese").value = scan.poids_pese != null ? scan.poids_pese : "";
   $("prix").value = scan.prix != null ? scan.prix : "";
   $("deja").checked = !!scan.deja;
   $("prix").disabled = !!scan.deja;
+  $("suspectChk").checked = !!scan.suspect;
 }
 
 function render() {
@@ -500,32 +736,26 @@ function render() {
   const c = compute(scan, cfg, price.value);
   const v = verdict(scan, c);
 
-  const card = $("verdictCard");
-  card.dataset.state = v.state;
+  $("verdictCard").dataset.state = v.state;
   $("vIcon").innerHTML = ICONS[v.state];
   $("vTitleText").textContent = v.title;
   $("vReason").textContent = v.reason;
-  $("vEyebrow").textContent = { example: "Exemple, scanne ton objet", ai: "Analyse de ta photo", manual: "Saisie à la main", saved: "Scan enregistré" }[source];
+  $("vEyebrow").textContent = source === "example" ? "Exemple, scanne ton objet"
+    : scan.statut === "stock" ? "Dans ton stock"
+    : source === "ai" ? "Analyse de ta photo" : source === "saved" ? "Scan enregistré" : "Saisie à la main";
   $("vDate").textContent = source === "example" ? "" : new Date(scan.ts).toLocaleDateString("fr-FR");
 
-  const figs = [
-    [c.weighed ? "Poids pesé" : "Poids estimé", c.pHi > 0 ? rng(c.pLo, c.pHi, kgFmt, " kg") : "?"],
-    ["Cuivre", c.pHi > 0 ? rng(c.mLo, c.mHi, kgFmt, " kg") : "?"],
-    [c.best.key === "up" ? "Revente (" + c.best.val.apres + ")" : "Revente", c.pHi > 0 ? rng(c.best.lo, c.best.hi, money, " €") : "?"]
-  ];
+  const fb = $("figs"); fb.replaceChildren();
+  const known = c.pHi > 0;
+  fb.append(fig(c.weighed ? "Poids pesé" : "Poids estimé", known ? rng(c.pLo, c.pHi, kgFmt, " kg") : "?"));
+  fb.append(fig("Cuivre", known ? rng(c.mLo, c.mHi, kgFmt, " kg") : "?"));
+  fb.append(fig(c.best.key !== "asis" ? "Revente (" + c.best.val.apres + ")" : "Revente", known ? rng(c.best.lo, c.best.hi, money, " €") : "?"));
   if (c.P > 0) {
     const a = c.best.lo - c.P, b = c.best.hi - c.P;
-    figs.push(["Marge", rng(a, b, signedMoney, " €"), a >= 0 ? "pos" : b < 0 ? "neg" : ""]);
-  } else if (c.P === null && c.pHi > 0) {
-    const G = cfg.gainMin, safe = Math.floor(c.best.lo - G), risky = Math.floor(c.best.hi - G);
-    figs.push(["Prix max", safe >= 1 ? money(safe) + " €" : risky >= 1 ? money(risky) + " € (risqué)" : "gratuit"]);
-  }
-  const fb = $("figs"); fb.replaceChildren();
-  for (const [k, val, cls] of figs) {
-    const d = document.createElement("div"); d.className = "fig";
-    const kk = document.createElement("span"); kk.className = "k"; kk.textContent = k;
-    const vv = document.createElement("span"); vv.className = "v" + (cls ? " " + cls : ""); vv.textContent = val;
-    d.append(kk, vv); fb.append(d);
+    fb.append(fig("Marge", rng(a, b, signedMoney, " €"), a >= 0 ? "pos" : b < 0 ? "neg" : ""));
+  } else if (c.P === null && known) {
+    const safe = Math.floor(c.best.lo - cfg.gainMin), risky = Math.floor(c.best.hi - cfg.gainMin);
+    fb.append(fig("Prix max", safe >= 1 ? money(safe) + " €" : risky >= 1 ? money(risky) + " € (risqué)" : "gratuit"));
   }
 
   const catLabel = c.mat ? c.mat.label : "Objet non reconnu (" + c.grade.label + ")";
@@ -537,61 +767,67 @@ function render() {
   $("poidsHint").textContent = c.weighed || !(scan.poids_max > 0) ? "vide = estimé sur la photo" : "estimé : " + rng(scan.poids_min, scan.poids_max, kgFmt, " kg");
   $("prixHint").textContent = scan.prix_lu > 0 && scan.prix === scan.prix_lu ? "lu sur la photo" : "vide = inconnu";
   $("rachatLabel").textContent = `Rachat ferrailleur pour « ${c.grade.label} » (% du cours)`;
+  const cal = profil.calibrage && profil.calibrage[c.gKey];
+  $("rachatHint").textContent = scan.rachat != null ? "modifié à la main" : cal ? `appris de ta vente du ${frDate(cal.date)}` : "valeur par défaut";
+  if (scan.rachat == null && document.activeElement !== $("rachat")) $("rachat").value = Math.round(c.rachat * 100);
+
+  const take = $("takeBtn");
+  $("actionRow").hidden = source === "example";
+  take.disabled = !col || (scan.suspect && scan.statut !== "stock");
+  if (scan.statut === "stock") { take.textContent = "Retirer de mon stock"; take.classList.remove("primary"); }
+  else { take.textContent = scan.deja ? "L'ajouter à mon stock" : "Je le prends"; take.classList.add("primary"); }
+
+  const vs = $("vSettings"); vs.replaceChildren();
+  vs.append(document.createTextNode(`Verdict calculé pour un gain minimum de ${money(cfg.gainMin)} €. `));
+  vs.append(btn("Modifier", () => { showTab("guide"); $("settingsDetails").open = true; $("gainMin").focus(); }, "link"));
 
   const ul = $("advice"); ul.replaceChildren();
-  for (const a of advice(scan, c)) { const li = document.createElement("li"); li.textContent = a.text; if (a.lead) li.className = "lead"; ul.append(li); }
+  for (const a of advice(scan, c)) { const li = el("li", a.lead ? "lead" : null, a.text); ul.append(li); }
 
   renderTicket(c, price);
-  updateSaveRow();
   return { c, v, price };
 }
 
 function renderTicket(c, price) {
   const b = c.best;
-  const eur2 = (x) => nf2.format(x);
   const rows = [
-    ["Objet", scan.description || (c.mat ? c.mat.label : "Non reconnu")],
+    ["Objet", scan.description || labelOf(scan)],
     ["Catégorie", c.mat ? c.mat.label : "Non reconnue"],
     ["Poids", c.pHi > 0 ? rng(c.pLo, c.pHi, kgFmt, " kg") + (c.weighed ? " (pesé)" : " (estimé)") : "inconnu"],
     ["Teneur cuivre", rng(c.tLo * 100, c.tHi * 100, nf0.format, " %")],
     ["Cuivre contenu", rng(c.mLo, c.mHi, kgFmt, " kg")],
     ["Cours", `${nf2.format(price.value)} €/kg`],
-    ["Vendu en", b.grade.label + (b.key === "up" ? " (" + b.val.apres + ")" : "")],
+    ["Vendu en", b.grade.label + (b.key !== "asis" ? " (" + b.val.apres + ")" : "")],
     ["Rachat", nf0.format(b.r * 100) + " % du cours"],
-    ["Valeur brute", rng(b.bruteLo, b.bruteHi, eur2, " €")],
-    ["Frais", rng(b.fraisLo, b.fraisHi, eur2, " €")]
+    ["Valeur brute", rng(b.bruteLo, b.bruteHi, nf2.format, " €")],
+    ["Frais", rng(b.fraisLo, b.fraisHi, nf2.format, " €")]
   ];
-  if (b.key === "up") rows.push(["Temps de travail", `${rng(b.hLo, b.hHi, nf1.format, " h")} = ${rng(b.tempsLo, b.tempsHi, eur2, " €")}`]);
-  rows.push(["Revente nette", rng(b.lo, b.hi, eur2, " €"), "big"]);
+  if (b.key === "up") rows.push(["Temps de travail", `${rng(b.hLo, b.hHi, nf1.format, " h")} = ${rng(b.tempsLo, b.tempsHi, nf2.format, " €")}`]);
+  rows.push(["Revente nette", rng(b.lo, b.hi, nf2.format, " €"), "big"]);
   if (c.P > 0) {
     const a = b.lo - c.P, z = b.hi - c.P;
-    rows.push(["Prix d'achat", eur2(c.P) + " €"]);
+    rows.push(["Prix d'achat", eur2(c.P)]);
     rows.push(["Marge", rng(a, z, (x) => (x > 0 ? "+" : "") + nf2.format(x), " €"), "big " + (a >= 0 ? "pos" : z < 0 ? "neg" : "")]);
     rows.push(["Ratio revente / achat", rng(b.lo / c.P, b.hi / c.P, nf2.format, "")]);
     const den = (m) => m * b.r * (1 - c.cfg.fraisPct);
-    const sLo = den(c.mHi) > 0 ? (c.P + c.cfg.fraisFixes + b.tempsHi) / den(c.mHi) : null;
-    const sHi = den(c.mLo) > 0 ? (c.P + c.cfg.fraisFixes + b.tempsLo) / den(c.mLo) : null;
-    if (sLo !== null && sHi !== null) rows.push(["Cours seuil", rng(sLo, sHi, nf2.format, " €/kg")]);
+    if (den(c.mHi) > 0 && den(c.mLo) > 0) {
+      rows.push(["Cours seuil", rng((c.P + c.cfg.fraisFixes + b.tempsHi) / den(c.mHi), (c.P + c.cfg.fraisFixes + b.tempsLo) / den(c.mLo), nf2.format, " €/kg")]);
+    }
   } else if (c.P === 0) {
-    rows.push(["Prix d'achat", "déjà à toi"]);
+    rows.push(["Prix d'achat", "gratuit"]);
   }
-
   const t = $("ticket"); t.replaceChildren();
-  const head = document.createElement("div"); head.className = "ticket-head";
-  const h1 = document.createElement("span"); h1.textContent = "Ticket d'estimation";
-  const h2 = document.createElement("span"); h2.textContent = `Cours ${price.label}`;
-  head.append(h1, h2);
-  const dl = document.createElement("dl");
+  const head = el("div", "ticket-head");
+  head.append(el("span", null, "Ticket d'estimation"), el("span", null, `Cours ${price.label}`));
+  const dl = el("dl");
   for (const [k, val, cls] of rows) {
-    const dt = document.createElement("dt"); dt.textContent = k;
-    const dd = document.createElement("dd"); dd.textContent = val;
+    const dt = el("dt", null, k), dd = el("dd", null, val);
     if (cls) { const parts = cls.split(" ").filter(Boolean); dd.classList.add(...parts); if (parts.includes("big")) dt.classList.add("big"); }
     dl.append(dt, dd);
   }
   t.append(head, dl);
 }
 
-// ---- Corrections ----
 function edited() {
   if (source === "example") { source = "manual"; scan.description = ""; scan.conseils = []; scan.ts = Date.now(); }
   render();
@@ -600,11 +836,12 @@ function edited() {
 $("poidsPese").addEventListener("input", () => { const v = num($("poidsPese"), NaN); scan.poids_pese = v > 0 ? v : null; edited(); });
 $("prix").addEventListener("input", () => { const raw = $("prix").value.trim(); scan.prix = raw === "" ? null : Math.max(0, num($("prix"), 0)); edited(); });
 $("deja").addEventListener("change", () => { scan.deja = $("deja").checked; $("prix").disabled = scan.deja; edited(); });
+$("suspectChk").addEventListener("change", () => { scan.suspect = $("suspectChk").checked; edited(); });
 catSel.addEventListener("change", () => {
   const key = catSel.value, mat = CATALOG.materials[key];
   scan.material_key = key;
   if (mat) { scan.grade = mat.grade; scan.teneur_min = mat.min; scan.teneur_max = mat.max; }
-  scan.rachat = null;
+  scan.rachat = null; scan.traite = false;
   syncInputs(); edited();
 });
 gradeSel.addEventListener("change", () => { scan.grade = gradeSel.value; scan.rachat = null; syncInputs(); edited(); });
@@ -614,13 +851,357 @@ for (const id of ["tmin", "tmax"]) $(id).addEventListener("input", () => {
   edited();
 });
 $("rachat").addEventListener("input", () => { scan.rachat = Math.min(100, Math.max(0, num($("rachat")))) / 100; edited(); });
-for (const id of ["coursManuel", "fraisFixes", "fraisPct", "tauxH", "gainMin"]) {
+
+$("takeBtn").addEventListener("click", () => {
+  if (!col) return;
+  if (scan.statut === "stock") {
+    scan.statut = "scan"; render(); saveNow("Retiré de ton stock.");
+    return;
+  }
+  if (!scan.deja && scan.prix == null) {
+    $("saveStatus").textContent = "Indique d'abord combien tu le paies, ou coche « C'est gratuit ».";
+    $("prix").focus();
+    return;
+  }
+  scan.statut = "stock";
+  render();
+  saveNow("Ajouté à ton stock. Retrouve-le dans l'onglet Stock.");
+});
+
+function resetScanner() {
+  scan = { ...EXAMPLE, ts: Date.now() };
+  source = "example"; savedId = null;
+  $("thumbs").replaceChildren();
+  $("saveStatus").textContent = "";
+  syncInputs(); render();
+}
+
+function openSaved(r) {
+  scan = scanFromDoc(r);
+  source = "saved"; savedId = r.id;
+  $("thumbs").replaceChildren();
+  $("saveStatus").textContent = "Recalculé avec le cours du jour.";
+  showTab("scan");
+  syncInputs(); render();
+  $("verdictCard").scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
+}
+
+function renderRecent() {
+  const box = $("recent"); box.replaceChildren();
+  $("recentEmpty").hidden = recentRows.length > 0;
+  for (const r of recentRows.slice(0, 20)) {
+    const row = el("div", "list-row");
+    const top = el("div", "list-top");
+    top.append(el("span", "pill " + (r.verdict || ""), r.titre || "—"), el("span", "muted small", new Date(r.ts).toLocaleDateString("fr-FR")));
+    const prixTxt = r.deja ? "gratuit" : r.prix != null ? `prix ${money(r.prix)} €` : "prix inconnu";
+    const nums = el("span", "num muted", `Revente ${rng(Number(r.revente_min) || 0, Number(r.revente_max) || 0, money, " €")} · ${prixTxt}`);
+    const act = el("div", "actions");
+    act.append(
+      btn("Revoir", () => openSaved(r)),
+      confirmBtn("Supprimer", async () => {
+        await col.doc(r.id).delete();
+        if (savedId === r.id) { savedId = null; source = "manual"; render(); }
+      }, () => { $("saveStatus").textContent = "Suppression impossible. Réessaie."; })
+    );
+    row.append(top, el("span", "desc", r.description || labelOf(scanFromDoc(r))), nums, act);
+    box.append(row);
+  }
+}
+
+// ---- Stock ----
+function renderStock() {
+  const cfg = settings(), price = currentPrice();
+  const { list, tot } = groupStock(stockRows, cfg, price.value);
+  $("stockBadge").hidden = tot.n === 0;
+  $("stockBadge").textContent = String(tot.n);
+  $("stockEmpty").hidden = tot.n > 0;
+  $("stockFigs").hidden = tot.n === 0;
+  $("stockReady").hidden = tot.n === 0;
+
+  const sf = $("stockFigs"); sf.replaceChildren();
+  if (tot.n) {
+    sf.append(
+      fig("Objets", String(tot.n)),
+      fig("Valeur estimée", rng(tot.lo, tot.hi, money, " €")),
+      fig("Argent investi", money(tot.paid) + " €")
+    );
+    const rd = $("stockReady"); rd.replaceChildren();
+    const trajet = cfg.fraisFixes > 0 ? ` Trajet déduit : ${rng(tot.lo - cfg.fraisFixes, tot.hi - cfg.fraisFixes, money, " €")}.` : "";
+    if (tot.hi >= cfg.seuilVente) {
+      rd.append(el("span", "pill good", "Prêt à vendre"), document.createTextNode(` Ton stock dépasse ton seuil de ${money(cfg.seuilVente)} € : le trajet vaut le coup.${trajet}`));
+    } else {
+      rd.append(el("span", "pill", "Continue à remplir"), document.createTextNode(` Encore environ ${money(cfg.seuilVente - tot.hi)} € avant ton seuil de vente (${money(cfg.seuilVente)} €).${trajet}`));
+    }
+  }
+
+  const box = $("stockGroups"); box.replaceChildren();
+  for (const g of list) box.append(groupCard(g, cfg));
+}
+
+function groupCard(g, cfg) {
+  const grade = CATALOG.grades[g.gKey];
+  const card = el("section", "card");
+  const head = el("div", "group-head");
+  head.append(el("h3", null, "Lot : " + grade.label), el("span", "muted small", `${g.items.length} objet${g.items.length > 1 ? "s" : ""}`));
+  const figs = el("div", "figs");
+  figs.append(fig("Poids", rng(g.wLo, g.wHi, kgFmt, " kg")), fig("Valeur", rng(g.lo, g.hi, money, " €")), fig("Payé", money(g.paid) + " €"));
+  const list = el("div", "list");
+  for (const it of g.items) list.append(itemRow(it));
+  card.append(head, figs, list);
+
+  const open = saleDraft && saleDraft.gKey === g.gKey;
+  if (open) card.append(saleForm(g));
+  else card.append(btn("J'ai vendu ce lot", () => {
+    saleDraft = { gKey: g.gKey, montant: "", poids: "", heures: "", frais: cfg.fraisFixes ? String(cfg.fraisFixes) : "", exclude: [] };
+    renderStock();
+    const m = $("sale-montant-" + g.gKey); if (m) m.focus();
+  }, "primary"));
+  return card;
+}
+
+function itemRow(it) {
+  const { s, v } = it, c = v.c;
+  const row = el("div", "list-row");
+  const top = el("div", "list-top");
+  top.append(el("span", "desc", s.description || labelOf(s)), el("span", "num", rng(v.lo, v.hi, money, " €")));
+  const meta = el("span", "muted small", `${rng(c.pLo, c.pHi, kgFmt, " kg")}${c.weighed ? " pesé" : " estimé"} · ${s.deja ? "gratuit" : "payé " + money(v.paid) + " €"}`);
+  const act = el("div", "actions");
+  if (c.mat && c.mat.val) {
+    if (s.traite) {
+      act.append(el("span", "pill good", c.mat.val.fait), btn("Annuler", () => setTraite(it.id, false)));
+    } else {
+      const u = c.up, g0 = u.lo - c.asIs.lo, g1 = u.hi - c.asIs.hi;
+      if (Math.max(g0, g1) > 0) act.append(el("span", "pill warn", `${cap(c.mat.val.inf)} : ${rng(g0, g1, signedMoney, " €")}`));
+      act.append(btn(c.mat.val.fini, () => setTraite(it.id, true)));
+    }
+  }
+  act.append(
+    btn("Revoir", () => openSaved(it.r)),
+    confirmBtn("Supprimer", async () => {
+      await col.doc(it.id).delete();
+      if (savedId === it.id) resetScanner();
+    }, () => { $("stockStatus").textContent = "Suppression impossible. Réessaie."; })
+  );
+  row.append(top, meta, act);
+  return row;
+}
+
+async function setTraite(id, value) {
+  try {
+    await col.doc(id).update({ traite: value });
+    if (savedId === id) { scan.traite = value; render(); }
+  } catch (e) { $("stockStatus").textContent = "Modification impossible. Réessaie."; }
+}
+
+function saleForm(g) {
+  const d = saleDraft;
+  const f = el("div", "sale-form");
+  f.append(el("p", "small", "Coche les objets vendus, puis recopie le ticket du ferrailleur."));
+  const checks = el("div", "checks");
+  for (const it of g.items) {
+    const id = "sale-cb-" + it.id;
+    const lab = el("label", "check"); lab.htmlFor = id;
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.id = id; cb.checked = !d.exclude.includes(it.id);
+    cb.addEventListener("change", () => {
+      d.exclude = cb.checked ? d.exclude.filter((x) => x !== it.id) : d.exclude.concat(it.id);
+    });
+    lab.append(cb, document.createTextNode(it.s.description || labelOf(it.s)));
+    checks.append(lab);
+  }
+  const grid = el("div", "grid2");
+  const field = (key, label, hint, step) => {
+    const id = `sale-${key}-${g.gKey}`;
+    const lab = el("label"); lab.htmlFor = id;
+    lab.append(document.createTextNode(label + " "));
+    if (hint) lab.append(el("span", "hint", hint));
+    const inp = document.createElement("input"); inp.type = "number"; inp.inputMode = "decimal"; inp.min = "0"; inp.step = step; inp.id = id; inp.value = d[key];
+    inp.addEventListener("input", () => { d[key] = inp.value; });
+    lab.append(inp);
+    return lab;
+  };
+  grid.append(
+    field("montant", "Montant reçu (€)", "sur le ticket", "0.01"),
+    field("poids", "Poids sur le ticket (kg)", "facultatif", "0.1"),
+    field("heures", "Temps passé (h)", "récup, tri, dénudage", "0.5"),
+    field("frais", "Frais du trajet (€)", "essence", "1")
+  );
+  const msg = el("p", "small status");
+  const row = el("div", "row");
+  const ok = btn("Enregistrer la vente", async () => {
+    if (selling) return;
+    ok.disabled = true;
+    selling = true;
+    let err = null;
+    try { err = await submitSale(g); } finally { selling = false; }
+    if (err) { msg.textContent = err; ok.disabled = false; }
+  }, "primary");
+  ok.disabled = selling;
+  row.append(ok, btn("Annuler", () => { saleDraft = null; renderStock(); }));
+  f.append(checks, grid, row, msg);
+  return f;
+}
+
+async function submitSale(g) {
+  const d = saleDraft;
+  const montant = parseNum(d.montant);
+  if (!(montant > 0)) return "Indique le montant reçu.";
+  const items = g.items.filter((it) => !d.exclude.includes(it.id));
+  if (!items.length) return "Coche au moins un objet.";
+  const price = currentPrice();
+  const sum = saleSummary(items, montant, price.value);
+  const poids = parseNum(d.poids), heures = parseNum(d.heures), frais = parseNum(d.frais);
+  const vente = {
+    ts: Date.now(), grade: g.gKey, montant,
+    poids_ticket: poids > 0 ? poids : null, heures: heures > 0 ? heures : 0, frais: frais > 0 ? frais : 0,
+    cout_achat: sum.cout, nb_objets: items.length, cuivre_estime_kg: sum.cuMid, cours_eur_kg: price.value,
+    calib_pct: sum.calPct, objets: sum.objets
+  };
+  try { await ventesCol.add(vente); }
+  catch (e) { return e && e.code === "quota_exceeded" ? "Plus de place pour enregistrer des ventes." : "La vente n'a pas pu être enregistrée. Réessaie."; }
+  if (sum.calPct) {
+    try { await setCalibration(g.gKey, { pct: sum.calPct, date: todayIso(), eur_kg: vente.poids_ticket ? montant / vente.poids_ticket : null }); } catch (e) {}
+  }
+  let failed = 0;
+  for (const it of items) {
+    try { await col.doc(it.id).delete(); } catch (e) { failed++; }
+    if (savedId === it.id) resetScanner();
+  }
+  saleDraft = null;
+  const benef = montant - sum.cout - vente.frais;
+  $("stockStatus").textContent = `Vente enregistrée : ${signedEur2(benef)} de bénéfice.`
+    + (sum.calPct ? ` Ton ferrailleur paie environ ${nf0.format(sum.calPct * 100)} % du cours pour ce lot : les prochaines estimations en tiennent compte.` : "")
+    + (failed ? " Certains objets sont restés dans le stock : supprime-les à la main." : "");
+  renderStock();
+  return null;
+}
+
+async function setCalibration(gKey, value) {
+  const snap = await profilRef.get();
+  const cur = snap.exists ? { ...snap.data() } : {};
+  const cal = { ...(cur.calibrage || {}) };
+  if (value) cal[gKey] = value; else delete cal[gKey];
+  await profilRef.set({ ...cur, calibrage: cal });
+}
+
+// ---- Gains ----
+function renderGains() {
+  const key = gainsMonth, cur = monthKey(Date.now());
+  $("monthLabel").textContent = monthName(key);
+  $("monthNext").disabled = key >= cur;
+  const st = monthStats(ventes, key);
+  const kb = $("kBenef"); kb.textContent = signedEur2(st.benef); kb.className = "v" + (st.benef > 0 ? " pos" : st.benef < 0 ? " neg" : "");
+  $("kSub").textContent = `${st.n} vente${st.n > 1 ? "s" : ""}` + (st.heures ? ` · ${nf1.format(st.heures)} h` : "");
+  $("kRecu").textContent = eur2(st.recu);
+  $("kAchats").textContent = eur2(st.achats + st.frais);
+  $("kHeure").textContent = st.parHeure != null ? nf2.format(st.parHeure) + " €/h" : "—";
+  const all = monthStats(ventes, null);
+  const kt = $("kTotal"); kt.textContent = signedEur2(all.benef); kt.className = "v" + (all.benef > 0 ? " pos" : all.benef < 0 ? " neg" : "");
+
+  const inMonth = ventes.filter((v) => monthKey(v.ts) === key);
+  $("ventesEmpty").hidden = inMonth.length > 0;
+  const box = $("ventesList"); box.replaceChildren();
+  for (const v of inMonth) {
+    const grade = CATALOG.grades[v.grade];
+    const benef = (Number(v.montant) || 0) - (Number(v.cout_achat) || 0) - (Number(v.frais) || 0);
+    const row = el("div", "list-row");
+    const top = el("div", "list-top");
+    top.append(el("span", "desc", `${new Date(v.ts).toLocaleDateString("fr-FR")} · ${grade ? grade.label : "Lot"}`), el("span", "num", eur2(Number(v.montant) || 0)));
+    const parts = [`Bénéfice ${signedEur2(benef)}`, `${v.nb_objets || 0} objet${(v.nb_objets || 0) > 1 ? "s" : ""}`];
+    if (v.poids_ticket > 0) parts.push(`${nf2.format(v.montant / v.poids_ticket)} €/kg`);
+    if (v.heures > 0) parts.push(`${nf1.format(v.heures)} h`);
+    const act = el("div", "actions");
+    act.append(confirmBtn("Supprimer cette vente", () => ventesCol.doc(v.id).delete(), () => { $("gainsStatus").textContent = "Suppression impossible. Réessaie."; }));
+    row.append(top, el("span", "muted small", parts.join(" · ")), act);
+    box.append(row);
+  }
+
+  const tb = $("monthsBody"); tb.replaceChildren();
+  for (let k = cur; k > cur - 6; k--) {
+    const m = monthStats(ventes, k);
+    const tr = el("tr");
+    tr.append(el("td", null, monthName(k)), el("td", "num", String(m.n)), el("td", "num", m.n ? signedEur2(m.benef) : "—"));
+    tb.append(tr);
+  }
+
+  const entries = Object.entries(profil.calibrage || {}).filter(([g]) => CATALOG.grades[g]);
+  $("calEmpty").hidden = entries.length > 0;
+  const cb = $("calList"); cb.replaceChildren();
+  for (const [g, c] of entries) {
+    const row = el("div", "list-row");
+    const top = el("div", "list-top");
+    top.append(el("span", "desc", CATALOG.grades[g].label), el("span", "num", nf0.format(c.pct * 100) + " % du cours"));
+    const meta = [`par défaut ${nf0.format(CATALOG.grades[g].rachat_pct * 100)} %`, `vente du ${frDate(c.date)}`];
+    if (c.eur_kg > 0) meta.push(`payé ${nf2.format(c.eur_kg)} €/kg`);
+    const act = el("div", "actions");
+    act.append(confirmBtn("Revenir au taux par défaut", () => setCalibration(g, null), () => { $("gainsStatus").textContent = "Modification impossible. Réessaie."; }));
+    row.append(top, el("span", "muted small", meta.join(" · ")), act);
+    cb.append(row);
+  }
+}
+$("monthPrev").addEventListener("click", () => { gainsMonth--; renderGains(); });
+$("monthNext").addEventListener("click", () => { if (gainsMonth < monthKey(Date.now())) { gainsMonth++; renderGains(); } });
+
+$("csvBtn").addEventListener("click", () => {
+  const head = ["date", "lot", "objets", "montant_recu", "achats", "frais", "benefice", "heures", "poids_ticket_kg"];
+  const cell = (v) => typeof v === "number" ? String(Math.round(v * 100) / 100).replace(".", ",") : `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const lines = [head.join(";")].concat(ventes.map((v) => {
+    const benef = (Number(v.montant) || 0) - (Number(v.cout_achat) || 0) - (Number(v.frais) || 0);
+    return [new Date(v.ts).toISOString().slice(0, 10), CATALOG.grades[v.grade] ? CATALOG.grades[v.grade].label : v.grade, Number(v.nb_objets) || 0,
+      Number(v.montant) || 0, Number(v.cout_achat) || 0, Number(v.frais) || 0, benef, Number(v.heures) || 0, v.poids_ticket > 0 ? Number(v.poids_ticket) : ""].map(cell).join(";");
+  }));
+  navigator.clipboard.writeText(lines.join("\n")).then(
+    () => { $("gainsStatus").textContent = "Ventes copiées : colle-les dans un tableur."; },
+    () => { $("gainsStatus").textContent = "Copie impossible dans cette vue."; }
+  );
+});
+
+// ---- Guide ----
+function renderGuide() {
+  const price = currentPrice();
+  $("rankCaption").textContent = `Valeur d'un kilo d'objet au cours de ${nf2.format(price.value)} €/kg, aux taux de rachat appris de tes ventes ou par défaut, sans compter ton temps de travail.`;
+  const rows = Object.values(CATALOG.materials).map((m) => {
+    const mid = (m.min + m.max) / 2;
+    const asIs = mid * price.value * rachatFor(m.grade);
+    const after = m.val ? mid * price.value * rachatFor(m.val.grade) : null;
+    return { m, asIs, after, best: Math.max(asIs, after || 0) };
+  }).sort((a, b) => b.best - a.best);
+  const tb = $("rankBody"); tb.replaceChildren();
+  for (const r of rows) {
+    const tr = el("tr");
+    tr.append(el("td", null, r.m.label), el("td", "num", nf2.format(r.asIs) + " €"), el("td", "num", r.after != null ? nf2.format(r.after) + " €" : "—"));
+    tb.append(tr);
+  }
+}
+
+// ---- Onglets ----
+const TABS = ["scan", "stock", "gains", "guide"];
+function showTab(name) {
+  for (const t of TABS) {
+    const on = t === name;
+    $("tab-" + t).setAttribute("aria-selected", on ? "true" : "false");
+    $("tab-" + t).tabIndex = on ? 0 : -1;
+    $("view-" + t).hidden = !on;
+  }
+  window.scrollTo(0, 0);
+}
+for (const t of TABS) $("tab-" + t).addEventListener("click", () => showTab(t));
+$("tabs").addEventListener("keydown", (e) => {
+  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+  const i = TABS.findIndex((t) => $("tab-" + t).getAttribute("aria-selected") === "true");
+  const j = (i + (e.key === "ArrowRight" ? 1 : TABS.length - 1)) % TABS.length;
+  showTab(TABS[j]); $("tab-" + TABS[j]).focus();
+});
+
+function renderAll() { render(); renderRecent(); renderStock(); renderGains(); renderGuide(); }
+
+for (const id of ["coursManuel", "fraisFixes", "fraisPct", "tauxH", "gainMin", "seuilVente"]) {
   const saved = load(id); if (saved !== null) $(id).value = saved;
-  $(id).addEventListener("input", () => { store(id, $(id).value); render(); });
+  $(id).addEventListener("input", () => { store(id, $(id).value); renderAll(); });
 }
 
 syncInputs();
-render();
+renderAll();
+{ const h = (location.hash || "").slice(1); if (TABS.includes(h)) showTab(h); }
 
 // ---- Photo et analyse automatique ----
 let maxImages = 5, canImages = false, ctl = null, ticker = null;
@@ -675,7 +1256,7 @@ Règles :
 
 function showThumbs(files) {
   const th = $("thumbs"); th.replaceChildren();
-  for (const f of files) { const img = document.createElement("img"); img.alt = "Photo analysée"; img.src = URL.createObjectURL(f); th.append(img); }
+  for (const f of files) { const img = el("img"); img.alt = "Photo analysée"; img.src = URL.createObjectURL(f); th.append(img); }
 }
 
 function setBusy(on) {
@@ -694,6 +1275,7 @@ $("stopBtn").addEventListener("click", () => { if (ctl) ctl.abort(); });
 async function analyze(fileList) {
   const files = Array.from(fileList || []).slice(0, maxImages);
   if (!files.length) return;
+  showTab("scan");
   showThumbs(files);
   const s = await samplePromise;
   if (!s || !canImages) { $("corrDetails").open = true; return; }
@@ -748,7 +1330,7 @@ function applyResult(r) {
     conseils,
     suspect: r.suspect_infrastructure === true,
     raison: String(r.raison_suspicion || "").trim(),
-    ts: Date.now()
+    ts: Date.now(), statut: "scan", traite: false
   };
   source = "ai";
   savedId = null;
@@ -764,24 +1346,63 @@ function applyResult(r) {
 $("camInput").addEventListener("change", (e) => { analyze(e.target.files); e.target.value = ""; });
 $("galInput").addEventListener("change", (e) => { analyze(e.target.files); e.target.value = ""; });
 
-// ---- Base : cours partagé et scans privés ----
+// ---- Base : cours partagé, objets, ventes et réglages appris (privés) ----
 (async () => {
   const db = window.claude ? await window.claude.use("db") : null;
-  if (!db) { $("histEmpty").textContent = "L'enregistrement des scans n'est pas disponible dans cette vue (connecte-toi à Claude)."; return; }
+  const offline = "Connecte-toi à Claude pour garder tes scans, ton stock et tes ventes.";
+  if (!db) { $("recentEmpty").textContent = offline; $("stockEmpty").textContent = offline; $("ventesEmpty").textContent = offline; return; }
   db.doc("config/cours").onSnapshot((snap) => {
     const d = snap.exists ? snap.data() : null;
-    if (d && Number(d.eur_per_kg) > 0) { quote = { ...quote, ...d, eur_per_kg: Number(d.eur_per_kg) }; render(); }
+    if (d && Number(d.eur_per_kg) > 0) { quote = { ...quote, ...d, eur_per_kg: Number(d.eur_per_kg) }; renderAll(); }
   }, () => {});
   const user = await window.claude.use("user");
   const uid = user ? await user.id() : null;
-  if (!uid) { $("histEmpty").textContent = "Connecte-toi à Claude pour garder tes scans."; return; }
+  if (!uid) { $("recentEmpty").textContent = offline; $("stockEmpty").textContent = offline; $("ventesEmpty").textContent = offline; return; }
+
   col = db.collection("data/users/" + uid);
-  col.orderBy("ts", "desc").limit(200).onSnapshot((snap) => {
-    histRows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    renderHist();
-  }, () => { $("histStatus").textContent = "Tes scans n'ont pas pu être chargés. Recharge la page."; });
-  updateSaveRow();
+  profilRef = db.doc("data/users/" + uid + "/profil");
+  ventesCol = profilRef.collection("ventes");
+
+  // Scans enregistrés par la version précédente de la page, sans statut.
+  try {
+    const all = await col.limit(300).get();
+    for (const d of all.docs) {
+      const x = d.data();
+      if (d.id !== "profil" && x && x.ts !== undefined && x.statut === undefined) await col.doc(d.id).update({ statut: "scan" });
+    }
+  } catch (e) {}
+
+  const failed = (id) => () => { $(id).textContent = "Tes données n'ont pas pu être chargées. Recharge la page."; };
+  profilRef.onSnapshot((snap) => {
+    profil = { calibrage: {}, ...(snap.exists ? snap.data() : {}) };
+    renderAll();
+  }, () => {});
+  col.where("statut", "==", "scan").orderBy("ts", "desc").limit(60).onSnapshot((snap) => {
+    recentRows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    renderRecent();
+    prune();
+  }, failed("saveStatus"));
+  col.where("statut", "==", "stock").orderBy("ts", "desc").limit(500).onSnapshot((snap) => {
+    stockRows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    renderStock();
+  }, failed("stockStatus"));
+  ventesCol.orderBy("ts", "desc").limit(1000).onSnapshot((snap) => {
+    ventes = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    renderGains();
+  }, failed("gainsStatus"));
+  render();
 })();
+
+// Garde les 50 derniers scans non retenus ; le stock et les ventes ne sont jamais élagués.
+async function prune() {
+  if (pruning || recentRows.length <= 50) return;
+  pruning = true;
+  for (const r of recentRows.slice(50)) {
+    if (r.id === savedId) continue;
+    try { await col.doc(r.id).delete(); } catch (e) { break; }
+  }
+  pruning = false;
+}
 
 function docBody() {
   const { c, v, price } = render();
@@ -790,100 +1411,31 @@ function docBody() {
     poids_min: scan.poids_min, poids_max: scan.poids_max, poids_pese: scan.poids_pese,
     teneur_min: scan.teneur_min, teneur_max: scan.teneur_max, rachat: scan.rachat,
     prix: scan.prix, deja: scan.deja, prix_lu: scan.prix_lu, conseils: scan.conseils,
-    suspect: scan.suspect, raison: scan.raison,
+    suspect: scan.suspect, raison: scan.raison, statut: scan.statut, traite: scan.traite,
     verdict: v.state, titre: v.title, revente_min: c.best.lo, revente_max: c.best.hi, cours_eur_kg: price.value
   };
 }
 
-async function saveNow() {
+async function saveNow(msg) {
   if (!col) return;
-  if (saving) { dirty = true; return; }
+  if (saving) { dirty = true; if (msg) pendingMsg = msg; return; }
   saving = true;
   try {
     const ref = savedId ? col.doc(savedId) : col.doc();
     savedId = ref.id;
     await ref.set(docBody());
-    $("saveStatus").textContent = "Enregistré dans tes scans.";
+    $("saveStatus").textContent = msg || (scan.statut === "stock" ? "Modifications enregistrées dans ton stock." : "Enregistré dans tes derniers scans.");
   } catch (e) {
     $("saveStatus").textContent = e && e.code === "quota_exceeded" ? "Plus de place : supprime d'anciens scans." : "Échec de l'enregistrement. Modifie un champ pour réessayer.";
   } finally {
     saving = false;
-    if (dirty) { dirty = false; saveNow(); }
-    updateSaveRow();
+    if (dirty) { dirty = false; const m = pendingMsg; pendingMsg = null; saveNow(m); }
   }
 }
 
 function autoSave() {
-  if (!col || !(source === "ai" || savedId)) return;
+  if (!col || source === "example" || !(source === "ai" || savedId)) return;
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveNow, 1200);
+  saveTimer = setTimeout(() => saveNow(), 1200);
 }
-
-function updateSaveRow() { $("saveRow").hidden = !(col && source === "manual" && !savedId); }
-$("saveBtn").addEventListener("click", () => saveNow());
-
-function renderHist() {
-  const box = $("hist"); box.replaceChildren();
-  $("histEmpty").hidden = histRows.length > 0;
-  $("histActions").hidden = histRows.length === 0;
-  let sLo = 0, sHi = 0, owned = 0;
-  for (const r of histRows) {
-    if (r.deja) { sLo += Number(r.revente_min) || 0; sHi += Number(r.revente_max) || 0; owned++; }
-    const row = document.createElement("div"); row.className = "hist-row";
-    const top = document.createElement("div"); top.className = "hist-top";
-    const pill = document.createElement("span"); pill.className = "pill " + (r.verdict || ""); pill.textContent = r.titre || "—";
-    const date = document.createElement("span"); date.className = "muted small"; date.textContent = new Date(r.ts).toLocaleDateString("fr-FR");
-    top.append(pill, date);
-    const desc = document.createElement("span"); desc.className = "desc";
-    desc.textContent = r.description || (CATALOG.materials[r.material_key] ? CATALOG.materials[r.material_key].label : "Objet non reconnu");
-    const nums = document.createElement("span"); nums.className = "num muted";
-    const prixTxt = r.deja ? "déjà à toi" : r.prix != null ? `payé ${money(r.prix)} €` : "prix inconnu";
-    nums.textContent = `Revente ${rng(Number(r.revente_min) || 0, Number(r.revente_max) || 0, money, " €")} · ${prixTxt}`;
-    const act = document.createElement("div"); act.className = "actions";
-    const see = document.createElement("button"); see.type = "button"; see.textContent = "Revoir";
-    see.addEventListener("click", () => openSaved(r));
-    const del = document.createElement("button"); del.type = "button"; del.textContent = "Supprimer";
-    del.addEventListener("click", async () => {
-      if (del.dataset.armed !== "1") { del.dataset.armed = "1"; del.textContent = "Confirmer la suppression"; return; }
-      del.disabled = true;
-      try {
-        await col.doc(r.id).delete();
-        if (savedId === r.id) { savedId = null; source = "manual"; updateSaveRow(); render(); }
-      } catch (e) { del.disabled = false; $("histStatus").textContent = "Suppression impossible. Réessaie."; }
-    });
-    act.append(see, del);
-    row.append(top, desc, nums, act);
-    box.append(row);
-  }
-  $("histTotal").hidden = owned === 0;
-  $("histTotal").textContent = `Ce que tu as déjà (${owned} objet${owned > 1 ? "s" : ""}) se revend ${rng(sLo, sHi, money, " €")}.`;
-}
-
-function openSaved(r) {
-  const numOr = (x, d) => (Number.isFinite(Number(x)) && x !== null ? Number(x) : d);
-  scan = {
-    description: String(r.description || ""), material_key: String(r.material_key || UNKNOWN), grade: String(r.grade || "mixte_bas"),
-    confiance: numOr(r.confiance, 1),
-    poids_min: numOr(r.poids_min, 0), poids_max: numOr(r.poids_max, 0), poids_pese: r.poids_pese != null ? numOr(r.poids_pese, null) : null,
-    teneur_min: numOr(r.teneur_min, 0), teneur_max: numOr(r.teneur_max, 0), rachat: r.rachat != null ? numOr(r.rachat, null) : null,
-    prix: r.prix != null ? numOr(r.prix, null) : null, deja: !!r.deja, prix_lu: numOr(r.prix_lu, 0),
-    conseils: Array.isArray(r.conseils) ? r.conseils.map(String) : [],
-    suspect: !!r.suspect, raison: String(r.raison || ""), ts: numOr(r.ts, Date.now())
-  };
-  source = "saved"; savedId = r.id;
-  $("thumbs").replaceChildren();
-  $("saveStatus").textContent = "Recalculé avec le cours du jour.";
-  syncInputs(); render();
-  $("verdictCard").scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
-}
-
-$("csvBtn").addEventListener("click", () => {
-  const cols = ["date", "description", "verdict", "poids_min", "poids_max", "poids_pese", "teneur_min", "teneur_max", "prix", "deja", "revente_min", "revente_max", "cours_eur_kg"];
-  const cell = (v) => typeof v === "number" ? String(Math.round(v * 1000) / 1000).replace(".", ",") : `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const lines = [cols.join(";")].concat(histRows.map((r) => cols.map((k) => k === "date" ? new Date(r.ts).toISOString().slice(0, 10) : k === "verdict" ? cell(r.titre) : k === "deja" ? (r.deja ? "oui" : "non") : cell(r[k])).join(";")));
-  navigator.clipboard.writeText(lines.join("\n")).then(
-    () => { $("histStatus").textContent = "CSV copié : colle-le dans un tableur."; },
-    () => { $("histStatus").textContent = "Copie impossible dans cette vue."; }
-  );
-});
 </script>

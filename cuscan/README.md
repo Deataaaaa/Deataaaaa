@@ -51,6 +51,10 @@ Chaque résultat est donné en fourchette (teneur min et max).
 
 Variables d'environnement : `ANTHROPIC_API_KEY`, `CUSCAN_MODEL` (par défaut `claude-opus-5-5`), `CUSCAN_DB`.
 
+## Version web (téléphone)
+
+`web/cuscan.html` est une page autonome publiée comme Artifact claude.ai, utilisable depuis un téléphone. Une photo suffit : Claude identifie l'objet et estime son poids, sa teneur en cuivre et le prix s'il est visible. La page applique le cours du jour, choisit entre vendre en l'état ou dénuder/démonter, puis donne le verdict (« Oui, ça vaut le coup », « Risqué », « Non… ») ou, sans prix connu, le prix maximum à payer. Chaque scan est enregistré dans l'historique privé de l'utilisateur.
+
 ## Tests
 
 ```bash

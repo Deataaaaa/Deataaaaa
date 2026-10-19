@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Layout : une colonne pensée pour le téléphone (max 640px) ; le résultat prend la forme d'un ticket de pesée de ferrailleur. */
+/* Layout : une colonne pensée pour le téléphone (max 640px). Un gros bouton de scan, puis le verdict en grand ; le détail chiffré prend la forme d'un ticket de pesée. */
 :root {
   --bg: #eceff0;
   --surface: #ffffff;
@@ -36,101 +36,122 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 16px; line-height: 1.45;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 20px 48px;
 }
-.wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 h1, h2 { font-family: var(--f-display); font-weight: 700; letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
 h1 { font-size: 2.4rem; line-height: 1; }
 h1 span { color: var(--copper); }
-h2 { font-size: 1.35rem; text-transform: uppercase; letter-spacing: 0.06em; }
+h2 { font-size: 1.3rem; text-transform: uppercase; letter-spacing: 0.06em; }
 p { margin: 0; }
 .muted { color: var(--muted); }
 .small { font-size: 0.875rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
-.price-chip {
-  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
-  font-family: var(--f-mono); font-variant-numeric: tabular-nums;
-}
-.price-chip strong { font-size: 1.25rem; color: var(--copper); }
+.price-chip { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.price-chip strong { font-size: 1.2rem; color: var(--copper); }
 .price-chip small { font-family: var(--f-body); color: var(--muted); font-size: 0.8rem; }
 
 section.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 
 label { display: flex; flex-direction: column; gap: 4px; font-weight: 500; font-size: 0.95rem; min-width: 0; }
 label .hint { font-weight: 400; color: var(--muted); font-size: 0.82rem; }
-input[type="number"], select, input[type="text"] {
+input[type="number"], select {
   font: inherit; font-family: var(--f-mono); font-variant-numeric: tabular-nums;
   width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
   background: var(--bg); color: var(--fg); min-height: 44px;
 }
 select { font-family: var(--f-body); }
-input:focus-visible, select:focus-visible, button:focus-visible, .filebtn:focus-within {
-  outline: 2px solid var(--copper); outline-offset: 2px;
-}
+input:disabled { opacity: 0.5; }
+input:focus-visible, select:focus-visible, button:focus-visible, .filebtn:focus-within, summary:focus-visible { outline: 2px solid var(--copper); outline-offset: 2px; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media (max-width: 380px) { .grid2 { grid-template-columns: 1fr; } }
+@media (max-width: 360px) { .grid2 { grid-template-columns: 1fr; } }
 
 button, .filebtn {
   font: inherit; font-weight: 600; border-radius: 8px; min-height: 44px; padding: 10px 16px;
   border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer;
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px; position: relative;
 }
 button.primary, .filebtn.primary { background: var(--copper); border-color: var(--copper); color: var(--copper-ink); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
+.filebtn { flex-direction: row; }
 .filebtn input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-.filebtn { position: relative; }
+.scan-btn { min-height: 64px; font-family: var(--f-display); font-size: 1.45rem; letter-spacing: 0.05em; text-transform: uppercase; }
+.scan-btn svg { width: 28px; height: 28px; flex: none; }
+.filebtn.quiet { border: none; background: none; color: var(--copper); text-decoration: underline; text-underline-offset: 3px; font-weight: 500; min-height: 40px; padding: 6px 0; align-self: center; }
 .row { display: flex; flex-wrap: wrap; gap: 10px; }
-.row > * { flex: 1 1 140px; }
 
 .thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
-.thumbs img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); }
+.thumbs:empty { display: none; }
+.thumbs img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); }
+.busy-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-weight: 500; }
+.busy-row button { min-height: 36px; padding: 6px 14px; font-size: 0.9rem; margin-left: auto; }
+.pulse { width: 10px; height: 10px; border-radius: 50%; background: var(--copper); animation: pulse 1.2s ease-in-out infinite; flex: none; }
+@keyframes pulse { 0%, 100% { opacity: 0.25; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.1); } }
 
-.ident { border-left: 3px solid var(--copper); padding: 4px 0 4px 12px; display: flex; flex-direction: column; gap: 6px; }
-.alert { border-radius: 8px; padding: 12px; font-size: 0.95rem; }
-.alert.bad { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--fg); border: 1px solid var(--bad); }
-.alert.info { background: var(--copper-soft); color: var(--fg); }
+/* Verdict */
+.verdict-card { --state: var(--muted); background: var(--surface); background: color-mix(in srgb, var(--state) 9%, var(--surface)); border-color: var(--line); border-color: color-mix(in srgb, var(--state) 45%, var(--line)); border-width: 1.5px; transition: opacity 0.2s; scroll-margin-top: 12px; }
+.verdict-card[data-state="good"] { --state: var(--good); }
+.verdict-card[data-state="warn"] { --state: var(--warn); }
+.verdict-card[data-state="bad"] { --state: var(--bad); }
+.verdict-card.busy { opacity: 0.45; }
+.vc-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.eyebrow { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; color: var(--copper); }
+.verdict-title { font-family: var(--f-display); font-weight: 700; font-size: clamp(2rem, 9vw, 2.75rem); line-height: 1.02; color: var(--state); display: flex; align-items: flex-start; gap: 10px; text-wrap: balance; }
+.verdict-title svg { width: 0.85em; height: 0.85em; flex: none; margin-top: 0.08em; }
+.v-reason { font-size: 1.05rem; }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px 16px; padding-block: 12px; border-block: 1px solid var(--line); border-color: color-mix(in srgb, var(--state) 25%, var(--line)); }
+.fig { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fig .k { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.fig .v { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 1.1rem; font-weight: 600; overflow-wrap: anywhere; }
+.fig .v.pos { color: var(--good); }
+.fig .v.neg { color: var(--bad); }
+.v-object { font-size: 0.92rem; color: var(--muted); overflow-wrap: anywhere; }
+.v-note { font-size: 0.92rem; font-weight: 500; color: var(--warn); }
+.check { flex-direction: row; align-items: center; gap: 10px; min-height: 44px; }
+.check input { width: 22px; height: 22px; accent-color: var(--copper); flex: none; }
+
+ul.advice { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+ul.advice li.lead { font-weight: 600; }
+
+details > summary { cursor: pointer; font-weight: 600; min-height: 32px; display: flex; align-items: center; }
+details[open] > summary { margin-bottom: 12px; }
+details + details { border-top: 1px solid var(--line); padding-top: 12px; }
+details .body { display: flex; flex-direction: column; gap: 12px; }
 
 /* Ticket de pesée */
 .ticket {
-  background: var(--ticket); border: 1px solid var(--line); border-radius: 4px; padding: 16px;
-  font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 0.9rem;
+  background: var(--ticket); border: 1px solid var(--line); border-radius: 4px; padding: 20px 16px 16px;
+  font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 0.86rem;
   display: flex; flex-direction: column; gap: 10px;
-  background-image: radial-gradient(circle at 8px 0, var(--bg) 6px, transparent 6.5px);
+  background-image: radial-gradient(circle at 8px 0, var(--surface) 6px, transparent 6.5px);
   background-size: 16px 8px; background-repeat: repeat-x; background-position: 0 -1px;
-  padding-top: 20px;
 }
-.ticket-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.78rem; color: var(--muted); }
+.ticket-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.76rem; color: var(--muted); }
 .ticket dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; }
 .ticket dt, .ticket dd { margin: 0; padding: 5px 0; border-bottom: 1px dashed var(--line); }
 .ticket dt { color: var(--muted); }
-.ticket dd { text-align: right; }
-.ticket dt.big, .ticket dd.big { font-weight: 600; color: var(--fg); font-size: 1rem; }
+.ticket dd { text-align: right; overflow-wrap: anywhere; min-width: 0; max-width: 60vw; }
+.ticket .big { font-weight: 600; color: var(--fg); font-size: 0.95rem; }
 .ticket dd.pos { color: var(--good); }
 .ticket dd.neg { color: var(--bad); }
-.verdict { display: inline-flex; align-self: flex-start; align-items: center; gap: 8px; font-family: var(--f-body); font-weight: 600; font-size: 0.95rem; padding: 6px 12px; border-radius: 999px; border: 1.5px solid currentColor; }
-.verdict::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.verdict.good { color: var(--good); } .verdict.warn { color: var(--warn); } .verdict.bad { color: var(--bad); } .verdict.neutral { color: var(--muted); }
-.example-tag { font-family: var(--f-body); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--copper); }
 
-ul.advice { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
-
-details { border-top: 1px solid var(--line); padding-top: 12px; }
-details summary { cursor: pointer; font-weight: 600; }
-details[open] summary { margin-bottom: 12px; }
-details .body { display: flex; flex-direction: column; gap: 12px; }
-
-.hist { display: flex; flex-direction: column; gap: 0; }
-.hist-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
-.hist-row .what { min-width: 0; }
-.hist-row .what strong { display: block; overflow-wrap: anywhere; }
-.hist-row .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; }
-.hist-row .actions { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: flex-end; }
+/* Historique */
+.hist { display: flex; flex-direction: column; }
+.hist-row { display: flex; flex-direction: column; gap: 4px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.hist-top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: center; }
+.hist-row .desc { overflow-wrap: anywhere; }
+.hist-row .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+.hist-row .actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
 .hist-row .actions button { min-height: 36px; padding: 6px 12px; font-size: 0.85rem; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; border: 1.5px solid currentColor; color: var(--muted); }
+.pill.good { color: var(--good); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); }
 .total { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-weight: 600; }
 .status { min-height: 1.2em; }
 footer { font-size: 0.85rem; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
@@ -142,109 +163,127 @@ footer { font-size: 0.85rem; color: var(--muted); display: flex; flex-direction:
   <header>
     <div>
       <h1>Cu<span>Scan</span></h1>
-      <p class="muted small">Combien de cuivre dans cet objet, et est-ce que ça vaut le coup ?</p>
+      <p class="muted small">Une photo, et tu sais si ça vaut le coup.</p>
     </div>
     <div class="price-chip" aria-live="polite">
       <small>Cours du cuivre</small>
       <strong id="priceMain">12,91 €/kg</strong>
-      <small id="priceSrc">COMEX, 16/10/2026</small>
+      <small id="priceSrc">COMEX, 19/10/2026</small>
     </div>
   </header>
 
-  <section class="card" aria-labelledby="h-photo">
-    <h2 id="h-photo">Photo</h2>
-    <div class="row">
-      <label class="filebtn primary" for="camInput">Prendre une photo
-        <input id="camInput" type="file" accept="image/*" capture="environment">
-      </label>
-      <label class="filebtn" for="galInput">Choisir des photos
-        <input id="galInput" type="file" accept="image/*" multiple>
-      </label>
-    </div>
+  <section class="card" aria-labelledby="h-scan">
+    <h2 id="h-scan" class="sr-only">Scanner un objet</h2>
+    <label class="filebtn primary scan-btn" for="camInput">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+      Scanner un objet
+      <input id="camInput" type="file" accept="image/*" capture="environment">
+    </label>
+    <label class="filebtn quiet" for="galInput">ou choisir des photos dans la galerie
+      <input id="galInput" type="file" accept="image/*" multiple>
+    </label>
     <div class="thumbs" id="thumbs"></div>
-    <div class="row" id="identRow" hidden>
-      <button id="identBtn" class="primary">Identifier l'objet</button>
-      <button id="clearBtn">Effacer les photos</button>
+    <div class="busy-row" id="busyRow" hidden>
+      <span class="pulse" aria-hidden="true"></span>
+      <span id="busyText">Claude analyse la photo…</span>
+      <button id="stopBtn" type="button">Arrêter</button>
     </div>
-    <p class="muted small status" id="identStatus">Prends l'objet en photo : Claude propose une catégorie, une teneur et un poids approximatif. Tu peux aussi remplir la fiche à la main.</p>
-    <div class="ident" id="identBox" hidden>
-      <p><strong id="identDesc"></strong> <span class="muted small" id="identConf"></span></p>
-      <p class="small" id="identTips"></p>
-    </div>
-    <div class="alert bad" id="suspectBox" hidden></div>
+    <p class="muted small status" id="scanStatus" aria-live="polite">Prends l'objet en photo : CuScan l'identifie, estime son poids et son cuivre, applique le cours du jour et te dit si ça vaut le coup. Chaque analyse utilise ton compte Claude.</p>
   </section>
 
-  <section class="card" aria-labelledby="h-obj">
-    <h2 id="h-obj">Objet</h2>
-    <label for="cat">Catégorie
-      <select id="cat"></select>
-    </label>
-    <p class="muted small" id="catNote"></p>
+  <section class="card verdict-card" id="verdictCard" data-state="good" aria-labelledby="vTitleText">
+    <div class="vc-head">
+      <span class="eyebrow" id="vEyebrow">Exemple</span>
+      <span class="muted small" id="vDate"></span>
+    </div>
+    <p class="verdict-title" aria-live="polite"><span id="vIcon"></span><span id="vTitleText">Oui, ça vaut le coup</span></p>
+    <p class="v-reason" id="vReason"></p>
+    <div class="figs" id="figs"></div>
+    <p class="v-object" id="vObject"></p>
+    <p class="v-note" id="vNote" hidden></p>
     <div class="grid2">
-      <label for="poids">Poids pesé (kg)
-        <input id="poids" type="number" inputmode="decimal" min="0" step="0.1" value="10">
+      <label for="poidsPese">Poids pesé (kg) <span class="hint" id="poidsHint">vide = estimé sur la photo</span>
+        <input id="poidsPese" type="number" inputmode="decimal" min="0" step="0.1" placeholder="estimé">
       </label>
-      <label for="achat">Prix d'achat (€) <span class="hint">0 si gratuit</span>
-        <input id="achat" type="number" inputmode="decimal" min="0" step="1" value="20">
-      </label>
-      <label for="tmin">Teneur cuivre min (%)
-        <input id="tmin" type="number" inputmode="decimal" min="0" max="100" step="1">
-      </label>
-      <label for="tmax">Teneur cuivre max (%)
-        <input id="tmax" type="number" inputmode="decimal" min="0" max="100" step="1">
+      <label for="prix">Prix demandé (€) <span class="hint" id="prixHint">vide = inconnu</span>
+        <input id="prix" type="number" inputmode="decimal" min="0" step="1" placeholder="inconnu">
       </label>
     </div>
-    <label for="rachat"><span id="rachatLabel">Rachat ferrailleur (% du cours)</span>
-      <input id="rachat" type="number" inputmode="decimal" min="0" max="100" step="1">
-    </label>
-    <p class="muted small" id="aiHint" hidden></p>
-  </section>
-
-  <section class="card" aria-labelledby="h-res">
-    <h2 id="h-res">Estimation</h2>
-    <div class="ticket" id="ticket"></div>
-    <div class="row">
-      <button id="saveBtn" class="primary">Enregistrer dans mon stock</button>
-    </div>
+    <label class="check" for="deja"><input id="deja" type="checkbox"> Je l'ai déjà (il ne me coûte rien)</label>
+    <div class="row" id="saveRow" hidden><button id="saveBtn" type="button">Enregistrer dans mes scans</button></div>
     <p class="muted small status" id="saveStatus"></p>
   </section>
 
   <section class="card" aria-labelledby="h-adv">
-    <h2 id="h-adv">Pour revendre vite</h2>
+    <h2 id="h-adv">Pour le revendre vite</h2>
     <ul class="advice" id="advice"></ul>
   </section>
 
+  <section class="card">
+    <details id="corrDetails">
+      <summary>Corriger l'estimation</summary>
+      <div class="body">
+        <label for="cat">Catégorie
+          <select id="cat"></select>
+        </label>
+        <label for="gradeSel" id="gradeWrap" hidden>Grade de revente
+          <select id="gradeSel"></select>
+        </label>
+        <div class="grid2">
+          <label for="tmin">Teneur cuivre min (%)
+            <input id="tmin" type="number" inputmode="decimal" min="0" max="100" step="1">
+          </label>
+          <label for="tmax">Teneur cuivre max (%)
+            <input id="tmax" type="number" inputmode="decimal" min="0" max="100" step="1">
+          </label>
+        </div>
+        <label for="rachat"><span id="rachatLabel">Rachat ferrailleur (% du cours)</span>
+          <input id="rachat" type="number" inputmode="decimal" min="0" max="100" step="1">
+        </label>
+      </div>
+    </details>
+    <details>
+      <summary>Détail du calcul</summary>
+      <div class="ticket" id="ticket"></div>
+    </details>
+  </section>
+
   <section class="card" aria-labelledby="h-hist">
-    <h2 id="h-hist">Mon stock</h2>
-    <p class="muted small" id="histEmpty">Tes estimations enregistrées s'afficheront ici, avec la valeur totale de ton stock. Elles sont privées : toi seul les vois.</p>
-    <div class="hist" id="hist"></div>
+    <h2 id="h-hist">Mes scans</h2>
+    <p class="muted small" id="histEmpty">Chaque analyse s'enregistre ici automatiquement. Tes scans sont privés : toi seul les vois.</p>
     <p class="total" id="histTotal" hidden></p>
-    <div class="row" id="histActions" hidden>
-      <button id="csvBtn">Copier en CSV</button>
-    </div>
+    <div class="hist" id="hist"></div>
+    <div class="row" id="histActions" hidden><button id="csvBtn" type="button">Copier en CSV</button></div>
     <p class="muted small status" id="histStatus"></p>
   </section>
 
-  <section class="card" aria-labelledby="h-set">
-    <h2 id="h-set">Réglages</h2>
-    <div class="grid2">
-      <label for="coursManuel">Cours à la main (€/kg) <span class="hint">vide = cours publié</span>
-        <input id="coursManuel" type="number" inputmode="decimal" min="0" step="0.1" placeholder="12,91">
-      </label>
-      <label for="fraisFixes">Frais fixes (€) <span class="hint">transport, essence</span>
-        <input id="fraisFixes" type="number" inputmode="decimal" min="0" step="1" value="0">
-      </label>
-      <label for="fraisPct">Frais (% de la valeur) <span class="hint">commission, décote</span>
-        <input id="fraisPct" type="number" inputmode="decimal" min="0" max="90" step="1" value="0">
-      </label>
-      <label for="tauxH">Ton heure de travail (€/h) <span class="hint">pour dénuder ou démonter</span>
-        <input id="tauxH" type="number" inputmode="decimal" min="0" step="1" value="15">
-      </label>
-    </div>
+  <section class="card">
+    <details>
+      <summary>Réglages</summary>
+      <div class="body">
+        <div class="grid2">
+          <label for="gainMin">Gain minimum (€) <span class="hint">en dessous, ça ne vaut pas le coup</span>
+            <input id="gainMin" type="number" inputmode="decimal" min="0" step="1" value="10">
+          </label>
+          <label for="coursManuel">Cours à la main (€/kg) <span class="hint">vide = cours publié</span>
+            <input id="coursManuel" type="number" inputmode="decimal" min="0" step="0.1" placeholder="12,91">
+          </label>
+          <label for="fraisFixes">Frais fixes (€) <span class="hint">transport, essence</span>
+            <input id="fraisFixes" type="number" inputmode="decimal" min="0" step="1" value="0">
+          </label>
+          <label for="fraisPct">Frais (% de la valeur) <span class="hint">commission, décote</span>
+            <input id="fraisPct" type="number" inputmode="decimal" min="0" max="90" step="1" value="0">
+          </label>
+          <label for="tauxH">Ton heure de travail (€/h) <span class="hint">pour dénuder ou démonter</span>
+            <input id="tauxH" type="number" inputmode="decimal" min="0" step="1" value="15">
+          </label>
+        </div>
+      </div>
+    </details>
   </section>
 
   <footer>
-    <p>Toutes les valeurs sont indicatives. Teneurs et taux de rachat sont des moyennes à recaler avec tes tickets de ferrailleur.</p>
+    <p>Toutes les valeurs sont indicatives : le poids estimé sur photo est la principale source d'erreur. Pèse l'objet pour un verdict fiable.</p>
     <p>En France, le paiement des métaux en espèces est interdit et le ferrailleur relève ta pièce d'identité. Le recel de métaux volés est un délit.</p>
   </footer>
 </div>
@@ -262,12 +301,12 @@ const CATALOG = {
   materials: {
     fil_cuivre_nu: { label: "Fil de cuivre nu (déjà dénudé)", min: 0.98, max: 1.0, grade: "cuivre_nu_brillant", notes: "Le grade le mieux payé. Il doit être propre, brillant, sans vernis, étain ni soudure." },
     tuyau_cuivre: { label: "Tuyau de cuivre (plomberie, chauffage)", min: 0.94, max: 0.99, grade: "cuivre_mele", notes: "Coupe les raccords en laiton et retire la soudure et l'isolant pour rester en cuivre mêlé." },
-    cable_domestique: { label: "Câble électrique domestique (1,5 à 6 mm²)", min: 0.35, max: 0.6, grade: "cable_isole", notes: "La teneur dépend de la section et de l'épaisseur de la gaine.", val: { action: "Dénuder", grade: "cuivre_nu_brillant", kgh: 4 } },
-    cable_gros: { label: "Gros câble d'alimentation (16 mm² et plus)", min: 0.55, max: 0.8, grade: "cable_isole", notes: "Vérifie que l'âme est en cuivre et pas en aluminium (argentée, plus légère).", val: { action: "Dénuder au couteau à câble", grade: "cuivre_nu_brillant", kgh: 10 } },
+    cable_domestique: { label: "Câble électrique domestique (1,5 à 6 mm²)", min: 0.35, max: 0.6, grade: "cable_isole", notes: "La teneur dépend de la section et de l'épaisseur de la gaine.", val: { faire: "Dénude-le", inf: "le dénuder", apres: "une fois dénudé", grade: "cuivre_nu_brillant", kgh: 4 } },
+    cable_gros: { label: "Gros câble d'alimentation (16 mm² et plus)", min: 0.55, max: 0.8, grade: "cable_isole", notes: "Vérifie que l'âme est en cuivre et pas en aluminium (argentée, plus légère).", val: { faire: "Dénude-le au couteau à câble", inf: "le dénuder", apres: "une fois dénudé", grade: "cuivre_nu_brillant", kgh: 10 } },
     cable_fin: { label: "Câble fin (réseau, USB, rallonges)", min: 0.1, max: 0.35, grade: "cable_isole", notes: "Trop fin pour être dénudé de façon rentable : vends-le tel quel." },
-    moteur_electrique: { label: "Moteur électrique (électroménager, outillage)", min: 0.08, max: 0.2, grade: "mixte_bas", notes: "Certains moteurs bon marché ont des bobinages en aluminium.", val: { action: "Démonter et extraire le bobinage", grade: "cuivre_mele", kgh: 6 } },
+    moteur_electrique: { label: "Moteur électrique (électroménager, outillage)", min: 0.08, max: 0.2, grade: "mixte_bas", notes: "Certains moteurs bon marché ont des bobinages en aluminium.", val: { faire: "Démonte-le et extrais le bobinage", inf: "extraire le bobinage", apres: "une fois le bobinage extrait", grade: "cuivre_mele", kgh: 6 } },
     demarreur_alternateur: { label: "Démarreur ou alternateur auto", min: 0.08, max: 0.2, grade: "mixte_bas", notes: "Souvent racheté au kilo comme lot dédié chez les ferrailleurs." },
-    transformateur: { label: "Transformateur (micro-ondes, alimentation)", min: 0.1, max: 0.3, grade: "mixte_bas", notes: "Vérifie que les bobinages sont en cuivre (rouge) et pas en aluminium.", val: { action: "Découper les tôles et extraire le bobinage", grade: "cuivre_mele", kgh: 5 } },
+    transformateur: { label: "Transformateur (micro-ondes, alimentation)", min: 0.1, max: 0.3, grade: "mixte_bas", notes: "Vérifie que les bobinages sont en cuivre (rouge) et pas en aluminium.", val: { faire: "Découpe les tôles et extrais le bobinage", inf: "extraire le bobinage", apres: "une fois le bobinage extrait", grade: "cuivre_mele", kgh: 5 } },
     compresseur: { label: "Compresseur (frigo, clim)", min: 0.05, max: 0.12, grade: "mixte_bas", notes: "Le fluide frigorigène doit être récupéré par un professionnel. Ne le dégaze jamais toi-même." },
     radiateur_auto: { label: "Radiateur auto cuivre/laiton", min: 0.45, max: 0.65, grade: "radiateur", notes: "Les radiateurs récents sont souvent en aluminium et plastique : sans intérêt pour le cuivre." },
     echangeur_clim: { label: "Échangeur de clim cuivre/alu", min: 0.3, max: 0.5, grade: "radiateur", notes: "Retire le cadre en acier pour éviter la décote." },
@@ -276,359 +315,573 @@ const CATALOG = {
     unite_centrale: { label: "Unité centrale ou petit électroménager entier", min: 0.02, max: 0.06, grade: "mixte_bas", notes: "Peu de cuivre au kilo : rentable seulement après démontage (câbles, alimentation, ventilateurs)." }
   }
 };
+const UNKNOWN = "inconnu";
 
-// Cours publié au moment de la mise en ligne ; remplacé par celui de la base s'il est disponible.
-let quote = { eur_per_kg: 12.91, usd_per_lb: 6.59, usd_eur: 0.8887, source: "COMEX HG=F + BCE", date: "2026-10-16" };
+// Cours publié au moment de la mise en ligne ; remplacé par celui de la base de la page dès qu'elle répond.
+let quote = { eur_per_kg: 12.91, source: "COMEX HG=F + BCE", date: "2026-10-19" };
+
+const EXAMPLE = {
+  description: "Rouleau de câble électrique R2V 3G2,5 mm², environ 50 m (exemple)",
+  material_key: "cable_domestique", grade: "cable_isole", confiance: 0.8,
+  poids_min: 6, poids_max: 7, poids_pese: null, teneur_min: 0.45, teneur_max: 0.55, rachat: null,
+  prix: 15, deja: false, prix_lu: 0,
+  conseils: [
+    "Un rouleau de 3G2,5 se revend bien entier : inutile de le couper si tu le vends en l'état.",
+    "Sépare les chutes de gaine et les étiquettes : le ferrailleur décote un lot mélangé."
+  ],
+  suspect: false, raison: "", ts: Date.now()
+};
+
+const ICONS = {
+  good: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.2 3.2L17 9"/></svg>',
+  warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9.5 17h-19z"/><path d="M12 10v4.5M12 17.5v.01"/></svg>',
+  bad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg>',
+  pending: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/></svg>'
+};
 
 const $ = (id) => document.getElementById(id);
-const nf2 = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const nf0 = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
-const eur = (x) => nf2.format(x) + " €";
-const signed = (x) => (x > 0 ? "+" : "") + nf2.format(x) + " €";
-const pct = (x) => nf0.format(x * 100) + " %";
+const nf1 = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 });
+const nf2 = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money = (x) => (Math.abs(x) < 10 ? nf1.format(x) : nf0.format(x));
+const signedMoney = (x) => (x > 0 ? "+" : "") + money(x);
+const kgFmt = (x) => (x < 1 ? nf2.format(x) : nf1.format(x));
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const frDate = (iso) => { const [y, m, d] = String(iso).slice(0, 10).split("-"); return d && m && y ? `${d}/${m}/${y}` : String(iso); };
-const num = (el, fallback = 0) => { const v = parseFloat(String(el.value).replace(",", ".")); return Number.isFinite(v) ? v : fallback; };
-
+function rng(a, b, fmt, unit) {
+  const lo = Math.min(a, b), hi = Math.max(a, b);
+  const A = fmt(lo), B = fmt(hi);
+  return (A === B ? A : `${A} – ${B}`) + unit;
+}
+function num(el, fallback = 0) { const v = parseFloat(String(el.value).replace(",", ".")); return Number.isFinite(v) ? v : fallback; }
 function store(key, value) { try { localStorage.setItem("cuscan:" + key, value); } catch (e) {} }
 function load(key) { try { return localStorage.getItem("cuscan:" + key); } catch (e) { return null; } }
+const reducedMotion = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// ---- Calculs (mêmes formules que cuscan/calc.py) ----
-function point(poids, cu, prix, rachat, achat, c) {
-  const masse = poids * cu;
-  const brute = masse * prix * rachat;
-  const frais = c.fixes + brute * c.pct;
-  const nette = brute - frais;
-  return { cu, masse, brute, frais, nette, marge: nette - achat, ratio: achat > 0 ? nette / achat : null };
-}
-function seuil(poids, cu, rachat, achat, c) {
-  const d = poids * cu * rachat * (1 - c.pct);
-  return d > 0 ? (achat + c.fixes) / d : null;
-}
-function estimate(poids, lo, hi, prix, rachat, achat, c) {
+// ---- État ----
+let scan = { ...EXAMPLE };
+let source = "example"; // example | ai | manual | saved
+let savedId = null;
+let col = null, histRows = [], saving = false, dirty = false, saveTimer = null;
+
+function settings() {
   return {
-    low: point(poids, lo, prix, rachat, achat, c),
-    high: point(poids, hi, prix, rachat, achat, c),
-    seuilMin: seuil(poids, hi, rachat, achat, c),
-    seuilMax: seuil(poids, lo, rachat, achat, c)
+    fraisFixes: Math.max(0, num($("fraisFixes"))),
+    fraisPct: Math.min(0.9, Math.max(0, num($("fraisPct")) / 100)),
+    tauxH: Math.max(0, num($("tauxH"), 15)),
+    gainMin: Math.max(0, num($("gainMin"), 10))
   };
 }
-function upgrade(poids, lo, hi, prix, rAvant, rApres, kgh, tauxH, c) {
-  const delta = (rApres - rAvant) * prix * (1 - c.pct);
-  const heures = poids / kgh;
-  const cout = heures * tauxH;
-  return { heures, netLow: poids * lo * delta - cout, netHigh: poids * hi * delta - cout };
+function currentPrice() {
+  const manual = num($("coursManuel"), NaN);
+  return Number.isFinite(manual) && manual > 0
+    ? { value: manual, label: "saisi à la main" }
+    : { value: quote.eur_per_kg, label: `COMEX, ${frDate(quote.date)}` };
+}
+function gradeOf(s) {
+  const mat = CATALOG.materials[s.material_key];
+  if (mat) return mat.grade;
+  return CATALOG.grades[s.grade] ? s.grade : "mixte_bas";
 }
 
-// ---- Conseils (mêmes règles que cuscan/advice.py) ----
-function advise(mat, grade, est, achat, upg, upgGrade) {
+// ---- Calcul ----
+// Mêmes formules que cuscan/calc.py, étendues aux fourchettes de poids et à la meilleure façon de revendre.
+function compute(s, cfg, cours) {
+  const mat = CATALOG.materials[s.material_key] || null;
+  const gKey = gradeOf(s), grade = CATALOG.grades[gKey];
+  const rachat = s.rachat != null ? s.rachat : grade.rachat_pct;
+  const weighed = s.poids_pese != null && s.poids_pese > 0;
+  const pLo = weighed ? s.poids_pese : Math.min(s.poids_min, s.poids_max);
+  const pHi = weighed ? s.poids_pese : Math.max(s.poids_min, s.poids_max);
+  const tLo = Math.min(s.teneur_min, s.teneur_max), tHi = Math.max(s.teneur_min, s.teneur_max);
+  const mLo = pLo * tLo, mHi = pHi * tHi;
+  const strat = (r, kgh) => {
+    const hLo = kgh ? pLo / kgh : 0, hHi = kgh ? pHi / kgh : 0;
+    const bruteLo = mLo * cours * r, bruteHi = mHi * cours * r;
+    const fraisLo = cfg.fraisFixes + bruteLo * cfg.fraisPct, fraisHi = cfg.fraisFixes + bruteHi * cfg.fraisPct;
+    const tempsLo = hLo * cfg.tauxH, tempsHi = hHi * cfg.tauxH;
+    const a = bruteLo - fraisLo - tempsLo, b = bruteHi - fraisHi - tempsHi;
+    return { r, hLo, hHi, bruteLo, bruteHi, fraisLo, fraisHi, tempsLo, tempsHi, lo: Math.min(a, b), hi: Math.max(a, b), mid: (a + b) / 2 };
+  };
+  const asIs = { key: "asis", grade, ...strat(rachat, 0) };
+  let up = null, best = asIs;
+  if (mat && mat.val) {
+    up = { key: "up", grade: CATALOG.grades[mat.val.grade], val: mat.val, ...strat(CATALOG.grades[mat.val.grade].rachat_pct, mat.val.kgh) };
+    if (up.mid > asIs.mid) best = up;
+  }
+  const P = s.deja ? 0 : (s.prix != null && s.prix >= 0 ? s.prix : null);
+  return { mat, gKey, grade, rachat, weighed, pLo, pHi, tLo, tHi, mLo, mHi, asIs, up, best, P, cours, cfg };
+}
+
+function verdict(s, c) {
+  const G = c.cfg.gainMin;
+  const { lo, hi } = c.best;
+  const maxSafe = Math.floor(lo - G), maxRisky = Math.floor(hi - G);
+  const rev = rng(lo, hi, money, " €");
+  const base = `Il se revend ${rev}${c.best.key === "up" ? " " + c.best.val.apres : ""}`;
+
+  if (s.suspect) return { state: "bad", title: "Non : provenance douteuse", reason: `${s.raison || "Cet objet ressemble à du matériel de réseau public ou d'entreprise."} Ne l'achète pas et ne le revends pas sans preuve d'origine.` };
+  if (!(c.pHi > 0)) return { state: "pending", title: "Pèse l'objet", reason: "Le poids n'a pas pu être estimé sur la photo. Indique le poids pesé pour avoir le verdict." };
+  if (!(c.tHi > 0)) return { state: "bad", title: "Non : pas de cuivre", reason: "Aucun cuivre récupérable n'est visible sur cet objet." };
+
+  if (c.P === null) {
+    if (maxSafe >= 1) return { state: "good", title: "Oui, ça vaut le coup", reason: `${base}. Pour gagner au moins ${money(G)} €, ne le paie pas plus de ${money(maxSafe)} €.` };
+    if (maxRisky >= 1) return { state: "warn", title: "Seulement à petit prix", reason: `${base}. Ne le paie pas plus de ${money(maxRisky)} €, et seulement si la teneur est bonne : sinon tu gagnes moins de ${money(G)} €.` };
+    if (hi >= G) return { state: "warn", title: "Seulement gratuit", reason: `${base}. Ça vaut le coup seulement si on te le donne.` };
+    return { state: "bad", title: "Non, ça ne vaut pas le coup", reason: `${base}, moins que tes ${money(G)} € de gain minimum. Garde-le pour un lot avec d'autres objets.` };
+  }
+  if (c.P === 0) {
+    if (lo >= G) return { state: "good", title: "Oui, ça vaut le coup", reason: `${base}, et il ne te coûte rien.` };
+    if (hi >= G) return { state: "warn", title: "Ça se tente", reason: `${base} : plus de ${money(G)} € seulement si la teneur est bonne. Pèse-le ou ajoute-le à un lot.` };
+    return { state: "bad", title: "Pas tout seul", reason: `${base} seulement. Garde-le pour un prochain lot plutôt que de faire le trajet pour lui.` };
+  }
+  const P = c.P, mLo = lo - P, mHi = hi - P;
+  const cost = `${base} et coûte ${money(P)} €`;
+  if (mLo >= G) return { state: "good", title: "Oui, ça vaut le coup", reason: `${cost} : tu gagnes ${rng(mLo, mHi, money, " €")}.` };
+  if (mHi >= G) {
+    const nego = maxSafe >= 1 ? ` Négocie à ${money(maxSafe)} € maximum.` : " Pèse-le avant d'acheter.";
+    const r = mLo < 0
+      ? `${cost} : tu peux gagner jusqu'à ${money(mHi)} €, mais aussi perdre ${money(-mLo)} €.`
+      : `${cost} : tu gagnes ${rng(mLo, mHi, money, " €")}, moins de ${money(G)} € si la teneur est basse.`;
+    return { state: "warn", title: "Risqué", reason: r + nego };
+  }
+  const hint = maxSafe >= 1 ? ` À ${money(maxSafe)} € maximum, ça vaudrait le coup.` : maxRisky >= 1 ? ` À ${money(maxRisky)} € maximum, ça se tenterait.` : "";
+  const r = mHi < 0
+    ? `${cost} : tu perds ${rng(-mHi, -mLo, money, " €")}.`
+    : `${cost} : tu gagnerais au mieux ${money(mHi)} €, moins que tes ${money(G)} € de gain minimum.`;
+  return { state: "bad", title: "Non, ça ne vaut pas le coup", reason: r + hint };
+}
+
+function advice(s, c) {
   const out = [];
-  if (achat > 0) {
-    if (est.high.marge < 0) out.push("À ce prix, l'achat est perdant même avec la teneur la plus haute. Négocie ou passe ton tour.");
-    else if (est.low.marge < 0) out.push("L'achat n'est rentable que si la teneur est dans le haut de la fourchette. Pèse ou démonte un échantillon avant d'en acheter beaucoup.");
-    else out.push("L'achat est rentable sur toute la fourchette de teneur estimée.");
-  }
-  if (est.high.nette <= 0) out.push("Les frais dépassent la valeur du cuivre : regroupe ce lot avec d'autres avant de te déplacer.");
-  if (upg && upgGrade) {
-    const a = mat.val.action, h = nf2.format(upg.heures);
-    if (upg.netLow > 0) out.push(`${a} rapporte environ ${eur(upg.netLow)} à ${eur(upg.netHigh)} de plus pour ${h} h de travail (passage en « ${upgGrade.label} »). Ça vaut le coup.`);
-    else if (upg.netHigh > 0) out.push(`${a} n'est rentable que si la teneur est haute (${eur(upg.netLow)} à ${eur(upg.netHigh)} pour ${h} h). Pour vendre vite, vends en l'état.`);
-    else out.push(`${a} ne compense pas le temps passé (${h} h) : vends en l'état en « ${grade.label} », c'est le plus rapide.`);
+  if (s.suspect) out.push({ lead: true, text: "Ne transporte pas et ne revends pas cet objet sans facture ou preuve d'origine." });
+  if (c.up) {
+    const u = c.up, g0 = u.lo - c.asIs.lo, g1 = u.hi - c.asIs.hi;
+    const gLo = Math.min(g0, g1), gHi = Math.max(g0, g1);
+    const hours = rng(u.hLo, u.hHi, nf1.format, " h");
+    if (c.best.key === "up" && gLo > 0) out.push({ lead: true, text: `${u.val.faire} avant de vendre : ${rng(gLo, gHi, money, " €")} de plus pour ${hours} de travail, en comptant ton heure à ${money(c.cfg.tauxH)} €. Ça vaut le coup.` });
+    else if (gHi > 0) out.push({ lead: true, text: `${cap(u.val.inf)} ne rapporte que si la teneur est bonne (${rng(gLo, gHi, signedMoney, " €")} pour ${hours}). Pour aller vite, vends-le en l'état en « ${c.grade.label} ».` });
+    else out.push({ lead: true, text: `Vends-le en l'état en « ${c.grade.label} » : ${u.val.inf} ne compense pas les ${hours} de travail.` });
   } else {
-    out.push(`Vends directement en « ${grade.label} », c'est le plus rapide.`);
+    out.push({ lead: true, text: `Vends-le en l'état en « ${c.grade.label} », c'est le plus rapide.` });
   }
-  if (mat.notes) out.push(mat.notes);
-  out.push("Pèse sur une balance fiable avant de partir et garde le ticket de pesée du ferrailleur pour comparer.");
-  out.push("Appelle 2 ou 3 ferrailleurs avant de te déplacer : le prix au kilo d'un même grade varie beaucoup d'un site à l'autre.");
-  out.push("Un lot trié et propre (sans fer, plastique ni terre) est classé dans un meilleur grade.");
+  for (const t of s.conseils || []) out.push({ text: t });
+  if (c.mat && c.mat.notes) out.push({ text: c.mat.notes });
+  if (!c.weighed) out.push({ text: "Pèse-le avant de partir : le poids estimé sur photo est la principale source d'erreur." });
+  out.push({ text: "Appelle 2 ou 3 ferrailleurs avant de te déplacer : le prix au kilo d'un même grade varie beaucoup d'un site à l'autre." });
+  out.push({ text: "Prends ta pièce d'identité : le ferrailleur la relève et paie par virement ou chèque, jamais en espèces." });
   return out;
 }
 
-// ---- Interface ----
-const catSel = $("cat");
-for (const [k, m] of Object.entries(CATALOG.materials)) {
-  const o = document.createElement("option"); o.value = k; o.textContent = m.label; catSel.append(o);
-}
-let isExample = true;
-let ident = null;
+// ---- Affichage ----
+const catSel = $("cat"), gradeSel = $("gradeSel");
+for (const [k, m] of Object.entries(CATALOG.materials)) { const o = document.createElement("option"); o.value = k; o.textContent = m.label; catSel.append(o); }
+{ const o = document.createElement("option"); o.value = UNKNOWN; o.textContent = "Autre / non reconnu"; catSel.append(o); }
+for (const [k, g] of Object.entries(CATALOG.grades)) { const o = document.createElement("option"); o.value = k; o.textContent = g.label; gradeSel.append(o); }
 
-function applyCategory(key, keepRachat = false) {
-  const m = CATALOG.materials[key];
-  catSel.value = key;
-  $("tmin").value = Math.round(m.min * 100);
-  $("tmax").value = Math.round(m.max * 100);
-  const g = CATALOG.grades[m.grade];
-  $("rachatLabel").textContent = `Rachat ferrailleur pour « ${g.label} » (% du cours)`;
-  if (!keepRachat) $("rachat").value = Math.round(g.rachat_pct * 100);
-  $("catNote").textContent = m.notes;
-  $("aiHint").hidden = !(ident && ident.material_key === key);
-}
-
-function currentPrice() {
-  const manual = num($("coursManuel"), NaN);
-  return Number.isFinite(manual) && manual > 0 ? { value: manual, label: "saisi à la main" } : { value: quote.eur_per_kg, label: `COMEX, ${frDate(quote.date)}` };
+function syncInputs() {
+  catSel.value = CATALOG.materials[scan.material_key] ? scan.material_key : UNKNOWN;
+  gradeSel.value = gradeOf(scan);
+  $("gradeWrap").hidden = catSel.value !== UNKNOWN;
+  $("tmin").value = Math.round(scan.teneur_min * 100);
+  $("tmax").value = Math.round(scan.teneur_max * 100);
+  $("rachat").value = Math.round((scan.rachat != null ? scan.rachat : CATALOG.grades[gradeOf(scan)].rachat_pct) * 100);
+  $("poidsPese").value = scan.poids_pese != null ? scan.poids_pese : "";
+  $("prix").value = scan.prix != null ? scan.prix : "";
+  $("deja").checked = !!scan.deja;
+  $("prix").disabled = !!scan.deja;
 }
 
-let last = null;
-function recompute() {
-  const key = catSel.value, mat = CATALOG.materials[key], grade = CATALOG.grades[mat.grade];
-  const poids = Math.max(0, num($("poids")));
-  const achat = Math.max(0, num($("achat")));
-  let lo = Math.min(100, Math.max(0, num($("tmin")))) / 100;
-  let hi = Math.min(100, Math.max(0, num($("tmax")))) / 100;
-  if (lo > hi) [lo, hi] = [hi, lo];
-  const rachat = Math.min(100, Math.max(0, num($("rachat")))) / 100;
-  const c = { fixes: Math.max(0, num($("fraisFixes"))), pct: Math.min(0.9, Math.max(0, num($("fraisPct")) / 100)) };
-  const price = currentPrice();
-
+function render() {
+  const cfg = settings(), price = currentPrice();
   $("priceMain").textContent = nf2.format(price.value) + " €/kg";
   $("priceSrc").textContent = price.label;
 
-  const est = estimate(poids, lo, hi, price.value, rachat, achat, c);
-  let upg = null, upgGrade = null;
-  if (mat.val) {
-    upgGrade = CATALOG.grades[mat.val.grade];
-    upg = upgrade(poids, lo, hi, price.value, rachat, upgGrade.rachat_pct, mat.val.kgh, Math.max(0, num($("tauxH"))), c);
-  }
-  last = { key, mat, poids, achat, lo, hi, rachat, price, est };
+  const c = compute(scan, cfg, price.value);
+  const v = verdict(scan, c);
 
-  let verdict;
-  if (achat <= 0) verdict = ["neutral", "Objet gratuit : tout est bénéfice"];
-  else if (est.low.marge >= 0) verdict = ["good", "Rentable"];
-  else if (est.high.marge >= 0) verdict = ["warn", "Rentable si la teneur est haute"];
-  else verdict = ["bad", "Perdant à ce prix"];
+  const card = $("verdictCard");
+  card.dataset.state = v.state;
+  $("vIcon").innerHTML = ICONS[v.state];
+  $("vTitleText").textContent = v.title;
+  $("vReason").textContent = v.reason;
+  $("vEyebrow").textContent = { example: "Exemple, scanne ton objet", ai: "Analyse de ta photo", manual: "Saisie à la main", saved: "Scan enregistré" }[source];
+  $("vDate").textContent = source === "example" ? "" : new Date(scan.ts).toLocaleDateString("fr-FR");
 
-  const range = (a, b, f) => (Math.abs(a - b) < 0.005 ? f(a) : `${f(a)} – ${f(b)}`);
-  const rows = [
-    ["Objet", mat.label],
-    ["Poids brut", nf2.format(poids) + " kg"],
-    ["Teneur cuivre", lo === hi ? pct(lo) : `${nf0.format(lo * 100)} – ${pct(hi)}`],
-    ["Cuivre contenu", range(est.low.masse, est.high.masse, (x) => nf2.format(x) + " kg")],
-    ["Cours", `${nf2.format(price.value)} €/kg`],
-    ["Rachat", pct(rachat)],
-    ["Valeur brute", range(est.low.brute, est.high.brute, eur)],
-    ["Frais", range(est.low.frais, est.high.frais, eur)],
-    ["Valeur nette", range(est.low.nette, est.high.nette, eur), "big"]
+  const figs = [
+    [c.weighed ? "Poids pesé" : "Poids estimé", c.pHi > 0 ? rng(c.pLo, c.pHi, kgFmt, " kg") : "?"],
+    ["Cuivre", c.pHi > 0 ? rng(c.mLo, c.mHi, kgFmt, " kg") : "?"],
+    [c.best.key === "up" ? "Revente (" + c.best.val.apres + ")" : "Revente", c.pHi > 0 ? rng(c.best.lo, c.best.hi, money, " €") : "?"]
   ];
-  if (achat > 0) {
-    const mcls = est.low.marge >= 0 ? "pos" : est.high.marge < 0 ? "neg" : "";
-    rows.push(["Prix d'achat", eur(achat)]);
-    rows.push(["Marge", range(est.low.marge, est.high.marge, signed), "big " + mcls]);
-    rows.push(["Ratio valeur / achat", range(est.low.ratio, est.high.ratio, (x) => nf2.format(x))]);
-    if (est.seuilMin !== null) rows.push(["Cours seuil", range(est.seuilMin, est.seuilMax, (x) => nf2.format(x)) + " €/kg"]);
+  if (c.P > 0) {
+    const a = c.best.lo - c.P, b = c.best.hi - c.P;
+    figs.push(["Marge", rng(a, b, signedMoney, " €"), a >= 0 ? "pos" : b < 0 ? "neg" : ""]);
+  } else if (c.P === null && c.pHi > 0) {
+    const G = cfg.gainMin, safe = Math.floor(c.best.lo - G), risky = Math.floor(c.best.hi - G);
+    figs.push(["Prix max", safe >= 1 ? money(safe) + " €" : risky >= 1 ? money(risky) + " € (risqué)" : "gratuit"]);
+  }
+  const fb = $("figs"); fb.replaceChildren();
+  for (const [k, val, cls] of figs) {
+    const d = document.createElement("div"); d.className = "fig";
+    const kk = document.createElement("span"); kk.className = "k"; kk.textContent = k;
+    const vv = document.createElement("span"); vv.className = "v" + (cls ? " " + cls : ""); vv.textContent = val;
+    d.append(kk, vv); fb.append(d);
   }
 
-  const t = $("ticket");
-  t.replaceChildren();
+  const catLabel = c.mat ? c.mat.label : "Objet non reconnu (" + c.grade.label + ")";
+  $("vObject").textContent = [scan.description, catLabel].filter(Boolean).join(" · ");
+  const lowConf = source === "ai" && scan.confiance < 0.5;
+  $("vNote").hidden = !lowConf;
+  $("vNote").textContent = lowConf ? "Identification incertaine : vérifie la catégorie dans « Corriger l'estimation »." : "";
+
+  $("poidsHint").textContent = c.weighed || !(scan.poids_max > 0) ? "vide = estimé sur la photo" : "estimé : " + rng(scan.poids_min, scan.poids_max, kgFmt, " kg");
+  $("prixHint").textContent = scan.prix_lu > 0 && scan.prix === scan.prix_lu ? "lu sur la photo" : "vide = inconnu";
+  $("rachatLabel").textContent = `Rachat ferrailleur pour « ${c.grade.label} » (% du cours)`;
+
+  const ul = $("advice"); ul.replaceChildren();
+  for (const a of advice(scan, c)) { const li = document.createElement("li"); li.textContent = a.text; if (a.lead) li.className = "lead"; ul.append(li); }
+
+  renderTicket(c, price);
+  updateSaveRow();
+  return { c, v, price };
+}
+
+function renderTicket(c, price) {
+  const b = c.best;
+  const eur2 = (x) => nf2.format(x);
+  const rows = [
+    ["Objet", scan.description || (c.mat ? c.mat.label : "Non reconnu")],
+    ["Catégorie", c.mat ? c.mat.label : "Non reconnue"],
+    ["Poids", c.pHi > 0 ? rng(c.pLo, c.pHi, kgFmt, " kg") + (c.weighed ? " (pesé)" : " (estimé)") : "inconnu"],
+    ["Teneur cuivre", rng(c.tLo * 100, c.tHi * 100, nf0.format, " %")],
+    ["Cuivre contenu", rng(c.mLo, c.mHi, kgFmt, " kg")],
+    ["Cours", `${nf2.format(price.value)} €/kg`],
+    ["Vendu en", b.grade.label + (b.key === "up" ? " (" + b.val.apres + ")" : "")],
+    ["Rachat", nf0.format(b.r * 100) + " % du cours"],
+    ["Valeur brute", rng(b.bruteLo, b.bruteHi, eur2, " €")],
+    ["Frais", rng(b.fraisLo, b.fraisHi, eur2, " €")]
+  ];
+  if (b.key === "up") rows.push(["Temps de travail", `${rng(b.hLo, b.hHi, nf1.format, " h")} = ${rng(b.tempsLo, b.tempsHi, eur2, " €")}`]);
+  rows.push(["Revente nette", rng(b.lo, b.hi, eur2, " €"), "big"]);
+  if (c.P > 0) {
+    const a = b.lo - c.P, z = b.hi - c.P;
+    rows.push(["Prix d'achat", eur2(c.P) + " €"]);
+    rows.push(["Marge", rng(a, z, (x) => (x > 0 ? "+" : "") + nf2.format(x), " €"), "big " + (a >= 0 ? "pos" : z < 0 ? "neg" : "")]);
+    rows.push(["Ratio revente / achat", rng(b.lo / c.P, b.hi / c.P, nf2.format, "")]);
+    const den = (m) => m * b.r * (1 - c.cfg.fraisPct);
+    const sLo = den(c.mHi) > 0 ? (c.P + c.cfg.fraisFixes + b.tempsHi) / den(c.mHi) : null;
+    const sHi = den(c.mLo) > 0 ? (c.P + c.cfg.fraisFixes + b.tempsLo) / den(c.mLo) : null;
+    if (sLo !== null && sHi !== null) rows.push(["Cours seuil", rng(sLo, sHi, nf2.format, " €/kg")]);
+  } else if (c.P === 0) {
+    rows.push(["Prix d'achat", "déjà à toi"]);
+  }
+
+  const t = $("ticket"); t.replaceChildren();
   const head = document.createElement("div"); head.className = "ticket-head";
   const h1 = document.createElement("span"); h1.textContent = "Ticket d'estimation";
-  const h2 = document.createElement("span"); h2.textContent = isExample ? "" : new Date().toLocaleDateString("fr-FR");
-  if (isExample) { h2.className = "example-tag"; h2.textContent = "Exemple, modifie la fiche"; }
+  const h2 = document.createElement("span"); h2.textContent = `Cours ${price.label}`;
   head.append(h1, h2);
-  const v = document.createElement("span"); v.className = "verdict " + verdict[0]; v.textContent = verdict[1];
   const dl = document.createElement("dl");
   for (const [k, val, cls] of rows) {
     const dt = document.createElement("dt"); dt.textContent = k;
     const dd = document.createElement("dd"); dd.textContent = val;
-    if (cls) { const parts = cls.split(" ").filter(Boolean); if (parts.includes("big")) dt.classList.add("big"); dd.classList.add(...parts); }
+    if (cls) { const parts = cls.split(" ").filter(Boolean); dd.classList.add(...parts); if (parts.includes("big")) dt.classList.add("big"); }
     dl.append(dt, dd);
   }
-  t.append(head, v, dl);
-  if (achat > 0 && est.seuilMin !== null) {
-    const p = document.createElement("p"); p.className = "small"; p.style.fontFamily = "var(--f-body)";
-    p.textContent = `Au-dessus d'un ratio de 1, l'achat est rentable. Le cours seuil est le cours à partir duquel tu rentres dans tes frais (cours actuel ${nf2.format(price.value)} €/kg).`;
-    p.classList.add("muted");
-    t.append(p);
-  }
-
-  const ul = $("advice"); ul.replaceChildren();
-  for (const line of advise(mat, grade, est, achat, upg, upgGrade)) { const li = document.createElement("li"); li.textContent = line; ul.append(li); }
+  t.append(head, dl);
 }
 
-function touched() { if (isExample) { isExample = false; } recompute(); }
-catSel.addEventListener("change", () => { applyCategory(catSel.value); touched(); });
-for (const id of ["poids", "achat", "tmin", "tmax", "rachat"]) $(id).addEventListener("input", touched);
-for (const id of ["coursManuel", "fraisFixes", "fraisPct", "tauxH"]) {
+// ---- Corrections ----
+function edited() {
+  if (source === "example") { source = "manual"; scan.description = ""; scan.conseils = []; scan.ts = Date.now(); }
+  render();
+  autoSave();
+}
+$("poidsPese").addEventListener("input", () => { const v = num($("poidsPese"), NaN); scan.poids_pese = v > 0 ? v : null; edited(); });
+$("prix").addEventListener("input", () => { const raw = $("prix").value.trim(); scan.prix = raw === "" ? null : Math.max(0, num($("prix"), 0)); edited(); });
+$("deja").addEventListener("change", () => { scan.deja = $("deja").checked; $("prix").disabled = scan.deja; edited(); });
+catSel.addEventListener("change", () => {
+  const key = catSel.value, mat = CATALOG.materials[key];
+  scan.material_key = key;
+  if (mat) { scan.grade = mat.grade; scan.teneur_min = mat.min; scan.teneur_max = mat.max; }
+  scan.rachat = null;
+  syncInputs(); edited();
+});
+gradeSel.addEventListener("change", () => { scan.grade = gradeSel.value; scan.rachat = null; syncInputs(); edited(); });
+for (const id of ["tmin", "tmax"]) $(id).addEventListener("input", () => {
+  scan.teneur_min = Math.min(100, Math.max(0, num($("tmin")))) / 100;
+  scan.teneur_max = Math.min(100, Math.max(0, num($("tmax")))) / 100;
+  edited();
+});
+$("rachat").addEventListener("input", () => { scan.rachat = Math.min(100, Math.max(0, num($("rachat")))) / 100; edited(); });
+for (const id of ["coursManuel", "fraisFixes", "fraisPct", "tauxH", "gainMin"]) {
   const saved = load(id); if (saved !== null) $(id).value = saved;
-  $(id).addEventListener("input", () => { store(id, $(id).value); recompute(); });
+  $(id).addEventListener("input", () => { store(id, $(id).value); render(); });
 }
 
-applyCategory("cable_domestique");
-recompute();
+syncInputs();
+render();
 
-// ---- Photos et identification ----
-let photos = [];
-let maxImages = 5;
-function setPhotos(files) {
-  photos = photos.concat(Array.from(files)).slice(-maxImages);
-  const th = $("thumbs"); th.replaceChildren();
-  for (const f of photos) { const img = document.createElement("img"); img.alt = "Photo de l'objet"; img.src = URL.createObjectURL(f); th.append(img); }
-  $("identRow").hidden = photos.length === 0;
-}
-$("camInput").addEventListener("change", (e) => { setPhotos(e.target.files); e.target.value = ""; });
-$("galInput").addEventListener("change", (e) => { setPhotos(e.target.files); e.target.value = ""; });
-$("clearBtn").addEventListener("click", () => { photos = []; setPhotos([]); });
+// ---- Photo et analyse automatique ----
+let maxImages = 5, canImages = false, ctl = null, ticker = null;
+const samplePromise = (window.claude ? window.claude.use("sample") : Promise.resolve(null)).then(async (s) => {
+  if (!s) { $("scanStatus").textContent = "L'analyse par photo n'est pas disponible dans cette vue. Tu peux remplir la fiche à la main dans « Corriger l'estimation »."; return null; }
+  const lim = await s.limits().catch(() => null);
+  if (lim && lim.images) { canImages = true; maxImages = lim.images.maxCount || 5; }
+  else $("scanStatus").textContent = "Cette vue ne peut pas envoyer de photos à Claude. Tu peux remplir la fiche à la main dans « Corriger l'estimation ».";
+  return s;
+});
 
 const SAMPLE_MSG = {
-  not_granted: "Tu n'as pas autorisé la page à utiliser Claude. Remplis la fiche à la main.",
-  sampling_disabled: "Claude n'est pas disponible pour ce compte. Remplis la fiche à la main.",
+  not_granted: "Tu n'as pas autorisé la page à utiliser Claude, donc l'analyse automatique est désactivée. Remplis la fiche à la main dans « Corriger l'estimation ».",
+  sampling_disabled: "Claude n'est pas disponible pour ce compte. Remplis la fiche à la main dans « Corriger l'estimation ».",
   images_unavailable: "Cette vue ne peut pas envoyer de photos à Claude. Remplis la fiche à la main.",
-  rate_limited: "Trop de demandes pour l'instant. Réessaie dans quelques minutes.",
-  image_rejected: "Photo refusée (format ou taille). Essaie une autre photo en JPEG ou PNG.",
-  refused: "Claude n'a pas voulu analyser ces photos. Essaie avec d'autres photos.",
-  invalid_json: "Réponse illisible. Appuie à nouveau sur « Identifier l'objet ».",
+  rate_limited: "Trop d'analyses d'un coup. Réessaie dans quelques minutes.",
+  image_rejected: "Photo refusée (format ou taille). Reprends-la avec l'appareil photo.",
+  refused: "Claude n'a pas voulu analyser cette photo. Essaie avec une autre photo.",
+  invalid_json: "Réponse illisible. Reprends la photo pour relancer l'analyse.",
+  empty_completion: "Claude n'a rien répondu. Reprends la photo.",
   session_expired: "Ta session a expiré. Reconnecte-toi à Claude.",
-  upstream_error: "Le service n'a pas répondu. Réessaie dans un instant."
+  upstream_error: "Le service n'a pas répondu. Reprends la photo dans un instant."
 };
 
 function promptFor() {
-  const cats = Object.entries(CATALOG.materials).map(([k, m]) => `- ${k} : ${m.label} (teneur indicative ${Math.round(m.min * 100)}–${Math.round(m.max * 100)} %)`).join("\n");
-  return `Tu aides un particulier à évaluer le cuivre récupérable dans un objet qu'il possède ou envisage d'acheter, pour le revendre à un ferrailleur. Les photos jointes montrent cet objet.
+  const cats = Object.entries(CATALOG.materials)
+    .map(([k, m]) => `- ${k} : ${m.label} (teneur indicative ${Math.round(m.min * 100)}–${Math.round(m.max * 100)} %, grade ${m.grade})`).join("\n");
+  return `Tu aides un particulier à décider si un objet vaut le coup pour le cuivre qu'il contient, en vue de le revendre à un ferrailleur. Les photos jointes montrent l'objet. Estime ce qu'il faut pour le calcul ; ne calcule aucun prix, la page le fait avec le cours du jour.
 
-Catégories connues :
+Catégories connues (clé : description, teneur indicative, grade de revente) :
 ${cats}
 
-Réponds uniquement avec un objet JSON de cette forme :
-{"material_key": "cable_domestique", "description": "…", "confiance": 0.8, "poids_estime_kg": 3, "teneur_cuivre_estimee": 0.45, "conseils": "…", "suspect_infrastructure": false, "raison_suspicion": ""}
+Grades de revente possibles : ${Object.keys(CATALOG.grades).join(", ")}.
 
-- material_key : la clé de la catégorie la plus proche, ou "inconnu" si aucune ne convient.
-- description : ce que tu vois, en une ou deux phrases (type d'objet, section du câble si visible, couleur du métal, présence d'aluminium).
-- confiance : entre 0 et 1.
-- poids_estime_kg : estimation grossière d'après la taille apparente, ou 0 si impossible.
-- teneur_cuivre_estimee : ta propre estimation entre 0 et 1 d'après ce que tu vois.
-- conseils : 1 à 3 conseils concrets pour valoriser cet objet précis (tri, démontage, pièges comme un bobinage en aluminium).
-- suspect_infrastructure : true si l'objet ressemble à du matériel de réseau public ou d'entreprise (câble de signalisation ferroviaire, câble télécom de réseau, câble de terre de pylône, câble avec marquage d'opérateur), qui pourrait provenir d'un vol ; raison_suspicion l'explique, sinon chaîne vide.
+Réponds uniquement avec un objet JSON de cette forme :
+{"photo_exploitable": true, "message": "", "material_key": "cable_domestique", "grade": "cable_isole", "description": "…", "confiance": 0.8, "poids_min_kg": 4, "poids_max_kg": 6, "teneur_min": 0.4, "teneur_max": 0.5, "prix_visible_eur": 0, "conseils": ["…"], "suspect_infrastructure": false, "raison_suspicion": ""}
+
+Règles :
+- photo_exploitable : false si la photo ne permet pas d'évaluer un objet (floue, trop sombre, pas d'objet). message dit alors en une phrase comment reprendre la photo.
+- material_key : la clé de la catégorie la plus proche, ou "${UNKNOWN}" si aucune ne convient.
+- grade : le grade sous lequel l'objet se vendrait en l'état.
+- description : ce que tu vois en une ou deux phrases (type d'objet, quantité, section du câble si lisible, couleur du métal, présence d'aluminium).
+- confiance : entre 0 et 1, ta confiance dans l'identification.
+- poids_min_kg et poids_max_kg : fourchette du poids total de tout ce qui est à évaluer sur la photo, d'après la taille apparente et les repères visibles (main, carrelage, objets connus). Une fourchette réaliste, ni trop large ni trop étroite.
+- teneur_min et teneur_max : part du poids qui est du cuivre récupérable, entre 0 et 1, pour cet objet précis. Reste dans la fourchette indicative de sa catégorie sauf si la photo montre une raison d'en sortir (gaine très épaisse, aluminium visible…). Mets 0 et 0 s'il n'y a pas de cuivre.
+- prix_visible_eur : le prix affiché sur la photo (étiquette, capture d'écran d'annonce), sinon 0.
+- conseils : 1 à 3 conseils courts et concrets pour revendre cet objet précis vite et au meilleur prix (tri, démontage utile ou non, pièges comme un bobinage en aluminium). Tutoie l'utilisateur.
+- suspect_infrastructure : true si l'objet ressemble à du matériel de réseau public ou d'entreprise (câble de signalisation ferroviaire, câble télécom de réseau, câble de terre de pylône, câble avec marquage d'opérateur), qui pourrait provenir d'un vol. raison_suspicion l'explique en une phrase, sinon chaîne vide.
 
 Écris en français.`;
 }
 
-let samplePromise = window.claude ? window.claude.use("sample") : Promise.resolve(null);
-samplePromise.then(async (s) => {
-  if (!s) { $("identBtn").disabled = true; $("identStatus").textContent = "L'identification par photo n'est pas disponible ici. Remplis la fiche à la main."; return; }
-  const lim = await s.limits().catch(() => null);
-  if (!lim || !lim.images) { $("identBtn").disabled = true; $("identStatus").textContent = "Cette vue ne peut pas envoyer de photos à Claude. Remplis la fiche à la main."; return; }
-  maxImages = lim.images.maxCount || 5;
-});
+function showThumbs(files) {
+  const th = $("thumbs"); th.replaceChildren();
+  for (const f of files) { const img = document.createElement("img"); img.alt = "Photo analysée"; img.src = URL.createObjectURL(f); th.append(img); }
+}
 
-$("identBtn").addEventListener("click", async () => {
-  const s = await samplePromise;
-  if (!s || photos.length === 0) return;
-  const btn = $("identBtn"), st = $("identStatus");
-  btn.disabled = true; st.textContent = "Analyse en cours… (10 à 60 secondes)";
-  try {
-    const r = await s.json(promptFor(), { images: photos, modelTier: "default" });
-    const clamp = (x) => Math.min(1, Math.max(0, Number(x) || 0));
-    ident = {
-      material_key: String(r.material_key || "inconnu"),
-      description: String(r.description || ""),
-      confiance: clamp(r.confiance),
-      poids: Math.max(0, Number(r.poids_estime_kg) || 0),
-      teneur: clamp(r.teneur_cuivre_estimee),
-      conseils: String(r.conseils || ""),
-      suspect: r.suspect_infrastructure === true,
-      raison: String(r.raison_suspicion || "")
-    };
-    $("identBox").hidden = false;
-    $("identDesc").textContent = ident.description;
-    $("identConf").textContent = `(confiance ${pct(ident.confiance)})`;
-    $("identTips").textContent = ident.conseils;
-    const sb = $("suspectBox");
-    sb.hidden = !ident.suspect;
-    if (ident.suspect) sb.textContent = `Attention : cet objet ressemble à du matériel de réseau public ou d'entreprise. ${ident.raison} Ne l'achète pas et ne le revends pas sans preuve d'origine : le recel de métaux volés est un délit.`;
-
-    if (CATALOG.materials[ident.material_key]) {
-      applyCategory(ident.material_key);
-      st.textContent = "Fiche pré-remplie. Pèse l'objet et corrige le poids.";
-    } else {
-      st.textContent = "Objet non reconnu dans la base : choisis la catégorie la plus proche et ajuste la teneur à la main.";
-    }
-    if (ident.poids > 0) $("poids").value = Math.round(ident.poids * 10) / 10;
-    $("aiHint").textContent = `Teneur estimée par Claude d'après la photo : ${pct(ident.teneur)}. Poids estimé : ${ident.poids > 0 ? nf2.format(ident.poids) + " kg" : "inconnu"}.`;
-    $("aiHint").hidden = !CATALOG.materials[ident.material_key];
-    isExample = false;
-    recompute();
-  } catch (e) {
-    st.textContent = (e && SAMPLE_MSG[e.code]) || (e && e.code === "cancelled" ? "" : SAMPLE_MSG.upstream_error);
-  } finally {
-    btn.disabled = false;
+function setBusy(on) {
+  $("busyRow").hidden = !on;
+  $("verdictCard").classList.toggle("busy", on);
+  clearInterval(ticker);
+  if (on) {
+    const t0 = Date.now();
+    const tick = () => { $("busyText").textContent = `Claude analyse la photo… ${Math.round((Date.now() - t0) / 1000)} s`; };
+    tick(); ticker = setInterval(tick, 1000);
   }
-});
+}
 
-// ---- Base : cours partagé et stock privé ----
-let col = null;
-let histRows = [];
+$("stopBtn").addEventListener("click", () => { if (ctl) ctl.abort(); });
+
+async function analyze(fileList) {
+  const files = Array.from(fileList || []).slice(0, maxImages);
+  if (!files.length) return;
+  showThumbs(files);
+  const s = await samplePromise;
+  if (!s || !canImages) { $("corrDetails").open = true; return; }
+  if (ctl) ctl.abort();
+  const my = new AbortController(); ctl = my;
+  setBusy(true);
+  $("scanStatus").textContent = "Identification, poids et teneur en cuivre… Ça prend en général 10 à 60 secondes.";
+  try {
+    const r = await s.json(promptFor(), { images: files, modelTier: "default", signal: my.signal });
+    if (ctl !== my) return;
+    applyResult(r);
+  } catch (e) {
+    if (ctl !== my) return;
+    $("scanStatus").textContent = e && e.code === "cancelled" ? "Analyse arrêtée." : (e && SAMPLE_MSG[e.code]) || SAMPLE_MSG.upstream_error;
+  } finally {
+    if (ctl === my) { ctl = null; setBusy(false); }
+  }
+}
+
+function applyResult(r) {
+  if (!r || typeof r !== "object") { $("scanStatus").textContent = SAMPLE_MSG.invalid_json; return; }
+  if (r.photo_exploitable === false) {
+    $("scanStatus").textContent = "Photo difficile à analyser. " + (r.message ? String(r.message) : "Reprends-la de plus près, avec plus de lumière.");
+    return;
+  }
+  const n = (x) => { const v = Number(x); return Number.isFinite(v) ? v : NaN; };
+  const c01 = (x) => Math.min(1, Math.max(0, x));
+  const key = CATALOG.materials[r.material_key] ? r.material_key : UNKNOWN;
+  const mat = CATALOG.materials[key];
+
+  let t1 = n(r.teneur_min), t2 = n(r.teneur_max);
+  if (!Number.isFinite(t1) || !Number.isFinite(t2)) { t1 = mat ? mat.min : 0.05; t2 = mat ? mat.max : 0.2; }
+  t1 = c01(t1); t2 = c01(t2); if (t1 > t2) [t1, t2] = [t2, t1];
+
+  let p1 = Math.max(0, n(r.poids_min_kg) || 0), p2 = Math.max(0, n(r.poids_max_kg) || 0);
+  if (p1 > p2) [p1, p2] = [p2, p1];
+  if (p2 === 0 && p1 > 0) p2 = p1;
+  if (p1 === 0 && p2 > 0) p1 = p2;
+
+  const prixLu = Math.max(0, n(r.prix_visible_eur) || 0);
+  const conseils = (Array.isArray(r.conseils) ? r.conseils : r.conseils ? [r.conseils] : [])
+    .map((x) => String(x).trim()).filter(Boolean).slice(0, 3);
+
+  scan = {
+    description: String(r.description || "").trim(),
+    material_key: key,
+    grade: mat ? mat.grade : CATALOG.grades[r.grade] ? r.grade : "mixte_bas",
+    confiance: c01(n(r.confiance) || 0),
+    poids_min: p1, poids_max: p2, poids_pese: null,
+    teneur_min: t1, teneur_max: t2, rachat: null,
+    prix: prixLu > 0 ? prixLu : null, deja: false, prix_lu: prixLu,
+    conseils,
+    suspect: r.suspect_infrastructure === true,
+    raison: String(r.raison_suspicion || "").trim(),
+    ts: Date.now()
+  };
+  source = "ai";
+  savedId = null;
+  syncInputs();
+  render();
+  $("scanStatus").textContent = prixLu > 0
+    ? `Analyse terminée. Prix lu sur la photo : ${money(prixLu)} €. Pèse l'objet ou corrige le prix pour affiner le verdict.`
+    : "Analyse terminée. Indique le prix demandé ou pèse l'objet pour affiner le verdict.";
+  $("verdictCard").scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
+  saveNow();
+}
+
+$("camInput").addEventListener("change", (e) => { analyze(e.target.files); e.target.value = ""; });
+$("galInput").addEventListener("change", (e) => { analyze(e.target.files); e.target.value = ""; });
+
+// ---- Base : cours partagé et scans privés ----
 (async () => {
   const db = window.claude ? await window.claude.use("db") : null;
-  if (!db) { $("histEmpty").textContent = "L'enregistrement n'est pas disponible dans cette vue (connecte-toi à Claude)."; $("saveBtn").disabled = true; return; }
-
+  if (!db) { $("histEmpty").textContent = "L'enregistrement des scans n'est pas disponible dans cette vue (connecte-toi à Claude)."; return; }
   db.doc("config/cours").onSnapshot((snap) => {
     const d = snap.exists ? snap.data() : null;
-    if (d && Number(d.eur_per_kg) > 0) { quote = { ...quote, ...d, eur_per_kg: Number(d.eur_per_kg) }; recompute(); }
+    if (d && Number(d.eur_per_kg) > 0) { quote = { ...quote, ...d, eur_per_kg: Number(d.eur_per_kg) }; render(); }
   }, () => {});
-
   const user = await window.claude.use("user");
   const uid = user ? await user.id() : null;
-  if (!uid) { $("histEmpty").textContent = "Connecte-toi à Claude pour enregistrer ton stock."; $("saveBtn").disabled = true; return; }
+  if (!uid) { $("histEmpty").textContent = "Connecte-toi à Claude pour garder tes scans."; return; }
   col = db.collection("data/users/" + uid);
   col.orderBy("ts", "desc").limit(200).onSnapshot((snap) => {
     histRows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     renderHist();
-  }, () => { $("histStatus").textContent = "Le stock n'a pas pu être chargé. Recharge la page."; });
+  }, () => { $("histStatus").textContent = "Tes scans n'ont pas pu être chargés. Recharge la page."; });
+  updateSaveRow();
 })();
 
-$("saveBtn").addEventListener("click", async () => {
-  if (!col || !last) return;
-  const btn = $("saveBtn"); btn.disabled = true;
-  const e = last.est;
+function docBody() {
+  const { c, v, price } = render();
+  return {
+    ts: scan.ts, description: scan.description, material_key: scan.material_key, grade: scan.grade, confiance: scan.confiance,
+    poids_min: scan.poids_min, poids_max: scan.poids_max, poids_pese: scan.poids_pese,
+    teneur_min: scan.teneur_min, teneur_max: scan.teneur_max, rachat: scan.rachat,
+    prix: scan.prix, deja: scan.deja, prix_lu: scan.prix_lu, conseils: scan.conseils,
+    suspect: scan.suspect, raison: scan.raison,
+    verdict: v.state, titre: v.title, revente_min: c.best.lo, revente_max: c.best.hi, cours_eur_kg: price.value
+  };
+}
+
+async function saveNow() {
+  if (!col) return;
+  if (saving) { dirty = true; return; }
+  saving = true;
   try {
-    await col.add({
-      ts: Date.now(), objet: last.mat.label, description: ident && ident.material_key === last.key ? ident.description : "",
-      poids_kg: last.poids, teneur_min: last.lo, teneur_max: last.hi, cours_eur_kg: last.price.value, rachat_pct: last.rachat,
-      prix_achat: last.achat, valeur_nette_min: e.low.nette, valeur_nette_max: e.high.nette, marge_min: e.low.marge, marge_max: e.high.marge
-    });
-    $("saveStatus").textContent = "Enregistré dans ton stock.";
-  } catch (err) {
-    $("saveStatus").textContent = err && err.code === "quota_exceeded" ? "Stock plein : supprime d'anciennes lignes." : "Échec de l'enregistrement. Réessaie.";
-  } finally { btn.disabled = false; }
-});
+    const ref = savedId ? col.doc(savedId) : col.doc();
+    savedId = ref.id;
+    await ref.set(docBody());
+    $("saveStatus").textContent = "Enregistré dans tes scans.";
+  } catch (e) {
+    $("saveStatus").textContent = e && e.code === "quota_exceeded" ? "Plus de place : supprime d'anciens scans." : "Échec de l'enregistrement. Modifie un champ pour réessayer.";
+  } finally {
+    saving = false;
+    if (dirty) { dirty = false; saveNow(); }
+    updateSaveRow();
+  }
+}
+
+function autoSave() {
+  if (!col || !(source === "ai" || savedId)) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, 1200);
+}
+
+function updateSaveRow() { $("saveRow").hidden = !(col && source === "manual" && !savedId); }
+$("saveBtn").addEventListener("click", () => saveNow());
 
 function renderHist() {
   const box = $("hist"); box.replaceChildren();
   $("histEmpty").hidden = histRows.length > 0;
-  $("histTotal").hidden = histRows.length === 0;
   $("histActions").hidden = histRows.length === 0;
-  let tLo = 0, tHi = 0, tAchat = 0;
+  let sLo = 0, sHi = 0, owned = 0;
   for (const r of histRows) {
-    tLo += Number(r.valeur_nette_min) || 0; tHi += Number(r.valeur_nette_max) || 0; tAchat += Number(r.prix_achat) || 0;
+    if (r.deja) { sLo += Number(r.revente_min) || 0; sHi += Number(r.revente_max) || 0; owned++; }
     const row = document.createElement("div"); row.className = "hist-row";
-    const what = document.createElement("div"); what.className = "what";
-    const s = document.createElement("strong"); s.textContent = r.objet;
-    const m = document.createElement("span"); m.className = "muted small";
-    m.textContent = `${new Date(r.ts).toLocaleDateString("fr-FR")} · ${nf2.format(r.poids_kg)} kg · achat ${eur(r.prix_achat)}`;
-    what.append(s, m);
-    const n = document.createElement("div"); n.className = "num";
-    n.textContent = `${eur(r.valeur_nette_min)} – ${eur(r.valeur_nette_max)}`;
+    const top = document.createElement("div"); top.className = "hist-top";
+    const pill = document.createElement("span"); pill.className = "pill " + (r.verdict || ""); pill.textContent = r.titre || "—";
+    const date = document.createElement("span"); date.className = "muted small"; date.textContent = new Date(r.ts).toLocaleDateString("fr-FR");
+    top.append(pill, date);
+    const desc = document.createElement("span"); desc.className = "desc";
+    desc.textContent = r.description || (CATALOG.materials[r.material_key] ? CATALOG.materials[r.material_key].label : "Objet non reconnu");
+    const nums = document.createElement("span"); nums.className = "num muted";
+    const prixTxt = r.deja ? "déjà à toi" : r.prix != null ? `payé ${money(r.prix)} €` : "prix inconnu";
+    nums.textContent = `Revente ${rng(Number(r.revente_min) || 0, Number(r.revente_max) || 0, money, " €")} · ${prixTxt}`;
     const act = document.createElement("div"); act.className = "actions";
-    const del = document.createElement("button"); del.textContent = "Supprimer";
+    const see = document.createElement("button"); see.type = "button"; see.textContent = "Revoir";
+    see.addEventListener("click", () => openSaved(r));
+    const del = document.createElement("button"); del.type = "button"; del.textContent = "Supprimer";
     del.addEventListener("click", async () => {
       if (del.dataset.armed !== "1") { del.dataset.armed = "1"; del.textContent = "Confirmer la suppression"; return; }
       del.disabled = true;
-      try { await col.doc(r.id).delete(); } catch (e) { del.disabled = false; $("histStatus").textContent = "Suppression impossible. Réessaie."; }
+      try {
+        await col.doc(r.id).delete();
+        if (savedId === r.id) { savedId = null; source = "manual"; updateSaveRow(); render(); }
+      } catch (e) { del.disabled = false; $("histStatus").textContent = "Suppression impossible. Réessaie."; }
     });
-    act.append(del);
-    row.append(what, n, act);
+    act.append(see, del);
+    row.append(top, desc, nums, act);
     box.append(row);
   }
-  $("histTotal").textContent = `Valeur nette du stock : ${eur(tLo)} – ${eur(tHi)} (achats : ${eur(tAchat)})`;
+  $("histTotal").hidden = owned === 0;
+  $("histTotal").textContent = `Ce que tu as déjà (${owned} objet${owned > 1 ? "s" : ""}) se revend ${rng(sLo, sHi, money, " €")}.`;
+}
+
+function openSaved(r) {
+  const numOr = (x, d) => (Number.isFinite(Number(x)) && x !== null ? Number(x) : d);
+  scan = {
+    description: String(r.description || ""), material_key: String(r.material_key || UNKNOWN), grade: String(r.grade || "mixte_bas"),
+    confiance: numOr(r.confiance, 1),
+    poids_min: numOr(r.poids_min, 0), poids_max: numOr(r.poids_max, 0), poids_pese: r.poids_pese != null ? numOr(r.poids_pese, null) : null,
+    teneur_min: numOr(r.teneur_min, 0), teneur_max: numOr(r.teneur_max, 0), rachat: r.rachat != null ? numOr(r.rachat, null) : null,
+    prix: r.prix != null ? numOr(r.prix, null) : null, deja: !!r.deja, prix_lu: numOr(r.prix_lu, 0),
+    conseils: Array.isArray(r.conseils) ? r.conseils.map(String) : [],
+    suspect: !!r.suspect, raison: String(r.raison || ""), ts: numOr(r.ts, Date.now())
+  };
+  source = "saved"; savedId = r.id;
+  $("thumbs").replaceChildren();
+  $("saveStatus").textContent = "Recalculé avec le cours du jour.";
+  syncInputs(); render();
+  $("verdictCard").scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
 }
 
 $("csvBtn").addEventListener("click", () => {
-  const cols = ["date", "objet", "poids_kg", "teneur_min", "teneur_max", "cours_eur_kg", "rachat_pct", "prix_achat", "valeur_nette_min", "valeur_nette_max", "marge_min", "marge_max"];
-  const lines = [cols.join(";")].concat(histRows.map((r) => cols.map((c) => {
-    const v = c === "date" ? new Date(r.ts).toISOString().slice(0, 10) : r[c];
-    return typeof v === "number" ? String(Math.round(v * 1000) / 1000).replace(".", ",") : `"${String(v ?? "").replace(/"/g, '""')}"`;
-  }).join(";")));
-  const text = lines.join("\n");
-  navigator.clipboard.writeText(text).then(
+  const cols = ["date", "description", "verdict", "poids_min", "poids_max", "poids_pese", "teneur_min", "teneur_max", "prix", "deja", "revente_min", "revente_max", "cours_eur_kg"];
+  const cell = (v) => typeof v === "number" ? String(Math.round(v * 1000) / 1000).replace(".", ",") : `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const lines = [cols.join(";")].concat(histRows.map((r) => cols.map((k) => k === "date" ? new Date(r.ts).toISOString().slice(0, 10) : k === "verdict" ? cell(r.titre) : k === "deja" ? (r.deja ? "oui" : "non") : cell(r[k])).join(";")));
+  navigator.clipboard.writeText(lines.join("\n")).then(
     () => { $("histStatus").textContent = "CSV copié : colle-le dans un tableur."; },
     () => { $("histStatus").textContent = "Copie impossible dans cette vue."; }
   );

@@ -1,0 +1,636 @@
+<title>CuScan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout : une colonne pensée pour le téléphone (max 640px) ; le résultat prend la forme d'un ticket de pesée de ferrailleur. */
+:root {
+  --bg: #eceff0;
+  --surface: #ffffff;
+  --fg: #1c2225;
+  --muted: #5a666c;
+  --line: #d0d6d9;
+  --copper: #b04f1d;
+  --copper-ink: #ffffff;
+  --copper-soft: #f5e3d8;
+  --ticket: #fbfaf5;
+  --good: #1d7547;
+  --warn: #9a6400;
+  --bad: #b2271f;
+  --f-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --f-body: "Barlow", system-ui, -apple-system, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131719; --surface: #1c2326; --fg: #e7ebed; --muted: #98a4aa; --line: #333d42;
+    --copper: #e27c45; --copper-ink: #1b0d05; --copper-soft: #3a2318; --ticket: #1f2629;
+    --good: #5cc28b; --warn: #e0ae4a; --bad: #f0827b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131719; --surface: #1c2326; --fg: #e7ebed; --muted: #98a4aa; --line: #333d42;
+  --copper: #e27c45; --copper-ink: #1b0d05; --copper-soft: #3a2318; --ticket: #1f2629;
+  --good: #5cc28b; --warn: #e0ae4a; --bad: #f0827b; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 16px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+.wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+h1, h2 { font-family: var(--f-display); font-weight: 700; letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+h1 { font-size: 2.4rem; line-height: 1; }
+h1 span { color: var(--copper); }
+h2 { font-size: 1.35rem; text-transform: uppercase; letter-spacing: 0.06em; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 0.875rem; }
+
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.price-chip {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+  font-family: var(--f-mono); font-variant-numeric: tabular-nums;
+}
+.price-chip strong { font-size: 1.25rem; color: var(--copper); }
+.price-chip small { font-family: var(--f-body); color: var(--muted); font-size: 0.8rem; }
+
+section.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+label { display: flex; flex-direction: column; gap: 4px; font-weight: 500; font-size: 0.95rem; min-width: 0; }
+label .hint { font-weight: 400; color: var(--muted); font-size: 0.82rem; }
+input[type="number"], select, input[type="text"] {
+  font: inherit; font-family: var(--f-mono); font-variant-numeric: tabular-nums;
+  width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--bg); color: var(--fg); min-height: 44px;
+}
+select { font-family: var(--f-body); }
+input:focus-visible, select:focus-visible, button:focus-visible, .filebtn:focus-within {
+  outline: 2px solid var(--copper); outline-offset: 2px;
+}
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 380px) { .grid2 { grid-template-columns: 1fr; } }
+
+button, .filebtn {
+  font: inherit; font-weight: 600; border-radius: 8px; min-height: 44px; padding: 10px 16px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+button.primary, .filebtn.primary { background: var(--copper); border-color: var(--copper); color: var(--copper-ink); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.filebtn input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.filebtn { position: relative; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+.row > * { flex: 1 1 140px; }
+
+.thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+.thumbs img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); }
+
+.ident { border-left: 3px solid var(--copper); padding: 4px 0 4px 12px; display: flex; flex-direction: column; gap: 6px; }
+.alert { border-radius: 8px; padding: 12px; font-size: 0.95rem; }
+.alert.bad { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--fg); border: 1px solid var(--bad); }
+.alert.info { background: var(--copper-soft); color: var(--fg); }
+
+/* Ticket de pesée */
+.ticket {
+  background: var(--ticket); border: 1px solid var(--line); border-radius: 4px; padding: 16px;
+  font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 0.9rem;
+  display: flex; flex-direction: column; gap: 10px;
+  background-image: radial-gradient(circle at 8px 0, var(--bg) 6px, transparent 6.5px);
+  background-size: 16px 8px; background-repeat: repeat-x; background-position: 0 -1px;
+  padding-top: 20px;
+}
+.ticket-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.78rem; color: var(--muted); }
+.ticket dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; }
+.ticket dt, .ticket dd { margin: 0; padding: 5px 0; border-bottom: 1px dashed var(--line); }
+.ticket dt { color: var(--muted); }
+.ticket dd { text-align: right; }
+.ticket dt.big, .ticket dd.big { font-weight: 600; color: var(--fg); font-size: 1rem; }
+.ticket dd.pos { color: var(--good); }
+.ticket dd.neg { color: var(--bad); }
+.verdict { display: inline-flex; align-self: flex-start; align-items: center; gap: 8px; font-family: var(--f-body); font-weight: 600; font-size: 0.95rem; padding: 6px 12px; border-radius: 999px; border: 1.5px solid currentColor; }
+.verdict::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.verdict.good { color: var(--good); } .verdict.warn { color: var(--warn); } .verdict.bad { color: var(--bad); } .verdict.neutral { color: var(--muted); }
+.example-tag { font-family: var(--f-body); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--copper); }
+
+ul.advice { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+
+details { border-top: 1px solid var(--line); padding-top: 12px; }
+details summary { cursor: pointer; font-weight: 600; }
+details[open] summary { margin-bottom: 12px; }
+details .body { display: flex; flex-direction: column; gap: 12px; }
+
+.hist { display: flex; flex-direction: column; gap: 0; }
+.hist-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.hist-row .what { min-width: 0; }
+.hist-row .what strong { display: block; overflow-wrap: anywhere; }
+.hist-row .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.hist-row .actions { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: flex-end; }
+.hist-row .actions button { min-height: 36px; padding: 6px 12px; font-size: 0.85rem; }
+.total { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-weight: 600; }
+.status { min-height: 1.2em; }
+footer { font-size: 0.85rem; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Cu<span>Scan</span></h1>
+      <p class="muted small">Combien de cuivre dans cet objet, et est-ce que ça vaut le coup ?</p>
+    </div>
+    <div class="price-chip" aria-live="polite">
+      <small>Cours du cuivre</small>
+      <strong id="priceMain">12,91 €/kg</strong>
+      <small id="priceSrc">COMEX, 16/10/2026</small>
+    </div>
+  </header>
+
+  <section class="card" aria-labelledby="h-photo">
+    <h2 id="h-photo">Photo</h2>
+    <div class="row">
+      <label class="filebtn primary" for="camInput">Prendre une photo
+        <input id="camInput" type="file" accept="image/*" capture="environment">
+      </label>
+      <label class="filebtn" for="galInput">Choisir des photos
+        <input id="galInput" type="file" accept="image/*" multiple>
+      </label>
+    </div>
+    <div class="thumbs" id="thumbs"></div>
+    <div class="row" id="identRow" hidden>
+      <button id="identBtn" class="primary">Identifier l'objet</button>
+      <button id="clearBtn">Effacer les photos</button>
+    </div>
+    <p class="muted small status" id="identStatus">Prends l'objet en photo : Claude propose une catégorie, une teneur et un poids approximatif. Tu peux aussi remplir la fiche à la main.</p>
+    <div class="ident" id="identBox" hidden>
+      <p><strong id="identDesc"></strong> <span class="muted small" id="identConf"></span></p>
+      <p class="small" id="identTips"></p>
+    </div>
+    <div class="alert bad" id="suspectBox" hidden></div>
+  </section>
+
+  <section class="card" aria-labelledby="h-obj">
+    <h2 id="h-obj">Objet</h2>
+    <label for="cat">Catégorie
+      <select id="cat"></select>
+    </label>
+    <p class="muted small" id="catNote"></p>
+    <div class="grid2">
+      <label for="poids">Poids pesé (kg)
+        <input id="poids" type="number" inputmode="decimal" min="0" step="0.1" value="10">
+      </label>
+      <label for="achat">Prix d'achat (€) <span class="hint">0 si gratuit</span>
+        <input id="achat" type="number" inputmode="decimal" min="0" step="1" value="20">
+      </label>
+      <label for="tmin">Teneur cuivre min (%)
+        <input id="tmin" type="number" inputmode="decimal" min="0" max="100" step="1">
+      </label>
+      <label for="tmax">Teneur cuivre max (%)
+        <input id="tmax" type="number" inputmode="decimal" min="0" max="100" step="1">
+      </label>
+    </div>
+    <label for="rachat"><span id="rachatLabel">Rachat ferrailleur (% du cours)</span>
+      <input id="rachat" type="number" inputmode="decimal" min="0" max="100" step="1">
+    </label>
+    <p class="muted small" id="aiHint" hidden></p>
+  </section>
+
+  <section class="card" aria-labelledby="h-res">
+    <h2 id="h-res">Estimation</h2>
+    <div class="ticket" id="ticket"></div>
+    <div class="row">
+      <button id="saveBtn" class="primary">Enregistrer dans mon stock</button>
+    </div>
+    <p class="muted small status" id="saveStatus"></p>
+  </section>
+
+  <section class="card" aria-labelledby="h-adv">
+    <h2 id="h-adv">Pour revendre vite</h2>
+    <ul class="advice" id="advice"></ul>
+  </section>
+
+  <section class="card" aria-labelledby="h-hist">
+    <h2 id="h-hist">Mon stock</h2>
+    <p class="muted small" id="histEmpty">Tes estimations enregistrées s'afficheront ici, avec la valeur totale de ton stock. Elles sont privées : toi seul les vois.</p>
+    <div class="hist" id="hist"></div>
+    <p class="total" id="histTotal" hidden></p>
+    <div class="row" id="histActions" hidden>
+      <button id="csvBtn">Copier en CSV</button>
+    </div>
+    <p class="muted small status" id="histStatus"></p>
+  </section>
+
+  <section class="card" aria-labelledby="h-set">
+    <h2 id="h-set">Réglages</h2>
+    <div class="grid2">
+      <label for="coursManuel">Cours à la main (€/kg) <span class="hint">vide = cours publié</span>
+        <input id="coursManuel" type="number" inputmode="decimal" min="0" step="0.1" placeholder="12,91">
+      </label>
+      <label for="fraisFixes">Frais fixes (€) <span class="hint">transport, essence</span>
+        <input id="fraisFixes" type="number" inputmode="decimal" min="0" step="1" value="0">
+      </label>
+      <label for="fraisPct">Frais (% de la valeur) <span class="hint">commission, décote</span>
+        <input id="fraisPct" type="number" inputmode="decimal" min="0" max="90" step="1" value="0">
+      </label>
+      <label for="tauxH">Ton heure de travail (€/h) <span class="hint">pour dénuder ou démonter</span>
+        <input id="tauxH" type="number" inputmode="decimal" min="0" step="1" value="15">
+      </label>
+    </div>
+  </section>
+
+  <footer>
+    <p>Toutes les valeurs sont indicatives. Teneurs et taux de rachat sont des moyennes à recaler avec tes tickets de ferrailleur.</p>
+    <p>En France, le paiement des métaux en espèces est interdit et le ferrailleur relève ta pièce d'identité. Le recel de métaux volés est un délit.</p>
+  </footer>
+</div>
+
+<script>
+const CATALOG = {
+  grades: {
+    cuivre_nu_brillant: { label: "Cuivre nu brillant (millberry)", rachat_pct: 0.90 },
+    cuivre_mele: { label: "Cuivre mêlé (tuyaux, cuivre oxydé, étamé)", rachat_pct: 0.85 },
+    cable_isole: { label: "Câble isolé", rachat_pct: 0.80 },
+    laiton: { label: "Laiton", rachat_pct: 0.85 },
+    radiateur: { label: "Radiateurs cuivre/laiton ou cuivre/alu", rachat_pct: 0.75 },
+    mixte_bas: { label: "Mixte bas de gamme (moteurs, électronique)", rachat_pct: 0.55 }
+  },
+  materials: {
+    fil_cuivre_nu: { label: "Fil de cuivre nu (déjà dénudé)", min: 0.98, max: 1.0, grade: "cuivre_nu_brillant", notes: "Le grade le mieux payé. Il doit être propre, brillant, sans vernis, étain ni soudure." },
+    tuyau_cuivre: { label: "Tuyau de cuivre (plomberie, chauffage)", min: 0.94, max: 0.99, grade: "cuivre_mele", notes: "Coupe les raccords en laiton et retire la soudure et l'isolant pour rester en cuivre mêlé." },
+    cable_domestique: { label: "Câble électrique domestique (1,5 à 6 mm²)", min: 0.35, max: 0.6, grade: "cable_isole", notes: "La teneur dépend de la section et de l'épaisseur de la gaine.", val: { action: "Dénuder", grade: "cuivre_nu_brillant", kgh: 4 } },
+    cable_gros: { label: "Gros câble d'alimentation (16 mm² et plus)", min: 0.55, max: 0.8, grade: "cable_isole", notes: "Vérifie que l'âme est en cuivre et pas en aluminium (argentée, plus légère).", val: { action: "Dénuder au couteau à câble", grade: "cuivre_nu_brillant", kgh: 10 } },
+    cable_fin: { label: "Câble fin (réseau, USB, rallonges)", min: 0.1, max: 0.35, grade: "cable_isole", notes: "Trop fin pour être dénudé de façon rentable : vends-le tel quel." },
+    moteur_electrique: { label: "Moteur électrique (électroménager, outillage)", min: 0.08, max: 0.2, grade: "mixte_bas", notes: "Certains moteurs bon marché ont des bobinages en aluminium.", val: { action: "Démonter et extraire le bobinage", grade: "cuivre_mele", kgh: 6 } },
+    demarreur_alternateur: { label: "Démarreur ou alternateur auto", min: 0.08, max: 0.2, grade: "mixte_bas", notes: "Souvent racheté au kilo comme lot dédié chez les ferrailleurs." },
+    transformateur: { label: "Transformateur (micro-ondes, alimentation)", min: 0.1, max: 0.3, grade: "mixte_bas", notes: "Vérifie que les bobinages sont en cuivre (rouge) et pas en aluminium.", val: { action: "Découper les tôles et extraire le bobinage", grade: "cuivre_mele", kgh: 5 } },
+    compresseur: { label: "Compresseur (frigo, clim)", min: 0.05, max: 0.12, grade: "mixte_bas", notes: "Le fluide frigorigène doit être récupéré par un professionnel. Ne le dégaze jamais toi-même." },
+    radiateur_auto: { label: "Radiateur auto cuivre/laiton", min: 0.45, max: 0.65, grade: "radiateur", notes: "Les radiateurs récents sont souvent en aluminium et plastique : sans intérêt pour le cuivre." },
+    echangeur_clim: { label: "Échangeur de clim cuivre/alu", min: 0.3, max: 0.5, grade: "radiateur", notes: "Retire le cadre en acier pour éviter la décote." },
+    laiton_robinetterie: { label: "Laiton (robinets, raccords, vannes)", min: 0.57, max: 0.7, grade: "laiton", notes: "Retire l'acier et le plastique. Un aimant ne colle pas au laiton." },
+    carte_electronique: { label: "Carte électronique", min: 0.1, max: 0.25, grade: "mixte_bas", notes: "Surtout valorisée par les métaux précieux, chez des recycleurs spécialisés, pas au cours du cuivre." },
+    unite_centrale: { label: "Unité centrale ou petit électroménager entier", min: 0.02, max: 0.06, grade: "mixte_bas", notes: "Peu de cuivre au kilo : rentable seulement après démontage (câbles, alimentation, ventilateurs)." }
+  }
+};
+
+// Cours publié au moment de la mise en ligne ; remplacé par celui de la base s'il est disponible.
+let quote = { eur_per_kg: 12.91, usd_per_lb: 6.59, usd_eur: 0.8887, source: "COMEX HG=F + BCE", date: "2026-10-16" };
+
+const $ = (id) => document.getElementById(id);
+const nf2 = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const nf0 = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+const eur = (x) => nf2.format(x) + " €";
+const signed = (x) => (x > 0 ? "+" : "") + nf2.format(x) + " €";
+const pct = (x) => nf0.format(x * 100) + " %";
+const frDate = (iso) => { const [y, m, d] = String(iso).slice(0, 10).split("-"); return d && m && y ? `${d}/${m}/${y}` : String(iso); };
+const num = (el, fallback = 0) => { const v = parseFloat(String(el.value).replace(",", ".")); return Number.isFinite(v) ? v : fallback; };
+
+function store(key, value) { try { localStorage.setItem("cuscan:" + key, value); } catch (e) {} }
+function load(key) { try { return localStorage.getItem("cuscan:" + key); } catch (e) { return null; } }
+
+// ---- Calculs (mêmes formules que cuscan/calc.py) ----
+function point(poids, cu, prix, rachat, achat, c) {
+  const masse = poids * cu;
+  const brute = masse * prix * rachat;
+  const frais = c.fixes + brute * c.pct;
+  const nette = brute - frais;
+  return { cu, masse, brute, frais, nette, marge: nette - achat, ratio: achat > 0 ? nette / achat : null };
+}
+function seuil(poids, cu, rachat, achat, c) {
+  const d = poids * cu * rachat * (1 - c.pct);
+  return d > 0 ? (achat + c.fixes) / d : null;
+}
+function estimate(poids, lo, hi, prix, rachat, achat, c) {
+  return {
+    low: point(poids, lo, prix, rachat, achat, c),
+    high: point(poids, hi, prix, rachat, achat, c),
+    seuilMin: seuil(poids, hi, rachat, achat, c),
+    seuilMax: seuil(poids, lo, rachat, achat, c)
+  };
+}
+function upgrade(poids, lo, hi, prix, rAvant, rApres, kgh, tauxH, c) {
+  const delta = (rApres - rAvant) * prix * (1 - c.pct);
+  const heures = poids / kgh;
+  const cout = heures * tauxH;
+  return { heures, netLow: poids * lo * delta - cout, netHigh: poids * hi * delta - cout };
+}
+
+// ---- Conseils (mêmes règles que cuscan/advice.py) ----
+function advise(mat, grade, est, achat, upg, upgGrade) {
+  const out = [];
+  if (achat > 0) {
+    if (est.high.marge < 0) out.push("À ce prix, l'achat est perdant même avec la teneur la plus haute. Négocie ou passe ton tour.");
+    else if (est.low.marge < 0) out.push("L'achat n'est rentable que si la teneur est dans le haut de la fourchette. Pèse ou démonte un échantillon avant d'en acheter beaucoup.");
+    else out.push("L'achat est rentable sur toute la fourchette de teneur estimée.");
+  }
+  if (est.high.nette <= 0) out.push("Les frais dépassent la valeur du cuivre : regroupe ce lot avec d'autres avant de te déplacer.");
+  if (upg && upgGrade) {
+    const a = mat.val.action, h = nf2.format(upg.heures);
+    if (upg.netLow > 0) out.push(`${a} rapporte environ ${eur(upg.netLow)} à ${eur(upg.netHigh)} de plus pour ${h} h de travail (passage en « ${upgGrade.label} »). Ça vaut le coup.`);
+    else if (upg.netHigh > 0) out.push(`${a} n'est rentable que si la teneur est haute (${eur(upg.netLow)} à ${eur(upg.netHigh)} pour ${h} h). Pour vendre vite, vends en l'état.`);
+    else out.push(`${a} ne compense pas le temps passé (${h} h) : vends en l'état en « ${grade.label} », c'est le plus rapide.`);
+  } else {
+    out.push(`Vends directement en « ${grade.label} », c'est le plus rapide.`);
+  }
+  if (mat.notes) out.push(mat.notes);
+  out.push("Pèse sur une balance fiable avant de partir et garde le ticket de pesée du ferrailleur pour comparer.");
+  out.push("Appelle 2 ou 3 ferrailleurs avant de te déplacer : le prix au kilo d'un même grade varie beaucoup d'un site à l'autre.");
+  out.push("Un lot trié et propre (sans fer, plastique ni terre) est classé dans un meilleur grade.");
+  return out;
+}
+
+// ---- Interface ----
+const catSel = $("cat");
+for (const [k, m] of Object.entries(CATALOG.materials)) {
+  const o = document.createElement("option"); o.value = k; o.textContent = m.label; catSel.append(o);
+}
+let isExample = true;
+let ident = null;
+
+function applyCategory(key, keepRachat = false) {
+  const m = CATALOG.materials[key];
+  catSel.value = key;
+  $("tmin").value = Math.round(m.min * 100);
+  $("tmax").value = Math.round(m.max * 100);
+  const g = CATALOG.grades[m.grade];
+  $("rachatLabel").textContent = `Rachat ferrailleur pour « ${g.label} » (% du cours)`;
+  if (!keepRachat) $("rachat").value = Math.round(g.rachat_pct * 100);
+  $("catNote").textContent = m.notes;
+  $("aiHint").hidden = !(ident && ident.material_key === key);
+}
+
+function currentPrice() {
+  const manual = num($("coursManuel"), NaN);
+  return Number.isFinite(manual) && manual > 0 ? { value: manual, label: "saisi à la main" } : { value: quote.eur_per_kg, label: `COMEX, ${frDate(quote.date)}` };
+}
+
+let last = null;
+function recompute() {
+  const key = catSel.value, mat = CATALOG.materials[key], grade = CATALOG.grades[mat.grade];
+  const poids = Math.max(0, num($("poids")));
+  const achat = Math.max(0, num($("achat")));
+  let lo = Math.min(100, Math.max(0, num($("tmin")))) / 100;
+  let hi = Math.min(100, Math.max(0, num($("tmax")))) / 100;
+  if (lo > hi) [lo, hi] = [hi, lo];
+  const rachat = Math.min(100, Math.max(0, num($("rachat")))) / 100;
+  const c = { fixes: Math.max(0, num($("fraisFixes"))), pct: Math.min(0.9, Math.max(0, num($("fraisPct")) / 100)) };
+  const price = currentPrice();
+
+  $("priceMain").textContent = nf2.format(price.value) + " €/kg";
+  $("priceSrc").textContent = price.label;
+
+  const est = estimate(poids, lo, hi, price.value, rachat, achat, c);
+  let upg = null, upgGrade = null;
+  if (mat.val) {
+    upgGrade = CATALOG.grades[mat.val.grade];
+    upg = upgrade(poids, lo, hi, price.value, rachat, upgGrade.rachat_pct, mat.val.kgh, Math.max(0, num($("tauxH"))), c);
+  }
+  last = { key, mat, poids, achat, lo, hi, rachat, price, est };
+
+  let verdict;
+  if (achat <= 0) verdict = ["neutral", "Objet gratuit : tout est bénéfice"];
+  else if (est.low.marge >= 0) verdict = ["good", "Rentable"];
+  else if (est.high.marge >= 0) verdict = ["warn", "Rentable si la teneur est haute"];
+  else verdict = ["bad", "Perdant à ce prix"];
+
+  const range = (a, b, f) => (Math.abs(a - b) < 0.005 ? f(a) : `${f(a)} – ${f(b)}`);
+  const rows = [
+    ["Objet", mat.label],
+    ["Poids brut", nf2.format(poids) + " kg"],
+    ["Teneur cuivre", lo === hi ? pct(lo) : `${nf0.format(lo * 100)} – ${pct(hi)}`],
+    ["Cuivre contenu", range(est.low.masse, est.high.masse, (x) => nf2.format(x) + " kg")],
+    ["Cours", `${nf2.format(price.value)} €/kg`],
+    ["Rachat", pct(rachat)],
+    ["Valeur brute", range(est.low.brute, est.high.brute, eur)],
+    ["Frais", range(est.low.frais, est.high.frais, eur)],
+    ["Valeur nette", range(est.low.nette, est.high.nette, eur), "big"]
+  ];
+  if (achat > 0) {
+    const mcls = est.low.marge >= 0 ? "pos" : est.high.marge < 0 ? "neg" : "";
+    rows.push(["Prix d'achat", eur(achat)]);
+    rows.push(["Marge", range(est.low.marge, est.high.marge, signed), "big " + mcls]);
+    rows.push(["Ratio valeur / achat", range(est.low.ratio, est.high.ratio, (x) => nf2.format(x))]);
+    if (est.seuilMin !== null) rows.push(["Cours seuil", range(est.seuilMin, est.seuilMax, (x) => nf2.format(x)) + " €/kg"]);
+  }
+
+  const t = $("ticket");
+  t.replaceChildren();
+  const head = document.createElement("div"); head.className = "ticket-head";
+  const h1 = document.createElement("span"); h1.textContent = "Ticket d'estimation";
+  const h2 = document.createElement("span"); h2.textContent = isExample ? "" : new Date().toLocaleDateString("fr-FR");
+  if (isExample) { h2.className = "example-tag"; h2.textContent = "Exemple, modifie la fiche"; }
+  head.append(h1, h2);
+  const v = document.createElement("span"); v.className = "verdict " + verdict[0]; v.textContent = verdict[1];
+  const dl = document.createElement("dl");
+  for (const [k, val, cls] of rows) {
+    const dt = document.createElement("dt"); dt.textContent = k;
+    const dd = document.createElement("dd"); dd.textContent = val;
+    if (cls) { const parts = cls.split(" ").filter(Boolean); if (parts.includes("big")) dt.classList.add("big"); dd.classList.add(...parts); }
+    dl.append(dt, dd);
+  }
+  t.append(head, v, dl);
+  if (achat > 0 && est.seuilMin !== null) {
+    const p = document.createElement("p"); p.className = "small"; p.style.fontFamily = "var(--f-body)";
+    p.textContent = `Au-dessus d'un ratio de 1, l'achat est rentable. Le cours seuil est le cours à partir duquel tu rentres dans tes frais (cours actuel ${nf2.format(price.value)} €/kg).`;
+    p.classList.add("muted");
+    t.append(p);
+  }
+
+  const ul = $("advice"); ul.replaceChildren();
+  for (const line of advise(mat, grade, est, achat, upg, upgGrade)) { const li = document.createElement("li"); li.textContent = line; ul.append(li); }
+}
+
+function touched() { if (isExample) { isExample = false; } recompute(); }
+catSel.addEventListener("change", () => { applyCategory(catSel.value); touched(); });
+for (const id of ["poids", "achat", "tmin", "tmax", "rachat"]) $(id).addEventListener("input", touched);
+for (const id of ["coursManuel", "fraisFixes", "fraisPct", "tauxH"]) {
+  const saved = load(id); if (saved !== null) $(id).value = saved;
+  $(id).addEventListener("input", () => { store(id, $(id).value); recompute(); });
+}
+
+applyCategory("cable_domestique");
+recompute();
+
+// ---- Photos et identification ----
+let photos = [];
+let maxImages = 5;
+function setPhotos(files) {
+  photos = photos.concat(Array.from(files)).slice(-maxImages);
+  const th = $("thumbs"); th.replaceChildren();
+  for (const f of photos) { const img = document.createElement("img"); img.alt = "Photo de l'objet"; img.src = URL.createObjectURL(f); th.append(img); }
+  $("identRow").hidden = photos.length === 0;
+}
+$("camInput").addEventListener("change", (e) => { setPhotos(e.target.files); e.target.value = ""; });
+$("galInput").addEventListener("change", (e) => { setPhotos(e.target.files); e.target.value = ""; });
+$("clearBtn").addEventListener("click", () => { photos = []; setPhotos([]); });
+
+const SAMPLE_MSG = {
+  not_granted: "Tu n'as pas autorisé la page à utiliser Claude. Remplis la fiche à la main.",
+  sampling_disabled: "Claude n'est pas disponible pour ce compte. Remplis la fiche à la main.",
+  images_unavailable: "Cette vue ne peut pas envoyer de photos à Claude. Remplis la fiche à la main.",
+  rate_limited: "Trop de demandes pour l'instant. Réessaie dans quelques minutes.",
+  image_rejected: "Photo refusée (format ou taille). Essaie une autre photo en JPEG ou PNG.",
+  refused: "Claude n'a pas voulu analyser ces photos. Essaie avec d'autres photos.",
+  invalid_json: "Réponse illisible. Appuie à nouveau sur « Identifier l'objet ».",
+  session_expired: "Ta session a expiré. Reconnecte-toi à Claude.",
+  upstream_error: "Le service n'a pas répondu. Réessaie dans un instant."
+};
+
+function promptFor() {
+  const cats = Object.entries(CATALOG.materials).map(([k, m]) => `- ${k} : ${m.label} (teneur indicative ${Math.round(m.min * 100)}–${Math.round(m.max * 100)} %)`).join("\n");
+  return `Tu aides un particulier à évaluer le cuivre récupérable dans un objet qu'il possède ou envisage d'acheter, pour le revendre à un ferrailleur. Les photos jointes montrent cet objet.
+
+Catégories connues :
+${cats}
+
+Réponds uniquement avec un objet JSON de cette forme :
+{"material_key": "cable_domestique", "description": "…", "confiance": 0.8, "poids_estime_kg": 3, "teneur_cuivre_estimee": 0.45, "conseils": "…", "suspect_infrastructure": false, "raison_suspicion": ""}
+
+- material_key : la clé de la catégorie la plus proche, ou "inconnu" si aucune ne convient.
+- description : ce que tu vois, en une ou deux phrases (type d'objet, section du câble si visible, couleur du métal, présence d'aluminium).
+- confiance : entre 0 et 1.
+- poids_estime_kg : estimation grossière d'après la taille apparente, ou 0 si impossible.
+- teneur_cuivre_estimee : ta propre estimation entre 0 et 1 d'après ce que tu vois.
+- conseils : 1 à 3 conseils concrets pour valoriser cet objet précis (tri, démontage, pièges comme un bobinage en aluminium).
+- suspect_infrastructure : true si l'objet ressemble à du matériel de réseau public ou d'entreprise (câble de signalisation ferroviaire, câble télécom de réseau, câble de terre de pylône, câble avec marquage d'opérateur), qui pourrait provenir d'un vol ; raison_suspicion l'explique, sinon chaîne vide.
+
+Écris en français.`;
+}
+
+let samplePromise = window.claude ? window.claude.use("sample") : Promise.resolve(null);
+samplePromise.then(async (s) => {
+  if (!s) { $("identBtn").disabled = true; $("identStatus").textContent = "L'identification par photo n'est pas disponible ici. Remplis la fiche à la main."; return; }
+  const lim = await s.limits().catch(() => null);
+  if (!lim || !lim.images) { $("identBtn").disabled = true; $("identStatus").textContent = "Cette vue ne peut pas envoyer de photos à Claude. Remplis la fiche à la main."; return; }
+  maxImages = lim.images.maxCount || 5;
+});
+
+$("identBtn").addEventListener("click", async () => {
+  const s = await samplePromise;
+  if (!s || photos.length === 0) return;
+  const btn = $("identBtn"), st = $("identStatus");
+  btn.disabled = true; st.textContent = "Analyse en cours… (10 à 60 secondes)";
+  try {
+    const r = await s.json(promptFor(), { images: photos, modelTier: "default" });
+    const clamp = (x) => Math.min(1, Math.max(0, Number(x) || 0));
+    ident = {
+      material_key: String(r.material_key || "inconnu"),
+      description: String(r.description || ""),
+      confiance: clamp(r.confiance),
+      poids: Math.max(0, Number(r.poids_estime_kg) || 0),
+      teneur: clamp(r.teneur_cuivre_estimee),
+      conseils: String(r.conseils || ""),
+      suspect: r.suspect_infrastructure === true,
+      raison: String(r.raison_suspicion || "")
+    };
+    $("identBox").hidden = false;
+    $("identDesc").textContent = ident.description;
+    $("identConf").textContent = `(confiance ${pct(ident.confiance)})`;
+    $("identTips").textContent = ident.conseils;
+    const sb = $("suspectBox");
+    sb.hidden = !ident.suspect;
+    if (ident.suspect) sb.textContent = `Attention : cet objet ressemble à du matériel de réseau public ou d'entreprise. ${ident.raison} Ne l'achète pas et ne le revends pas sans preuve d'origine : le recel de métaux volés est un délit.`;
+
+    if (CATALOG.materials[ident.material_key]) {
+      applyCategory(ident.material_key);
+      st.textContent = "Fiche pré-remplie. Pèse l'objet et corrige le poids.";
+    } else {
+      st.textContent = "Objet non reconnu dans la base : choisis la catégorie la plus proche et ajuste la teneur à la main.";
+    }
+    if (ident.poids > 0) $("poids").value = Math.round(ident.poids * 10) / 10;
+    $("aiHint").textContent = `Teneur estimée par Claude d'après la photo : ${pct(ident.teneur)}. Poids estimé : ${ident.poids > 0 ? nf2.format(ident.poids) + " kg" : "inconnu"}.`;
+    $("aiHint").hidden = !CATALOG.materials[ident.material_key];
+    isExample = false;
+    recompute();
+  } catch (e) {
+    st.textContent = (e && SAMPLE_MSG[e.code]) || (e && e.code === "cancelled" ? "" : SAMPLE_MSG.upstream_error);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ---- Base : cours partagé et stock privé ----
+let col = null;
+let histRows = [];
+(async () => {
+  const db = window.claude ? await window.claude.use("db") : null;
+  if (!db) { $("histEmpty").textContent = "L'enregistrement n'est pas disponible dans cette vue (connecte-toi à Claude)."; $("saveBtn").disabled = true; return; }
+
+  db.doc("config/cours").onSnapshot((snap) => {
+    const d = snap.exists ? snap.data() : null;
+    if (d && Number(d.eur_per_kg) > 0) { quote = { ...quote, ...d, eur_per_kg: Number(d.eur_per_kg) }; recompute(); }
+  }, () => {});
+
+  const user = await window.claude.use("user");
+  const uid = user ? await user.id() : null;
+  if (!uid) { $("histEmpty").textContent = "Connecte-toi à Claude pour enregistrer ton stock."; $("saveBtn").disabled = true; return; }
+  col = db.collection("data/users/" + uid);
+  col.orderBy("ts", "desc").limit(200).onSnapshot((snap) => {
+    histRows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    renderHist();
+  }, () => { $("histStatus").textContent = "Le stock n'a pas pu être chargé. Recharge la page."; });
+})();
+
+$("saveBtn").addEventListener("click", async () => {
+  if (!col || !last) return;
+  const btn = $("saveBtn"); btn.disabled = true;
+  const e = last.est;
+  try {
+    await col.add({
+      ts: Date.now(), objet: last.mat.label, description: ident && ident.material_key === last.key ? ident.description : "",
+      poids_kg: last.poids, teneur_min: last.lo, teneur_max: last.hi, cours_eur_kg: last.price.value, rachat_pct: last.rachat,
+      prix_achat: last.achat, valeur_nette_min: e.low.nette, valeur_nette_max: e.high.nette, marge_min: e.low.marge, marge_max: e.high.marge
+    });
+    $("saveStatus").textContent = "Enregistré dans ton stock.";
+  } catch (err) {
+    $("saveStatus").textContent = err && err.code === "quota_exceeded" ? "Stock plein : supprime d'anciennes lignes." : "Échec de l'enregistrement. Réessaie.";
+  } finally { btn.disabled = false; }
+});
+
+function renderHist() {
+  const box = $("hist"); box.replaceChildren();
+  $("histEmpty").hidden = histRows.length > 0;
+  $("histTotal").hidden = histRows.length === 0;
+  $("histActions").hidden = histRows.length === 0;
+  let tLo = 0, tHi = 0, tAchat = 0;
+  for (const r of histRows) {
+    tLo += Number(r.valeur_nette_min) || 0; tHi += Number(r.valeur_nette_max) || 0; tAchat += Number(r.prix_achat) || 0;
+    const row = document.createElement("div"); row.className = "hist-row";
+    const what = document.createElement("div"); what.className = "what";
+    const s = document.createElement("strong"); s.textContent = r.objet;
+    const m = document.createElement("span"); m.className = "muted small";
+    m.textContent = `${new Date(r.ts).toLocaleDateString("fr-FR")} · ${nf2.format(r.poids_kg)} kg · achat ${eur(r.prix_achat)}`;
+    what.append(s, m);
+    const n = document.createElement("div"); n.className = "num";
+    n.textContent = `${eur(r.valeur_nette_min)} – ${eur(r.valeur_nette_max)}`;
+    const act = document.createElement("div"); act.className = "actions";
+    const del = document.createElement("button"); del.textContent = "Supprimer";
+    del.addEventListener("click", async () => {
+      if (del.dataset.armed !== "1") { del.dataset.armed = "1"; del.textContent = "Confirmer la suppression"; return; }
+      del.disabled = true;
+      try { await col.doc(r.id).delete(); } catch (e) { del.disabled = false; $("histStatus").textContent = "Suppression impossible. Réessaie."; }
+    });
+    act.append(del);
+    row.append(what, n, act);
+    box.append(row);
+  }
+  $("histTotal").textContent = `Valeur nette du stock : ${eur(tLo)} – ${eur(tHi)} (achats : ${eur(tAchat)})`;
+}
+
+$("csvBtn").addEventListener("click", () => {
+  const cols = ["date", "objet", "poids_kg", "teneur_min", "teneur_max", "cours_eur_kg", "rachat_pct", "prix_achat", "valeur_nette_min", "valeur_nette_max", "marge_min", "marge_max"];
+  const lines = [cols.join(";")].concat(histRows.map((r) => cols.map((c) => {
+    const v = c === "date" ? new Date(r.ts).toISOString().slice(0, 10) : r[c];
+    return typeof v === "number" ? String(Math.round(v * 1000) / 1000).replace(".", ",") : `"${String(v ?? "").replace(/"/g, '""')}"`;
+  }).join(";")));
+  const text = lines.join("\n");
+  navigator.clipboard.writeText(text).then(
+    () => { $("histStatus").textContent = "CSV copié : colle-le dans un tableur."; },
+    () => { $("histStatus").textContent = "Copie impossible dans cette vue."; }
+  );
+});
+</script>

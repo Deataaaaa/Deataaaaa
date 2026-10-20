@@ -266,10 +266,10 @@ export async function create() {
       keyL.intensity = endK ? 16 : 0; keyL.position.set(-2.6, 1.4, 3.6);
       // ---- the lagoon: chop, the rings of every blast still spreading ----
       const rings = VU.uRing.value; for (const r of rings) r.set(0, 0, -1, 0);
-      VU.uChop.value = 1 + Math.min(3, Math.max(0, n - 10) * 0.15);
+      VU.uChop.value = 1 + Math.min(0.6, Math.max(0, n - 10) * 0.05);
       for (let i = id === 0 ? 40 : Math.max(12, n - 5); i <= n; i++) { const B = blastAt(i, s); if (!B) continue; const slot = i % 6;
-        const gust = i < 25, Rr = gust ? Math.min(B.R, 0.6 + 45 * B.tp) : B.R, amp = Math.min(1.2, 0.18 * Math.log10(B.E / 60)) * Math.exp(-B.tp / (gust ? 1.2 : 2.5));
-        if (amp > 0.01) rings[slot].set(0, 0.15, Math.sqrt(Math.max(Rr * Rr - 8.1, 0.01)), amp); }
+        const gust = i < 25, Rr = gust ? Math.min(B.R, 0.6 + 20 * B.tp) : B.R, amp = Math.min(1.2, 0.18 * Math.log10(B.E / 60)) * Math.exp(-B.tp / (gust ? 1.2 : 2.5));
+        if (amp > 0.01) rings[slot].set(0, 0.15, Math.sqrt(Math.max(Rr * Rr - 8.1, 0.01)), gust || id === 0 ? amp : amp * 0.35); }
       VU.uSteam.value = farK ? smooth(39, 44, s) * 0.5 : 0; LAG.U.uFogD.value = farK ? 0.000015 : 0.00022; LAG.U.uFogC.value.set(farK ? '#8c6b61' : '#d9a888');
       // ---- the gondolas: bobbing, rocked by the gusts, then pushed straight out over the water ----
       let push = 0, rock = 0; for (let i = 15; i <= n; i++) { const B = blastAt(i, s); if (!B) continue; const kk = Math.pow(B.E, 0.25) * 0.06;
@@ -290,14 +290,15 @@ export async function create() {
       // ---- domes: the condensation skin of the biggest recent fronts; faded before they reach the lens ----
       const camD = cam.position.distanceTo(V(0, 2, 0));
       domes.forEach((d) => { d.mesh.visible = false; });
-      if (id <= 3) for (let i = id === 0 ? 40 : Math.max(26, n - 2), k = 0; i <= n && k < 3; i++, k++) { const B = blastAt(i, s); if (!B) continue; const d = domes[i % 3];
+      // (only in the hook's slow motion: at full speed a dome is a 3-frame pop)
+      if (id === 0) for (let i = 40, k = 0; i <= n && k < 3; i++, k++) { const B = blastAt(i, s); if (!B) continue; const d = domes[i % 3];
         d.mesh.visible = true; d.mesh.position.set(0, VZ.Y0 + 1.65, 0.15); d.U.uR.value = B.R; d.U.uTime.value = s;
-        d.U.uA.value = Math.min(0.9, 0.12 * Math.log10(B.E / 1e6)) * (id === 0 ? 1 : 1 - smooth(camD * 0.55, camD * 0.92, B.R)) * Math.exp(-B.tp / 1.5); }
+        d.U.uA.value = Math.min(0.9, 0.12 * Math.log10(B.E / 1e6)) * (id === 0 ? 1 : smooth(0, 0.12, B.tp) * (1 - smooth(camD * 0.55, camD * 0.92, B.R))) * Math.exp(-B.tp / 1.5); }
       // the newest big dome bends the light behind it (a refraction ring in the grade); in the hook, the air in it glows
       U.uWarp.value = 0; HL.mesh.visible = false;
-      { const i = id === 0 ? 40 : n, B = i >= 30 && id <= 3 ? blastAt(i, s) : null;
+      { const i = 40, B = id === 0 ? blastAt(i, s) : null;
         if (B && (id === 0 || B.tp < 0.3)) { const c0 = V(0, VZ.Y0 + 1.65, 0.15), right = V(1, 0, 0).applyQuaternion(cam.quaternion), p0 = c0.clone().project(cam), p1 = c0.clone().addScaledVector(right, B.R).project(cam);
-          U.uWarpC.value.set(p0.x * 0.5 + 0.5, p0.y * 0.5 + 0.5); U.uWarpR.value = Math.hypot((p1.x - p0.x) * 0.5, (p1.y - p0.y) * 0.5 * 1.7778); U.uWarpW.value = 0.03; U.uWarp.value = id === 0 ? 0.008 : 0.008 * Math.exp(-B.tp / 0.12);
+          U.uWarpC.value.set(p0.x * 0.5 + 0.5, p0.y * 0.5 + 0.5); U.uWarpR.value = Math.hypot((p1.x - p0.x) * 0.5, (p1.y - p0.y) * 0.5 * 1.7778); U.uWarpW.value = 0.03; U.uWarp.value = id === 0 ? 0.008 : 0.008 * smooth(0, 0.07, B.tp) * Math.exp(-B.tp / 0.12);
           if (id === 0) { HL.mesh.visible = true; HL.mesh.position.copy(c0); HL.U.uR.value = B.R * 0.6; HL.U.uI.value = 0.3; } } }
       // ---- water thrown up and dust off the paving behind each big front ----
       let sk = 0, dk = 0;
@@ -326,8 +327,8 @@ export async function create() {
       for (let i = sk; i < 420; i++) sprayB.set(i, 0, -999, 0, 0, 0, 0, 0, 0, 0); for (let i = dk; i < 360; i++) dustB.set(i, 0, -999, 0, 0, 0, 0, 0, 0, 0);
       sprayB.commit(); sprayB.update(cam, R.SSAA, SUN); dustB.commit(); dustB.update(cam, R.SSAA, SUN); sprayB.mesh.visible = dustB.mesh.visible = id <= 3;
       // ---- the flash of the big ones (the air in the jet glows), the fireballs of the far shot ----
-      let fl = 0; for (let i = Math.max(36, n - 3); i <= n && id <= 3; i++) { const B = blastAt(i, s); if (B) fl += Math.pow(B.E / 1e9, 0.5) * 60 * Math.exp(-B.tp / 0.12); }
-      flashL.position.set(0, VZ.Y0 + 1.7, 1.8); flashL.intensity = Math.min(fl, id === 0 ? 8 : 6000);
+      let fl = 0; for (let i = Math.max(36, n - 3); i <= n && id <= 3; i++) { const B = blastAt(i, s); if (B) fl += Math.pow(B.E / 1e9, 0.5) * 40 * smooth(0, 0.07, B.tp) * Math.exp(-Math.max(0, B.tp - 0.07) / 0.25); }   // rises over two frames, fades over eight
+      flashL.position.set(0, VZ.Y0 + 1.7, 1.8); flashL.intensity = Math.min(fl, id === 0 ? 8 : 1500);
       FB.mesh.visible = HL.mesh.visible = mush.mesh.visible = false; fbL.intensity = 0;
       if (farK) { let Rf = 0, heat = 0; for (let i = 46; i <= n; i++) { const B = blastAt(i, s); if (!B) continue; const Rmax = 60 * Math.pow(B.E / 4.184e12, 0.4), g = smooth(0, 0.35, B.tp);
           Rf = Math.max(Rf, Rmax * (0.25 + 0.75 * g)); heat = Math.max(heat, Math.exp(-B.tp / 0.6)); }
@@ -348,7 +349,7 @@ export async function create() {
         hazeB.commit(); hazeB.update(cam, R.SSAA, V(-0.4, 0.3, 0.8).normalize()); embers.update(s, cam, R.SSAA); }
       // ---- camera shake when a front reaches the lens; exposure ----
       let sh = 0; for (let i = Math.max(14, n - 4); i <= n; i++) { const B = blastAt(i, s); if (!B || id > 4) continue; const dd = id === 4 ? farDist(t) : camD, arr = B.R - dd;
-        if (arr > 0) sh += Math.min(1, 0.0025 * Math.pow(B.E, 0.18)) * Math.exp(-arr / Math.max(8, dd * 0.6)); }
+        if (arr > 0) sh += Math.min(1, 0.0025 * Math.pow(B.E, 0.18)) * smooth(0, Math.max(40, dd * 0.5), arr) * Math.exp(-arr / Math.max(30, dd * 1.2)); }   // eases in over a few frames
       U.uShake.value.set((Math.sin(t * 17) + 0.6 * Math.sin(t * 23 + 1)) * sh * 0.004, (Math.cos(t * 19) + 0.6 * Math.sin(t * 29)) * sh * 0.004);   // a sway, not a per-frame jitter
       const ex = endK ? 1.25 : 1.0; R.renderer.toneMappingExposure = ex; R.bloom.strength = farK ? 0.32 : 0.28; R.bloom.radius = 0.5; R.bloom.threshold = 0.9 / ex;
       U.uFadeWhite.value = Math.min(0.5, fl > 0 ? 0.25 * Math.min(1, fl / 2e4) : 0);

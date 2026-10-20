@@ -142,9 +142,9 @@ export function makeLagoon({ ssaa = 2 } = {}) {
         n += vec2(fbm3(vec3(vW.xz * 0.35 + vec2(t * 0.15, 0.0), t * 0.1), 2), fbm3(vec3(vW.zx * 0.35 + 9.0, t * 0.1), 2)) * 0.035 * uChop * (1.0 - smoothstep(0.15, 0.9, px));
         float foam = 0.0;
         for (int i = 0; i < 6; i++) { vec4 r = uRing[i]; if (r.z < 0.0) continue;
-          vec2 dv = vW.xz - r.xy; float d = length(dv), w = max(0.6, r.z * 0.04) + px * 2.0, x = (d - r.z) / w;
-          float a = exp(-x * x) * r.w; n += normalize(dv + 1e-4) * a * cos(x * 2.0) * 0.5;
-          foam += a * smoothstep(-1.5, 0.2, x) * (1.0 - smoothstep(0.2, 1.4, x));
+          vec2 dv = vW.xz - r.xy; float d = length(dv), w = max(1.6, r.z * 0.12) + px * 2.0, x = (d - r.z) / w;   // wide enough to cover a fast front's travel in one frame
+          float dc = length(cameraPosition.xz - r.xy), a = exp(-x * x) * r.w * min(1.0, 25.0 / max(r.z, 1.0)) * (1.0 - smoothstep(dc * 0.3, dc * 0.7, r.z));   // gone before it sweeps under the lens n += normalize(dv + 1e-4) * a * cos(x * 1.6) * 0.2;
+          foam += 0.6 * a * smoothstep(-1.5, 0.2, x) * (1.0 - smoothstep(0.2, 1.4, x));
           n += vec2(fbm3(vec3(vW.xz * 0.25, t), 2), fbm3(vec3(vW.zx * 0.25 + 3.0, t), 2)) * 0.035 * r.w * step(d, r.z) * (1.0 - smoothstep(0.1, 1.0, px));
         }
         vec3 V = normalize(cameraPosition - vW), N = normalize(vec3(-n.x * 2.6, 1.0, -n.y * 2.6));

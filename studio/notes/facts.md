@@ -286,3 +286,28 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
 - "Field change ~150× smaller, over hours" / end card "A storm 150× weaker": the storm's Dst minimum was −589 nT (14 March,
   02 UT), built up over hours; the flip changes the field at Giza by 86,000 nT (43 → −43 µT) in 5 s: 86,000 / 589 ≈ 146.
 - "Big transformers: years to replace": large power transformer lead times ~2–4 years (US DOE, 2024 supply-chain report: 120–210 weeks).
+
+## EP17 (post 11): What if every sneeze was twice as strong as the last? (Venice, the Molo)
+- "A normal sneeze: ~0.05 J": a sneeze pushes out ~1–1.5 L of air (~1.2–1.8 g) at a peak flow of a few L/s through a
+  3–4 cm² opening, ~9 m/s (Gupta et al. 2009, Indoor Air 19:517: sneeze peak flow ~3–4.5 L/s): ½ × 0.0012 kg × (9 m/s)² ≈ 0.05 J.
+  (The popular "160 km/h sneeze" is a myth.) Sneeze n carries E = 0.05 J × 2^(n−1); every sneeze holds more energy than all
+  the earlier ones together (2^(n−1) > 2^(n−1) − 1).
+- HUD "N× a normal sneeze": 2^(n−1) (sneeze 10: 512×). TNT = 4,184 J/g.
+- "Sneeze 20: six grams of TNT": 0.05 × 2^19 = 26.2 kJ = 6.3 g.
+- "Sneeze 25: a hand grenade": 0.84 MJ ≈ 200 g of TNT; an M67 grenade holds 180 g of Composition B (~1.3× TNT) ≈ 0.98 MJ.
+- "Sneeze 30: the lagoon erupts": 26.8 MJ ≈ 6.4 kg of TNT.
+- "Sneeze 40: 7 tonnes of TNT": 27.5 GJ ≈ 6.6 t.
+- "Sneeze 45 drops the bell tower": 880 GJ ≈ 210 t of TNT. Real anchor: St Mark's Campanile (98.6 m) collapsed on its own
+  on 14 July 1902 and was rebuilt "where it was, as it was" by 1912.
+- "Sneeze 51: Hiroshima": 56 TJ ≈ 13 kt (Little Boy ~15 kt ≈ 63 TJ).
+- "Sneeze 63: the biggest bomb ever": 2.3 × 10¹⁷ J ≈ 55 Mt; Tsar Bomba (1961) was ~50 Mt ≈ 2.1 × 10¹⁷ J.
+- "Sneeze 84: the dinosaur asteroid": 4.8 × 10²³ J ≈ 115 teratons; the Chicxulub impact is estimated at ~10²³–5 × 10²³ J
+  (~100 teratons is the common figure).
+- "Sneeze 97 boils the oceans": 4.0 × 10²⁷ J; the oceans (1.35 × 10²¹ kg) need ~2.6 MJ/kg (heat from ~15 °C to 100 °C +
+  2.26 MJ/kg to boil) ≈ 3.5 × 10²⁷ J.
+- "Sneeze 113 would blow Earth apart": 2.6 × 10³² J ≥ Earth's gravitational binding energy, 2.24 × 10³² J (3GM²/5R).
+- "One girl sneezed for 976 days straight": Donna Griffiths (UK), aged 12, sneezed from 13 January 1981 to 16 September 1983,
+  976 days, an estimated million sneezes in the first year (Guinness World Records).
+- Visual scales (not on screen): blast fronts follow Sedov–Taylor, R = 1.03 (E t²/ρ)^(1/5), then 343 m/s; fireball radius
+  ≈ 60 m × Y(kt)^0.4 (Hiroshima ~180 m, Tsar Bomba ~4.6 km). Venice sunset on 20 October is ~18:20 CEST: at "6:05 pm" the sun
+  is a few degrees up in the west-southwest, behind the Salute from the Molo.

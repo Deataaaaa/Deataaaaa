@@ -384,7 +384,7 @@ export function fireStripAtlas(seed = 7) {
   }
   return dataTex(W, Hh, d);
 }
-export function smokeAtlas(seed = 2) {
+export function smokeAtlas(seed = 2, normK = 3.2) {
   const N = 128, W = N * 2, d = new Uint8Array(W * W * 4), dens = new Float32Array(N * N);
   for (let tile = 0; tile < 4; tile++) {
     const ox = (tile % 2) * N, oy = Math.floor(tile / 2) * N, r = rng(seed * 31 + tile);
@@ -399,7 +399,7 @@ export function smokeAtlas(seed = 2) {
     for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
       const D = (xx, yy) => dens[clamp(yy, 0, N - 1) * N + clamp(xx, 0, N - 1)];
       const gx = D(x + 2, y) - D(x - 2, y), gy = D(x, y + 2) - D(x, y - 2);
-      let nx = -gx * 3.2, ny = -gy * 3.2; const l = Math.hypot(nx, ny, 1); nx /= l; ny /= l;   // rows go up in v: outward normal
+      let nx = -gx * normK, ny = -gy * normK; const l = Math.hypot(nx, ny, 1); nx /= l; ny /= l;   // rows go up in v: outward normal
       const k = ((oy + y) * W + ox + x) * 4, dd = dens[y * N + x];
       d[k] = (nx * 0.5 + 0.5) * 255; d[k + 1] = (ny * 0.5 + 0.5) * 255; d[k + 2] = clamp(0.4 + dd) * 255; d[k + 3] = Math.pow(dd, 0.9) * 255;
     }

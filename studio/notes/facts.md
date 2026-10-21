@@ -311,3 +311,44 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
 - Visual scales (not on screen): blast fronts follow Sedov–Taylor, R = 1.03 (E t²/ρ)^(1/5), then 343 m/s; fireball radius
   ≈ 60 m × Y(kt)^0.4 (Hiroshima ~180 m, Tsar Bomba ~4.6 km). Venice sunset on 20 October is ~18:20 CEST: at "6:05 pm" the sun
   is a few degrees up in the west-southwest, behind the Salute from the Molo.
+
+## EP18 (post 12): What if all the ice on Earth melted in 5 seconds? (Diamond Beach, Iceland)
+- Premise model (ours): the melt eats into all ice from its surface at a depth d(τ) = 0.03 m × e^(3(τ − 1)) after τ seconds, so
+  the thinnest ice goes first: 1.5 mm at the start, 3 cm after 1 s (ice cubes, half-thickness ~1.3 cm), 2.7 m after 2.5 s
+  (beach blocks), ~240 m after 4 s, 4.9 km at 5 s (the thickest ice on Earth). The HUD "Melting X deep" is d(τ).
+- "4:45 pm": 21 October 2026, 16:45 UTC at Jökulsárlón (64.05° N, 16.18° W): Sun 3.0° up at azimuth 237° (NOAA solar
+  formulas); sunset ~17:20.
+- "Every block of ice here fell off a glacier": Diamond Beach (Breiðamerkursandur) ice calves from Breiðamerkurjökull into
+  Jökulsárlón, drifts out through the Jökulsá to the sea and washes back ashore.
+- "Ice on land: 30 million km³": Antarctic ice sheet 26.5 million km³ (Bedmap2, Fretwell et al. 2013) + Greenland 2.9 million
+  km³ (BedMachine, Morlighem et al. 2017: 2.99) + glaciers and ice caps ~0.16 million km³ (Farinotti et al. 2019) ≈ 29.6.
+- "Ice cubes: 1.3 cm", "Beach ice: up to 1.5 m": half-thicknesses of the cubes (2.6 cm) and of the largest blocks in the scene.
+- "The glacier: 300 m": Breiðamerkurjökull near its front, order of magnitude (its bed lies 200–300 m below sea level under the
+  lagoon; Björnsson et al. 2001, Jökull). "Vatnajökull: 950 m": maximum ice thickness ~950 m (Björnsson & Pálsson 2008).
+  "Antarctica: 4.9 km": thickest ice measured 4,897 m (Bedmap2, Astrolabe Subglacial Basin).
+- "Then the glacier, then the ice cap": Vatnajökull, Europe's largest ice cap by volume, ~7,700 km² (2019) and ~3,100 km³ of
+  ice (Björnsson & Pálsson 2008); as water 3,100 × 0.917 ≈ 2,840 km³ ("Vatnajökull: 2,800 km³ of water").
+- "800 times the great flood of 1996": the Gjálp eruption's jökulhlaup from Grímsvötn (5–7 Nov 1996), ~3.2–3.8 km³ of water,
+  peak ~45,000–53,000 m³/s; 2,840 / 3.5 ≈ 810. "That one swept away bridges on this coast": it destroyed the Gígjukvísl bridge
+  and damaged the Skeiðará bridge on Route 1 (Skeiðarársandur, ~50 km west).
+- Flood front (HUD "310 km/h", "70 m tall"): our estimate. Dam-break front speed 2√(g h₀) with h₀ ≈ 190 m of meltwater above
+  the lagoon gives 86 m/s ≈ 310 km/h (Ritter's solution, frictionless: an upper bound). Vatnajökull's 2,840 km³ over its
+  7,700 km² is a 370 m layer of water; a front tens of metres to ~100 m high near the coast is the right order.
+- "Greenland pours into the sea" / "Greenland: 2.9 million km³ of ice": as above. "Waves taller than any ever recorded": our
+  estimate. A 2 km dome of water draining over the ice-sheet margin flows at critical depth h = (q/√g)^(2/3) with
+  q ≈ (8/27)√g h₀^1.5 (h₀ = 2,000 m): q ≈ 83,000 m²/s per metre of margin, h ≈ 890 m. The record is Lituya Bay, Alaska,
+  9 July 1958: run-up 524 m ("Tallest wave ever recorded: 524 m").
+- "Then Antarctica: 26 million km³ of ice" (26.5, Bedmap2).
+- "In three days, the seas rise 66 metres": sea-level equivalents 58.3 m (Antarctica) + 7.4 m (Greenland) + 0.32 m (glaciers)
+  ≈ 66 m (IPCC AR6 WG1 ch. 9). Timing is our estimate: long waves cross ocean basins at √(g·4,000 m) ≈ 200 m/s, a few
+  thousand km per 6 h; the meltwater drains off the ice sheets in hours to days. HUD sea level = 66 m × (1 − e^(−h/18 h))
+  normalised to reach 66 m at 72 h.
+- Space map: land below ~66 m from NASA's GEBCO elevation map (gebco_08_rev_elev, 25 m steps: levels 0–1 flooded, level 2
+  weighted 0.64); ice from the Blue Marble texture's white at high latitudes. Sun at 16:45 UTC: subsolar point 10.9° S, 75° W.
+- "London, New York, Shanghai: gone": central London mostly below 30 m; most of New York City below 30 m (its high points,
+  e.g. Bennett Park in Manhattan at 81 m, stay dry); Shanghai averages ~4 m. All largely under a 66 m rise.
+- "1 billion people live under 10 m above the sea": Kulp & Strauss 2019 (Nature Communications 10, 4844): ~1 billion people
+  live on land less than 10 m above current high-tide lines.
+- End card: "All the ice on Earth = 66 m of sea" (above), "Vatnajökull: 3,100 km³ of ice" (above).
+- WTF (not a claim): a polar bear on Diamond Beach doing the "6-7" meme. (Polar bears do reach Iceland on drift ice: ~600
+  recorded since settlement, the last in 2024.)

@@ -40,3 +40,45 @@
 - Keep: realism (rule 4), worst case + real cases (rule 12), the frame-1 shock (rule 14: the flash-forward now carries the
   title and the countdown), the loud phone master (rule 6: −10.5 LUFS, but with the reference's contrast between the calm
   setup and the climax), the end question (rule 15, written on the loop end card).
+
+# Second reference: his "What if electrons disappeared for 5 seconds?" (16.2M views)
+
+Drive › Reel ref › "Reel-reference.mp4" (owner, 21 Oct 2026: "His videos are ULTRA DETAILED"). 80.15 s, a 576×1024 TikTok
+download at 1.5 Mbps, so its detail does not come from resolution. Same template as the neutrons reel: the same Central Park
+set, an 8 s countdown (`ELECTRONS DISAPPEAR IN`, sub `EVERY ATOM ON EARTH HAS THEM`), the event at 8.0 s, then
+`ELECTRONS RETURN IN 0:04.979` slowed 11× to 64 s, `ELECTRONS BACK / CENTRAL PARK, 5 SECONDS LATER`, black at 72 s, and the end
+card at 73.5 s. Scene detection finds only 2 hard cuts (8.0 and 64.0 s). The white-out at 41.5 s and the black at 72 s are
+fades. −14.2 LUFS, LRA 13 LU, true peak +1.4 dBFS (clipped by TikTok's re-encode).
+
+## Beats (each caption is shown literally, at the moment it is read)
+| Time | Caption | Picture |
+|---|---|---|
+| 0–8 s | "You're in Central Park, New York." | a low-poly picnic at dusk, dozens of people each doing something (frisbee, blankets, walking), a full skyline with lit windows, the title with a 3D atom icon |
+| 8 s | "Light now passes straight through everything." | **cut**: the whole world becomes white line art on black (every tree, person, window and blanket square outlined); the ground is a dense star field; the Sun is a flare with a long horizontal streak |
+| 14–20 s | "You can see the stars through your hands." | POV: your hands rise, drawn in line art, with stars behind them |
+| 20–28 s | "Every atom is now pure positive charge." / "And positive charges repel." | the line-art park, the glitter in the ground thickening |
+| 28–35 s | "Each grain of sand becomes a nuclear bomb." | the ground breaks into thousands of four-point sparkles |
+| 35–41 s | "Each person outshines the Sun." | the people glow white, brighter than the flared Sun; white-out |
+| 43–64 s | "Earth comes apart at nearly light speed." / "More than the Milky Way will ever shine." | a turbulent white sphere fills the frame (`EARTH IS NOW 151,383 MILES WIDE`), a slow push-in to the limb, the Moon a dark disc |
+| 64–72 s | "Every electron returns to where it was." / "With nothing to hold them, they explode too." | **cut**: people and city rebuilt out of blue points, then a blue blast |
+| 73.5–80 s | — | charcoal end card: the title (key word in pale blue) + 2 mono lines `ELECTRONS ARE 0.03% OF YOUR MASS / AND EVERY CHEMICAL BOND IN YOUR BODY` |
+
+## What reads as "ultra detailed" (it is not polygons: blocky people and box buildings)
+1. **A new look for the new physics.** At the event the whole world changes how it is drawn (line art), and the epilogue
+   changes it again (points). The change of look itself says "physics just changed", with no explanation needed.
+2. **Density everywhere.** Crowds where everyone does something, rows of trees, full skylines with lit window grids. After
+   the event, thousands of star specks, sparkles and particle streaks at every depth. No frame has an empty area.
+3. **The picture proves every caption.** One visual idea per line, on screen at the moment the line is read.
+4. **Light is a character.** A flared Sun (white core, long anamorphic streak, a ghost), heavy bloom and glow halos.
+5. **Few, slow moves.** One slow camera move per phase; POV only for the personal beat (the hands).
+
+## What we adopt (from post 12 on)
+- **A look change at the event, in our realistic style.** Each episode invents its own: what the new physics would really
+  look like, rendered physically (PBR, real light). Never his line art or point clouds: rule 3 says "never reuse his
+  footage, scenes or wording".
+- **A density pass on every shot**: people doing things, lit windows, props in the foreground and particles in the air at
+  every depth (`fx.js` Sparks/Billboards, within rule 18).
+- **Storyboard caption by caption**: each line gets the picture that proves it, on screen while the voice reads it.
+- **A light-source hero**: `fx.js` `Flare` on the Sun or the event's light.
+- **An epilogue, "X BACK · N SECONDS LATER"**: when the condition ends, the return is its own disaster.
+- Keep: realism, worst case, our places, words and red, the voiceover, the loud phone master (rule 6), the frame-1 shock.

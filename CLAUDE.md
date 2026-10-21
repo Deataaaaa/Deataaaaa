@@ -17,6 +17,9 @@ often while at work, so every deliverable has to be ready to post straight from 
    from "you" in a real, famous place. Avoid what every science account already did (gravity, oxygen or friction
    disappearing, the Sun or Moon vanishing, Earth stopping, black holes) and the reference creator's own particle
    series (electrons, neutrons, protons…), so we never look like a copy.
+   **Update (owner, 21 Oct 2026: "Do the same ideas as him, he BLEW UP tiktok"):** remake his biggest topics (electrons
+   16.2M, oxygen 12.3M, neutrons 5M, pop star 100x taller 4.3M, pi = 3 3.2M, iron 2.5M, atom gains a proton 1.1M) in our own
+   realistic style: our own place, numbers, script, visuals and music. Never reuse his footage, scenes or wording.
 4. **Realism first.** PBR materials, real lighting, a real-looking human ("you"), never a glowing or blown-out
    mannequin. Check exposure on every shot: nothing should be blinding on a phone screen.
 5. **Brand.** Accent colour is the logo red `#ff2e2e` (titles' key word, warnings); everything else white/

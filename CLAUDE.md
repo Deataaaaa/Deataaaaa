@@ -58,7 +58,7 @@ often while at work, so every deliverable has to be ready to post straight from 
     build, outfit). Keep the cast log below up to date and never reuse a look.
 17. **Cinematic, like the reference.** The owner's benchmark is a viral "What if neutrons disappeared for 5 seconds?"
     reel (10M views on TikTok; theirs reach ~1,500). Breakdown: `studio/notes/reference.md` (file: Drive › Reel ref ›
-    "Famous reel.mp4"; the Drive connector only downloads files under 10 MB: ask for "Anyone with the link").
+    "Famous reel.mp4"; the Drive connector fails on videos over ~7 MB (its base64 reply is too big) and cannot share publicly: ask the owner for "Anyone with the link", then curl `drive.usercontent.google.com/download?id=ID&export=download&confirm=t`).
     Every video now has: a **countdown spine** (a millisecond timer from frame 1 to the event, then a second timer,
     slowed down if needed, to the end); **escalation of scale** every ~10 s; **4–6 long eased takes** instead of many
     shots, hard cuts only on sound hits; golden-hour/dusk light, bloom, particles (no film grain: see rule 18); quiet premium type

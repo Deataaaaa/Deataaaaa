@@ -135,7 +135,7 @@ export async function create() {
 
   // ---------- smoke, fire, water ----------
   const sAtlas = smokeAtlas(12, 1.2);
-  const gapSm = new Billboards(90, { map: sAtlas, additive: false, lit: true, minPx: 1.6, near: 0.3, nearK: 1, renderOrder: 4 }); scene.add(gapSm.mesh);
+  const gapSm = new Billboards(90, { map: sAtlas, additive: false, lit: true, minPx: 1.6, near: 0.25, nearK: 0, renderOrder: 4 }); scene.add(gapSm.mesh);
   const landSm = new Billboards(160, { map: sAtlas, additive: false, lit: true, minPx: 1.6, near: 0.15, nearK: 1, renderOrder: 4 }); scene.add(landSm.mesh);
   const fireSm = new Billboards(220, { map: smokeAtlas(5, 1.2), additive: false, lit: true, minPx: 1.6, near: 0.6, renderOrder: 4 }); scene.add(fireSm.mesh);
   const flames = new Billboards(18, { map: fireStripAtlas(3), tiles: [1, 4], additive: true, upright: true, anchor: 1, minPx: 1.6, near: 0.4, renderOrder: 6 }); scene.add(flames.mesh);
@@ -191,10 +191,10 @@ export async function create() {
     ext: P2(S.ext, V(6.8, 1.7, 11.9), V(6.6, 1.75, 11.6), V(3.6, 13.5, 0), V(3.4, 17.0, 0), 58, 52),
     flash: P2(S.flash, V(1.95, 1.62, 3.7), V(1.8, 1.62, 3.45), V(0.35, 1.45, -0.7), V(0.35, 1.45, -0.7), 42, 40),
     man: P2(S.man, V(1.05, 1.66, 0.75), V(0.95, 1.66, 0.55), V(0.33, 1.66, -0.82), V(0.33, 1.66, -0.82), 30, 27),
-    detector: P2(S.detector, V(3.2, Y0 + 1.3, -2.25), V(3.25, Y0 + 1.35, -2.35), V(3.7, ROOM.CEIL - 0.05, -3.0), V(3.7, ROOM.CEIL - 0.05, -3.0), 44, 40),
-    apple: P2(S.apple, V(3.62, Y0 + 0.26, -3.05), V(3.68, Y0 + 0.24, -3.2), V(4.08, Y0 + 0.18, -4.0), V(4.08, Y0 + 0.18, -4.0), 42, 38),
-    gap: P2(S.gap, V(3.86, Y0 + 1.82, -2.95), V(3.88, Y0 + 1.8, -3.02), V(4.26, Y0 + 0.05, -4.35), V(4.26, Y0 + 0.05, -4.36), 50, 47),
-    hand: P2(S.hand, V(4.62, Y0 + 1.36, -3.95), V(4.58, Y0 + 1.35, -4.02), V(4.3, Y0 + 1.3, -4.37), V(4.3, Y0 + 1.3, -4.37), 34, 31),
+    detector: P2(S.detector, V(3.35, Y0 + 1.75, -2.45), V(3.4, Y0 + 1.8, -2.55), V(3.7, ROOM.CEIL - 0.04, -3.0), V(3.7, ROOM.CEIL - 0.04, -3.0), 30, 27),
+    apple: P2(S.apple, V(3.45, Y0 + 0.3, -3.35), V(3.5, Y0 + 0.28, -3.45), V(4.02, Y0 + 0.16, -4.05), V(4.02, Y0 + 0.16, -4.05), 40, 36),
+    gap: P2(S.gap, V(4.62, Y0 + 0.24, -3.72), V(4.6, Y0 + 0.22, -3.8), V(4.24, Y0 + 0.04, -4.36), V(4.24, Y0 + 0.04, -4.36), 46, 42),
+    hand: P2(S.hand, V(3.72, Y0 + 1.36, -4.2), V(3.76, Y0 + 1.35, -4.22), V(4.3, Y0 + 1.3, -4.37), V(4.3, Y0 + 1.3, -4.37), 34, 31),
     peep: P2(S.peep, V(4.295, Y0 + 1.55, -4.47), V(4.295, Y0 + 1.55, -4.5), V(4.6, Y0 + 1.3, -6.2), V(4.6, Y0 + 1.3, -6.2), 105, 105),
     etsi: P2(S.etsi, V(3.22, Y0 + 1.75, -2.72), V(3.23, Y0 + 1.75, -2.75), V(4.15, Y0 + 1.15, -4.45), V(4.15, Y0 + 1.15, -4.45), 50, 49),
     open: P2(S.open, V(2.95, Y0 + 1.62, -2.45), V(3.0, Y0 + 1.6, -2.6), V(4.3, Y0 + 1.15, -4.4), V(4.3, Y0 + 1.2, -4.4), 52, 50),
@@ -207,9 +207,9 @@ export async function create() {
     splash: P2(S.splash, V(4.75, Y0 + 1.25, -2.95), V(4.72, Y0 + 1.23, -3.02), V(3.95, Y0 + 0.9, -4.2), V(3.95, Y0 + 0.9, -4.2), 48, 46),
     call: P2(S.call, V(3.92, Y0 + 0.58, -3.68), V(3.93, Y0 + 0.54, -3.72), V(3.97, Y0, -3.98), V(3.97, Y0, -3.98), 40, 38),
     speaker: P2(S.speaker, V(4.02, Y0 + 0.62, -4.18), V(4.03, Y0 + 0.64, -4.15), V(4.3, Y0 + 1.05, -3.72), V(4.3, Y0 + 1.06, -3.72), 42, 40),
-    low: P2(S.low, V(4.25, Y0 + 1.05, -2.3), V(4.2, Y0 + 1.02, -2.22), V(3.2, Y0 + 0.85, -1.2), V(3.2, Y0 + 0.85, -1.2), 46, 43),
+    low: P2(S.low, V(4.3, Y0 + 0.75, -2.15), V(4.25, Y0 + 0.73, -2.08), V(3.2, Y0 + 0.65, -1.2), V(3.2, Y0 + 0.65, -1.2), 48, 45),
     street: P2(S.street, V(3.2, ROOM.SILL + 0.45, 0.02), V(3.2, ROOM.SILL + 0.47, 0.08), V(-0.5, 0, 7.0), V(-0.6, 0, 6.9), 62, 60),
-    door: P2(S.door, V(3.2, 1.55, 6.4), V(2.9, 1.55, 6.0), V(0, 1.8, -0.4), V(0, 1.8, -0.4), 46, 44),
+    door: P2(S.door, V(3.0, 1.6, 3.7), V(2.8, 1.6, 3.5), V(0, 1.7, -0.4), V(0, 1.7, -0.4), 50, 48),
     neigh: P2(S.neigh, V(9.6, 3.4, 6.6), V(9.4, 3.3, 6.3), V(6.4, 0.35, 1.5), V(6.4, 0.35, 1.5), 40, 38),
     ladder: P2(S.ladder, V(-2.2, 1.45, 9.8), V(-2.0, 1.5, 9.6), V(1.2, 12.5, 2.6), V(1.6, 14.5, 2.2), 62, 60),
     news: P2(S.news, V(-1.0, 3.2, 10.6), V(-1.2, 3.3, 10.3), V(FIRE_BAY, 10.5, 0), V(FIRE_BAY, 11.5, 0), 46, 43),
@@ -233,7 +233,7 @@ export async function create() {
       const c = GAP[i], tb = smokeStart + c.b * (0.6 + 0.4 * Math.sin(i)), a = (t - tb) % c.life, born = t >= tb && tb < gapStop + c.life * 0 && (t - tb) < c.life * 6;
       const ag = born ? ((t - tb) % c.life) : -1;
       if (!which.gap || ag < 0 || tb + Math.floor((t - tb) / c.life) * c.life > gapStop) { gapSm.hide(i); continue; }
-      const k = ag / c.life, alpha = Math.min(1, ag / 0.8) * (1 - k) * 0.4;
+      const k = ag / c.life, alpha = Math.min(1, ag / 0.5) * (1 - k) * (0.4 + 0.35 * (1 - Math.min(1, ag / 2)));
       gapSm.set(i, 4.3 + c.x + c.vx * ag, Y0 + 0.04 + c.vy * ag + 0.02 * Math.sin(ag * 1.3 + i), ROOM.Z0 + 0.04 + c.vz * ag, c.s * (1 + 1.3 * k), c.s * (0.5 + 0.9 * k), 0.42, 0.4, 0.38, alpha, c.r + ag * 0.15, i % 4);
     }
     gapSm.commit();
@@ -299,10 +299,10 @@ export async function create() {
       let isRew = false, tt = t;
       // ---- per shot ----
       if (id === 'hook' || id === 'apple') {
-        apple.root.visible = true; apple.root.position.set(id === 'hook' ? 4.42 : 4.06, Y0, id === 'hook' ? -3.9 : -3.92); apple.root.rotation.y = id === 'hook' ? Math.PI + 1.15 : Math.PI + 0.25; apple.update(t, { look: V(4.3, Y0 + 0.05, -4.4) });
+        apple.root.visible = true; apple.root.position.set(id === 'hook' ? 4.42 : 3.92, Y0, id === 'hook' ? -3.9 : -3.9); apple.root.rotation.y = id === 'hook' ? Math.PI + 1.15 : -Math.PI / 2 - 0.35; apple.update(t, { look: V(4.3, Y0 + 0.05, -4.4) });
         torch.intensity = 0; // a standalone torch from where she stands, behind the camera
         phone.visible = true; phone.position.set(4.32, Y0 + 1.25, -3.05); phone.lookAt(V(4.28, Y0 + 0.02, -4.35)); phone.rotateY(Math.PI); phone.updateMatrixWorld(true);
-        torch.intensity = 70; beamMat.uniforms.uI.value = 0.35; smokeLit(0.3); fill.intensity = 1.2;
+        torch.intensity = id === 'apple' ? 14 : 70; beamMat.uniforms.uI.value = 0.35; smokeLit(id === 'apple' ? 0.15 : 0.3); fill.intensity = id === 'apple' ? 0.25 : 1.2;
         R.renderer.toneMappingExposure = 1.1;
       }
       if (id === 'face' || id === 'gap' || id === 'hand' || id === 'etsi' || id === 'open' || id === 'rewind') {
@@ -310,14 +310,14 @@ export async function create() {
         poseInes(() => {
           const hand = id === 'hand';
           stand(ines, { pos: id === 'hand' ? V(4.2, Y0, -3.82) : (id === 'etsi' || id === 'open' || id === 'rewind') ? V(3.55, Y0, -3.85) : IP, yaw: (id === 'etsi' || id === 'open' || id === 'rewind') ? DOORYAW - 0.35 : DOORYAW, breath: t * 0.33, lean: id === 'face' ? 0.04 : 0.08,
-            armR: hand ? (sh2, fwd, left, up) => ({ hand: V(4.3, Y0 + 1.3, ROOM.Z0 + 0.05), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.6), F: up.clone(), N: fwd.clone().negate(), curl: 0.25 })
+            armR: hand ? (sh2, fwd, left, up) => ({ hand: V(4.3, Y0 + 1.3, ROOM.Z0 + 0.05), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.6), F: up.clone(), N: fwd.clone().negate(), curl: 0.04 })
               : (id === 'etsi' || id === 'open' || id === 'rewind') ? (sh2, fwd, left, up) => { const lv = room.door.localToWorld(V(-(ROOM.DX1 - ROOM.DX0) + 0.14, 1.02, 0.09)); return { hand: lv, pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.6), F: left.clone().negate(), N: up.clone().negate(), curl: 0.7 }; }
               : torchHand(aimAt),
             armL: hand || id === 'etsi' || id === 'open' || id === 'rewind' ? torchHand(aimAt) : undefined,
             look: id === 'face' ? V(4.3, Y0 + 0.6, -4.4) : V(4.3, Y0 + 1.0, -4.4), lookK: 0.8 });
         });
         phone.visible = true; phoneFit(ines, (id === 'hand' || id === 'etsi' || id === 'open' || id === 'rewind') ? 'Left' : 'Right');
-        torch.intensity = 70; beamMat.uniforms.uI.value = 0.25 + 0.4 * roomSmoke; screenGlow.intensity = 0.5; smokeLit(0.28); fill.intensity = 1.5;
+        torch.intensity = id === 'hand' ? 12 : id === 'gap' ? 26 : 70; beamMat.uniforms.uI.value = 0.25 + 0.4 * roomSmoke; screenGlow.intensity = 0.5; smokeLit(id === 'gap' ? 0.55 : 0.28); fill.intensity = id === 'hand' || id === 'gap' ? 0.3 : 1.5;
       }
       if (id === 'face') { drawPhone('torch', t); R.renderer.toneMappingExposure = 1.15; }
       if (id === 'ext') { which.fire = 1; R.renderer.toneMappingExposure = 1.0; phone.visible = true; phone.position.set(4.3, Y0 + 1.25, -3.4); phone.lookAt(V(4.3, Y0, -4.4)); phone.rotateY(Math.PI); phone.updateMatrixWorld(true); torch.intensity = 70; }
@@ -336,7 +336,7 @@ export async function create() {
       }
       if (id === 'detector') {
         const beep = (t - S.detector.t0) % 2.6, on = beep < 1.5 ? (Math.floor(beep / 0.5) % 2 === 0 ? 1 : 0) : 0;
-        room.led.material.emissiveIntensity = 6 * on;
+        room.led.material.emissiveIntensity = 6 * on; which.gap = true; smokeLit(0.12); fogTo(0.09, '#2a2723');
         poseInes(() => { stand(ines, { pos: V(2.35, Y0, -3.0), yaw: Math.PI * 0.35, breath: t * 0.4, look: V(3.7, ROOM.CEIL, -3.0), lookK: 0.9 }); });
         R.renderer.toneMappingExposure = 1.2;
       } else room.led.material.emissiveIntensity = 0;
@@ -356,7 +356,7 @@ export async function create() {
         isRew = id === 'rewind'; tt = to;
         updateSmoke(to, which); which = null;
       }
-      if (id === 'well') { which.land = 1; wellLight.intensity = 90 * (0.85 + 0.15 * Math.sin(t * 5.1)); W.stairLamp.intensity = 4; fogTo(0.16, '#2e2925'); R.renderer.toneMappingExposure = 1.25; }
+      if (id === 'well') { which.land = 1; wellLight.intensity = 90 * (0.85 + 0.15 * Math.sin(t * 5.1)); W.stairLamp.intensity = 4; fogTo(0.16, '#2e2925'); smokeLit(0.22); R.renderer.toneMappingExposure = 1.25; }
       if (id === 'blind' || id === 'stat') {
         poseInes(() => { stand(ines, { pos: V(4.5, Y0, -5.0), yaw: Math.PI / 2 + 0.25, breath: t * 0.6, lean: 0.15,
           armR: (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(fwd, 0.55).addScaledVector(up, -0.05), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.5), F: fwd.clone(), N: left.clone(), curl: 0.25 }),
@@ -412,7 +412,7 @@ export async function create() {
       if (id === 'low' || id === 'msg') {
         room.openWindow(id === 'low' ? smooth(0.55, 0.85, k) : 1);
         apple.root.visible = true; apple.root.position.set(3.75, Y0, -1.55); apple.root.rotation.y = -0.6; apple.update(t, { look: V(3.2, Y0 + 1.0, -1.4) });
-        poseInes(() => { kneel(ines, { pos: V(3.18, Y0, -1.5), yaw: 0.0, hipH: 0.6, lean: 0.1, breath: t * 0.55,
+        poseInes(() => { kneel(ines, { pos: V(3.18, Y0, -1.5), yaw: 0.0, hipH: id === 'low' ? 0.42 : 0.6, lean: id === 'low' ? 0.35 : 0.1, breath: t * 0.55,
           armR: id === 'msg' ? (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(fwd, 0.3).addScaledVector(up, -0.3).addScaledVector(left, 0.12), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.6), F: up.clone().addScaledVector(fwd, 0.4), N: up.clone().addScaledVector(fwd, -1).normalize(), curl: 0.55 }) : undefined,
           look: id === 'msg' ? V(3.12, Y0 + 0.9, -1.15) : V(3.2, ROOM.SILL + 0.4, -0.4), lookK: 0.9 }); });
         if (id === 'msg') { phone.visible = true; phoneFit(ines, 'Right'); drawPhone('msg', t); screenGlow.intensity = 0.12; phone.screen.material.emissiveIntensity = 0.5; }
@@ -470,6 +470,7 @@ export async function create() {
         etsi: id === 'etsi' ? smooth(0, 0.25, k) : id === 'open' ? 1 - smooth(0, 0.3, k) : 0,
         rew: id === 'rewind' ? 1 : 0,
         news: id === 'news' ? { a: 'RUE ERLANGER · PARIS 16e', b: '5 février 2019 · incendie volontaire · 10 morts', k: smooth(0.04, 0.12, k) } : null,
+        capHtml: opts.cover ? '<span class="w1">De la </span><span class="r1">fumée</span><span class="w1"> sous votre porte…</span><br><span class="w1">vous </span><span class="r1">sortez ?</span>' : null,
         notif: id === 'msg' && t >= L(27) + 0.9 ? { from: 'Numéro inconnu', when: 'maintenant', msg: 'Tu es restée. Dommage.', k: smooth(L(27) + 0.9, L(27) + 1.25, t) } : null,
         peep: id === 'peep' ? 1 : 0, black: id === 'black' ? 1 : 0 });
       endEl.style.opacity = String(endK);

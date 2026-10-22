@@ -96,7 +96,8 @@ export class Overlay12 {
     // karaoke caption
     const c = this.chunks.find((c) => t >= c.t0 && t < c.t1);
     let html = '';
-    if (c && (s.capA ?? 1) > 0) html = c.units.map((u) => { const on = t >= u.t0 - 0.05; return `<span class="${u.red ? (on ? 'r1' : 'r0') : (on ? 'w1' : 'w0')}">${u.shown}</span>`; }).join(' ');
+    if (s.capHtml) html = s.capHtml;
+    else if (c && (s.capA ?? 1) > 0) html = c.units.map((u) => { const on = t >= u.t0 - 0.05; return `<span class="${u.red ? (on ? 'r1' : 'r0') : (on ? 'w1' : 'w0')}">${u.shown}</span>`; }).join(' ');
     this.set('k', e.kara, 'html', html);
     this.set('k', e.kara, 'opacity', String(s.capA ?? 1));
     this.set('k', e.kara, 'top', (s.capY ?? 57) + '%');

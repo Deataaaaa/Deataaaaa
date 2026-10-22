@@ -90,8 +90,12 @@ export function makeSpace18(tex) {
 
   // the camera: the North Atlantic (Greenland, Iceland, Europe in the night), south to Antarctica, back north over
   // South America as the seas rise, pulling back
-  const VIEW = [[33.0, 58, -32, 3.35], [39.6, 60, -30, 3.3], [43.8, -62, -42, 3.25], [47.0, -8, -52, 3.6], [51.0, -4, -50, 4.3]];
-  const viewAt = (t) => { let i = 1; while (i < VIEW.length - 1 && t > VIEW[i][0]) i++; const a = VIEW[i - 1], b = VIEW[i], k = smooth(a[0], b[0], t);
+  // (from 39.6 s the swings ease in and out over a quarter of their time each and cruise in between: the swing from Greenland
+  // to Antarctica moved the picture 32 px per frame with a smoothstep over 4.2 s)
+  const VIEW = [[33.0, 58, -32, 3.35], [39.6, 60, -30, 3.3], [45.0, -62, -42, 3.25], [48.2, -8, -52, 3.6], [51.0, -4, -50, 4.3]];
+  const trap = (a, b, t) => { const u = Math.min(1, Math.max(0, (t - a) / (b - a))), r = 0.25, vm = 1 / (1 - r);
+    return u < r ? vm * u * u / (2 * r) : u > 1 - r ? 1 - vm * (1 - u) * (1 - u) / (2 * r) : vm * (r / 2 + u - r); };
+  const viewAt = (t) => { let i = 1; while (i < VIEW.length - 1 && t > VIEW[i][0]) i++; const a = VIEW[i - 1], b = VIEW[i], k = a[0] >= 39.6 ? trap(a[0], b[0], t) : smooth(a[0], b[0], t);
     return [a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k, a[3] + (b[3] - a[3]) * k]; };
   function frame(t, cam, R) {
     const h = hoursAt(t);

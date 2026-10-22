@@ -109,7 +109,10 @@ export async function create() {
   let cupFit = null;
   function poseYou(t) {
     const tau = tauAt(t), shock = smooth(0.8, 2.0, tau) * (t >= T.MELT && t < T.SPACE ? 1 : 0);
-    const look = t < T.MELT ? V(HERO.x - 30 + 6 * Math.sin(t * 0.21), HERO.y + 1.2, HERO.z - 40) : V(HERO.x - 0.2, HERO.y + 1.0, HERO.z - 0.1).lerp(V(HERO.x + 40, HERO.y + 6, HERO.z - 30), shock);
+    // from the melt on, the look turns by direction (from your cup to the glacier): lerping a point 20 cm away toward one
+    // 50 m away whipped the head round in two frames as the shock began (13.3 s)
+    const E0 = V(HERO.x, HERO.y + 1.55, HERO.z), dA = V(HERO.x - 0.2, HERO.y + 1.0, HERO.z - 0.1).sub(E0).normalize(), dB = V(HERO.x + 40, HERO.y + 6, HERO.z - 30).sub(E0).normalize();
+    const look = t < T.MELT ? V(HERO.x - 30 + 6 * Math.sin(t * 0.21), HERO.y + 1.2, HERO.z - 40) : E0.clone().addScaledVector(dA.lerp(dB, shock).normalize(), 20);
     stand(you, { pos: V(HERO.x, HERO.y, HERO.z), yaw: -2.1, breath: t * 0.27, lean: 0.03, look, lookK: 0.85,
       armR: (P, fwd, left, up) => ({ hand: P.clone().addScaledVector(fwd, 0.3).addScaledVector(up, -0.33).addScaledVector(left, -0.06), pole: P.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.5).addScaledVector(fwd, -0.15),
         F: fwd.clone().addScaledVector(left, 0.45).normalize(), N: left.clone(), curl: 0.75 }) });

@@ -209,7 +209,9 @@ export function stand(av, o) {
   }
   if (o.look) lookAt(av, o.look, o.lookK ?? 1);
   if (o.groundAt) { av.root.position.y += 0.004 - lowestAbove(av, o.groundAt); av.root.updateMatrixWorld(true); return; }
-  const low = lowestY(av);
+  // o.cache (an object): measure the lowest vertex once and reuse its height under the root (still poses in a crowd)
+  let low;
+  if (o.cache) { if (o.cache.off == null) o.cache.off = lowestY(av) - av.root.position.y; low = av.root.position.y + o.cache.off; } else low = lowestY(av);
   av.root.position.y += (ground + 0.004) - low; av.root.updateMatrixWorld(true);
 }
 
@@ -251,5 +253,6 @@ export function cloneAvatar(av, skClone) {
   const root = skClone(av.root), byName = {};
   root.traverse((o) => { if (o.isBone) byName[o.name] = o; });
   const bones = {}; for (const [k, b] of Object.entries(av.bones)) bones[k] = byName[b.name];
-  return { root, bones, rest: av.rest };
+  const meshes = []; root.traverse((o) => { if (o.isSkinnedMesh) meshes.push(o); });
+  return { root, bones, rest: av.rest, meshes };
 }

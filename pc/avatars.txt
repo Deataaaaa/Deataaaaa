@@ -30,3 +30,9 @@ Sports_Female_01
 Sports_Male_01
 Sports_Male_02
 Female_Adult_07
+Male_Adult_13
+Business_Male_03
+Female_Adult_15
+Female_Adult_14
+Male_Adult_16
+Male_Adult_18

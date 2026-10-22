@@ -38,8 +38,8 @@ export function makeUmbrella() {
   return g;
 }
 
-// a London double-decker (11.2 m x 2.55 m x 4.4 m), red, front toward +z, lit inside; destination "78 Peckham"
-export function makeBus() {
+// a London double-decker (11.2 m x 2.55 m x 4.4 m), red, front toward +z, lit inside; destination "78 Peckham" by default
+export function makeBus({ route = '78', to = 'Peckham' } = {}) {
   const g = new THREE.Group();
   const red = new THREE.MeshPhysicalMaterial({ color: '#b4141c', roughness: 0.32, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.1 });
   const glass = new THREE.MeshPhysicalMaterial({ color: '#0c0f12', roughness: 0.05, metalness: 0.2, clearcoat: 1, emissive: new THREE.Color('#fff1d6'), emissiveIntensity: 0.55 });
@@ -57,7 +57,7 @@ export function makeBus() {
   for (const s of [-1, 1]) for (let z = -Lb / 2 + 1.4; z < Lb / 2 - 1; z += 1.4) for (const [y0, y1] of [[1.05, 2.15], [2.6, 3.8]]) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.06, y1 - y0, 0.09), red); p.position.set(s * (Wb / 2 + 0.02), (y0 + y1) / 2, z); g.add(p); }
   // destination blind (lit, front, above the windscreen)
   const cv = document.createElement('canvas'); cv.width = 512; cv.height = 96; const cx = cv.getContext('2d');
-  cx.fillStyle = '#050505'; cx.fillRect(0, 0, 512, 96); cx.fillStyle = '#ffb21a'; cx.font = 'bold 64px Inter, Arial, sans-serif'; cx.textBaseline = 'middle'; cx.fillText('78', 18, 50); cx.font = '600 52px Inter, Arial, sans-serif'; cx.fillText('Peckham', 130, 52);
+  cx.fillStyle = '#050505'; cx.fillRect(0, 0, 512, 96); cx.fillStyle = '#ffb21a'; cx.font = 'bold 64px Inter, Arial, sans-serif'; cx.textBaseline = 'middle'; cx.fillText(route, 18, 50); cx.font = '600 52px Inter, Arial, sans-serif'; cx.fillText(to, 130, 52);
   const dt = new THREE.CanvasTexture(cv); dt.colorSpace = THREE.SRGBColorSpace;
   const dest = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.3), new THREE.MeshBasicMaterial({ map: dt, color: new THREE.Color(2.2, 2.2, 2.2) })); dest.position.set(0, 2.35, Lb / 2 + 0.03); g.add(dest);
   // wheels, skirt, lights

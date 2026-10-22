@@ -352,3 +352,23 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
 - End card: "All the ice on Earth = 66 m of sea" (above), "Vatnajökull: 3,100 km³ of ice" (above).
 - WTF (not a claim): a polar bear on Diamond Beach doing the "6-7" meme. (Polar bears do reach Iceland on drift ice: ~600
   recorded since settlement, the last in 2024.)
+
+## EP19 (post 13): What if beauty standards were reversed for 5 years? (Piccadilly Circus, London)
+- Set: building footprints, levels, road centrelines, crossings, the Lights' curve and the fountain from OpenStreetMap
+  (api.openstreetmap.org, map data © OpenStreetMap contributors, ODbL); credited on the end card and in the post caption.
+- "Piccadilly Lights: 783 m² of LEDs" (HUD): Landsec/Ocean Outdoor 2017 spec: one curved screen 17.56 m x 44.62 m = 783 m²
+  (most press says ~790 m²), 5,490 x 2,160 px at 8 mm pitch; it can split into six sections. Our screen: 17.56 m tall,
+  44.6 m along the OSM curve.
+- "Year 1: a $446-billion industry" / HUD "Beauty industry: $446 bn a year": McKinsey, "The beauty boom and beyond" (2024):
+  global beauty retail sales $446 billion in 2023 (skin care, fragrance, make-up, hair care).
+- "35 million procedures a year" / HUD "Procedures: 34.9 million a year" / end card: ISAPS Global Survey 2023 (published
+  June 2024): 34.9 million aesthetic procedures (15.8 million surgical, 19.1 million non-surgical).
+- "In the 1920s, a tan went from shameful to chic": before the 1920s pale skin signalled status in Western Europe and the
+  US (a tan meant outdoor labour); in the 1920s tanning became fashionable on the Riviera (the oft-told 1923 Coco Chanel
+  sunburn in Cannes is a popular, partly legendary, marker). The screen's "RIVIERA 1923" poster is an illustration.
+- New Year's Eve countdown on the Lights: the screen does run New Year countdowns; ours is drawn for the story.
+- Day count: 1 Jan 2027 to 1 Jan 2032 = 1,826 days (2028 is a leap year).
+- Story numbers (not claims about the real world, they happen in the premise): "3 million likes" on your photo (HUD
+  3,214,559), "48 million" followers. Brands on the screen are invented (LUMIÈRE, PRO-AGE, YELLOW, PORES+, FRIZZ, Frame).
+- WTF (not a claim): a man in a suit drops his litter next to an empty Westminster bin every time we see him; his pile
+  grows over five years to a 2.5 m heap and the bin stays empty.

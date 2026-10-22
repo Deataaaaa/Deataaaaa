@@ -215,6 +215,38 @@ export function stand(av, o) {
   av.root.position.y += (ground + 0.004) - low; av.root.updateMatrixWorld(true);
 }
 
+// kneeling, sitting back on the heels (o.hipH = hip height above the floor, ~0.5-0.75 for a crouch on the knees), arms by o.armL /
+// o.armR like stand(); knees forward, insteps flat behind. Lifted so the lowest skinned vertex sits 4 mm above o.pos.y
+export function kneel(av, o) {
+  const B = av.bones;
+  resetPose(av);
+  av.root.position.copy(o.pos); av.root.rotation.set(0, o.yaw || 0, 0); av.root.updateMatrixWorld(true);
+  av.root.position.y += (o.pos.y + (o.hipH ?? 0.58)) - wp(B.Hips).y; av.root.updateMatrixWorld(true);
+  const { fwd, left, up } = bodyFrame(av);
+  const lean = (o.lean ?? 0.12) + (o.breath != null ? Math.sin(o.breath * Math.PI * 2) * 0.012 : 0);
+  rotW(B.Spine, left, lean * 0.45); rotW(B.Spine1, left, lean * 0.3); rotW(B.Spine2, left, lean * 0.25);
+  if (o.twist) { rotW(B.Spine1, up, o.twist * 0.5); rotW(B.Spine2, up, o.twist * 0.5); }
+  const P = wp(B.Hips), gy = o.pos.y;
+  for (const [side, s] of [['Left', 1], ['Right', -1]]) {
+    const foot = P.clone().addScaledVector(left, s * 0.13).addScaledVector(fwd, -0.12); foot.y = gy + 0.07;
+    const pole = P.clone().addScaledVector(fwd, 1.2).addScaledVector(up, -0.3).addScaledVector(left, s * 0.1);
+    twoBoneIK(av, side + 'UpLeg', side + 'Leg', side + 'Foot', foot, pole);
+    if (B[side + 'ToeBase']) { const toe = foot.clone().addScaledVector(fwd, -0.16); toe.y = gy + 0.03; aimBone(B[side + 'Foot'], wp(B[side + 'ToeBase']), toe); }
+  }
+  for (const [side, s] of [['Left', 1], ['Right', -1]]) {
+    const fn = side === 'Left' ? o.armL : o.armR, sh = wp(B[side + 'Arm']);
+    const def = { hand: sh.clone().addScaledVector(up, -0.45).addScaledVector(left, s * 0.05).addScaledVector(fwd, 0.22), pole: sh.clone().addScaledVector(up, -0.3).addScaledVector(fwd, -0.5).addScaledVector(left, s * 0.25) };
+    const a = fn ? fn(sh, fwd, left, up) : def;
+    twoBoneIK(av, side + 'Arm', side + 'ForeArm', side + 'Hand', a.hand, a.pole);
+    if (a.F && a.N) orientHand(av, side, a.F, a.N);
+    curlFingers(av, side, a.curl ?? 0.4, 0.15);
+  }
+  if (o.look) lookAt(av, o.look, o.lookK ?? 1);
+  let low;
+  if (o.cache) { if (o.cache.off == null) o.cache.off = lowestY(av) - av.root.position.y; low = av.root.position.y + o.cache.off; } else low = lowestY(av);
+  av.root.position.y += (gy + 0.004) - low; av.root.updateMatrixWorld(true);
+}
+
 // a walking stride, rebuilt from rest each frame (a pure function of the phase): o.pos = the body's ground point now,
 // o.yaw, o.phase in cycles (one cycle = two steps; the caller advances it as distance / (2 * stride)), o.stride (m per step).
 // Feet: planted for the first half of their cycle (sliding back under the body), swung forward with a lift for the

@@ -36,3 +36,6 @@ Female_Adult_15
 Female_Adult_14
 Male_Adult_16
 Male_Adult_18
+Female_Adult_11
+Male_Adult_07
+Fire_Male_01

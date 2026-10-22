@@ -372,3 +372,24 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
   3,214,559), "48 million" followers. Brands on the screen are invented (LUMIÈRE, PRO-AGE, YELLOW, PORES+, FRIZZ, Frame).
 - WTF (not a claim): a man in a suit drops his litter next to an empty Westminster bin every time we see him; his pile
   grows over five years to a 2.5 m heap and the bin stays empty.
+
+## EP20 (« 12 % » Partie 1 · La fumée): smoke under the door at 3:12 am (Paris 18e). Fiction; the advice and the numbers are real
+- What to do when the fire is elsewhere in the building and the stairwell is full of smoke: stay home, shut the door, wet it,
+  seal the gap with wet cloths, show yourself at the window, call 18 or 112; never cross smoke, never take the lift. National
+  firefighters' guide (pompiers.fr, "sqv_incendiedom.pdf": smoke invades corridors and stairs and makes them impassable; close,
+  wet and seal your door); a Paris fire-brigade (BSPP) doctor quoted by Allodocteurs (wet cloths at the bottom of the doors);
+  évous Paris guide (leave only if the corridor/stairwell is smoke-free; a hot door must not be opened); Oise prefecture leaflet
+  (signal at the window, open it in short bursts and close it again; 18/112); Dieburg fire brigade leaflet in French (evacuating
+  through a smoke-filled stairwell is a classic mistake); Brussels fire service after the Anderlecht fire (avoid smoke-filled
+  stairwells, the Saint-Gilles resident who stayed in and signalled from a window). Stay low: fresher air near the floor (same sources).
+- "8 morts sur 10, c'est la fumée": joint press release of the housing and interior ministries with the firefighters' federation,
+  28 Jan 2015 ("80 % des décès sont dus à l'intoxication par les fumées"); MAIF citing the ministry of the Interior (~80 %).
+- Smoke alarm in her flat: at least one detector mandatory in every French home since 8 March 2015 (same press release; arrêté du
+  14 mars 2013).
+- "En 2019, rue Erlanger à Paris, un incendie volontaire a bloqué les escaliers. 10 morts." Wikipedia, "February 2019 Paris fire":
+  5 Feb 2019, 17 bis rue Erlanger (16e), set deliberately on the 2nd floor, at least 10 dead and 36 injured, "smoke and flames
+  had obstructed stairwells", more than 50 people trapped, over 30 rooftop rescues by ladder, ~250 firefighters; a resident was
+  convicted of arson (25 years).
+- Fiction (not claims): Inès, 20, 6th floor without a lift in the 18e, here for 9 days; the man who held the door; the times
+  (22:41, 3:12 → 3:31) and her battery (34 % at 22:41, 12 % → 9 → 6 → 3 %); the neighbours from the 4th; the text message.
+- Voice: Kyutai TTS 1.6B en_fr (CC BY 4.0, credited on the end card), Kyutai's own CC0 voices (unmute-prod-website).

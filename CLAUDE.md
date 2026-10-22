@@ -140,6 +140,8 @@ rigged people, MIT). Log the avatar name here once used. Apple (rule 19) is `eng
 every video.
 Other ideas: 50 km/h crash without a seatbelt; lightning hits your plane; stuck upside down on a roller coaster;
 phone battery catching fire in your pocket. Old built-but-unpublished episodes: `ep02`–`ep06` (topics too common).
+Reference 2 (22 Oct 2026): `studio/notes/reference2.md`, a French serial night-drive thriller with real checked safety tips
+("6 POINTS", 700K views and 4K follows in 2 videos). The owner is deciding whether to switch formats: ask before changing any rule.
 
 ## Technical lessons (pitfalls already hit)
 - This cloud box has no GPU: SwiftShader renders ~10–25 s/frame per worker with 3 workers on 4 cores, so an

@@ -179,7 +179,8 @@ own series (pitch first, rule 10). Rules that clash with it (3, 5, 11, 16, 17, 2
   VRAM/RAM use from WMI perf classes, `checkframes.py` (also flags black areas), `encode.sh` (Git Bash), `sheet1fps.py`, the
   frames deleted, Explorer opened on the phone file, optional shutdown with a key to cancel. Program output only goes to
   `studio/out/pc_render_log.txt`: the owner pastes it in the chat when something fails. To hand over a video: finish and check it here with previews,
-  set `pc/job.json` (ep, name, cover, workers), add any new avatar to `pc/avatars.txt`, push, then tell the owner to
+  set `pc/job.json` (ep, name, cover, workers; or `{ "queue": [job, job] }` for several videos in one run, each rendered,
+  checked and encoded in turn, a failed one does not stop the next), add any new avatar to `pc/avatars.txt`, push, then tell the owner to
   double-click RENDER.bat. The owner's PC has no winget (App Installer missing): `setup.ps1` falls back to direct downloads
   (Node zip, python.org installer, gyan.dev ffmpeg, Git installer); Git itself came from git-scm.com. Keep `pc/*.ps1` ASCII only (PowerShell 5.1) and bash scripts LF (`.gitattributes`); Windows
   tools print `\r\n`, so strip `\r` from every `$(...)` in bash. `render.mjs --gpu` exits 3 if Chromium lands on a

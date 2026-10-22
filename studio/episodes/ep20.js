@@ -135,7 +135,7 @@ export async function create() {
 
   // ---------- smoke, fire, water ----------
   const sAtlas = smokeAtlas(12, 1.2);
-  const gapSm = new Billboards(90, { map: sAtlas, additive: false, lit: true, minPx: 1.6, near: 0.25, nearK: 0, renderOrder: 4 }); scene.add(gapSm.mesh);
+  const gapSm = new Billboards(110, { map: sAtlas, additive: false, lit: true, minPx: 1.6, near: 0.25, nearK: 0, renderOrder: 4 }); scene.add(gapSm.mesh);
   const landSm = new Billboards(160, { map: sAtlas, additive: false, lit: true, minPx: 1.6, near: 0.15, nearK: 1, renderOrder: 4 }); scene.add(landSm.mesh);
   const fireSm = new Billboards(220, { map: smokeAtlas(5, 1.2), additive: false, lit: true, minPx: 1.6, near: 0.6, renderOrder: 4 }); scene.add(fireSm.mesh);
   const flames = new Billboards(18, { map: fireStripAtlas(3), tiles: [1, 4], additive: true, upright: true, anchor: 1, minPx: 1.6, near: 0.4, renderOrder: 6 }); scene.add(flames.mesh);
@@ -194,8 +194,8 @@ export async function create() {
     detector: P2(S.detector, V(3.35, Y0 + 1.75, -2.45), V(3.4, Y0 + 1.8, -2.55), V(3.7, ROOM.CEIL - 0.04, -3.0), V(3.7, ROOM.CEIL - 0.04, -3.0), 30, 27),
     apple: P2(S.apple, V(3.45, Y0 + 0.3, -3.35), V(3.5, Y0 + 0.28, -3.45), V(4.02, Y0 + 0.16, -4.05), V(4.02, Y0 + 0.16, -4.05), 40, 36),
     gap: P2(S.gap, V(4.62, Y0 + 0.24, -3.72), V(4.6, Y0 + 0.22, -3.8), V(4.24, Y0 + 0.04, -4.36), V(4.24, Y0 + 0.04, -4.36), 46, 42),
-    hand: P2(S.hand, V(3.72, Y0 + 1.36, -4.2), V(3.76, Y0 + 1.35, -4.22), V(4.3, Y0 + 1.3, -4.37), V(4.3, Y0 + 1.3, -4.37), 34, 31),
-    peep: P2(S.peep, V(4.295, Y0 + 1.55, -4.47), V(4.295, Y0 + 1.55, -4.5), V(4.6, Y0 + 1.3, -6.2), V(4.6, Y0 + 1.3, -6.2), 105, 105),
+    hand: P2(S.hand, V(3.9, Y0 + 1.42, -3.98), V(3.93, Y0 + 1.41, -4.02), V(4.3, Y0 + 1.3, -4.37), V(4.3, Y0 + 1.3, -4.37), 34, 31),
+    peep: P2(S.peep, V(4.295, Y0 + 1.55, -4.47), V(4.295, Y0 + 1.55, -4.5), V(6.1, Y0 + 1.0, -5.5), V(6.1, Y0 + 1.0, -5.5), 110, 110),
     etsi: P2(S.etsi, V(3.22, Y0 + 1.75, -2.72), V(3.23, Y0 + 1.75, -2.75), V(4.15, Y0 + 1.15, -4.45), V(4.15, Y0 + 1.15, -4.45), 50, 49),
     open: P2(S.open, V(2.95, Y0 + 1.62, -2.45), V(3.0, Y0 + 1.6, -2.6), V(4.3, Y0 + 1.15, -4.4), V(4.3, Y0 + 1.2, -4.4), 52, 50),
     well: P2(S.well, V(6.25, LV[6] + 1.45, -5.82), V(6.25, LV[6] + 1.4, -5.9), V(6.25, LV[3], -7.0), V(6.25, LV[3], -7.1), 72, 70),
@@ -236,6 +236,12 @@ export async function create() {
       const k = ag / c.life, alpha = Math.min(1, ag / 0.5) * (1 - k) * (0.4 + 0.35 * (1 - Math.min(1, ag / 2)));
       gapSm.set(i, 4.3 + c.x + c.vx * ag, Y0 + 0.04 + c.vy * ag + 0.02 * Math.sin(ag * 1.3 + i), ROOM.Z0 + 0.04 + c.vz * ag, c.s * (1 + 1.3 * k), c.s * (0.5 + 0.9 * k), 0.42, 0.4, 0.38, alpha, c.r + ag * 0.15, i % 4);
     }
+    // haze drifting under the ceiling (the detector's shot), on the gap system (no near fade)
+    for (let i = 90; i < 110; i++) {
+      if (!which.ceil) { gapSm.hide(i); continue; }
+      const c = GAP[i - 90];
+      gapSm.set(i, 3.42 + (i - 90) * 0.03 + 0.03 * Math.sin(t * 0.3 + i), ROOM.CEIL - 0.07 - 0.05 * Math.abs(Math.sin(i)), -3.05 + c.x * 0.7 + 0.03 * Math.sin(t * 0.5 + i), 0.35 + c.s * 0.8, 0.2 + c.s * 0.4, 0.42, 0.4, 0.38, 0.45, c.r + t * 0.04, i % 4);
+    }
     gapSm.commit();
     // the landing / stairwell: a slow churn; denser when which.land > 0
     for (let i = 0; i < LAND.length; i++) {
@@ -245,10 +251,11 @@ export async function create() {
       const col = inWell ? [0.5, 0.36, 0.26] : [0.42, 0.4, 0.38];
       landSm.set(i, x, yy, z, c.s * (inWell ? 1.4 : 1), c.s * (inWell ? 1.4 : 1), col[0], col[1], col[2], 0.62 * which.land, c.r + t * 0.05 * (i % 2 ? 1 : -1), i % 4);
     }
+    // haze drifting under the ceiling (the detector's shot)
     // the doorway flood when she opens (cards pushed in toward the camera)
-    if (which.flood != null) for (let i = 0; i < 50; i++) {
+    if (which.flood != null) for (let i = 0; i < 80; i++) {
       const c = LAND[i], tb = which.flood + i * 0.03, ag = t - tb; if (ag < 0) { landSm.hide(i); continue; }
-      landSm.set(i, 4.3 + (c.x - 4.6) * 0.18 * (1 + ag), Y0 + 0.6 + c.y * 1.5 + ag * 0.25, ROOM.Z0 + 0.1 + ag * (1.3 + c.w), 0.9 + ag * 1.4, 0.9 + ag * 1.4, 0.3, 0.29, 0.28, Math.min(0.85, ag * 2.5), c.r + ag * 0.3, i % 4);
+      landSm.set(i, 4.3 + (c.x - 4.6) * 0.16 * (1 + ag), Y0 + 1.95 - 0.35 * ag * ag + c.y * 0.25, ROOM.Z0 + 0.15 + ag * (1.1 + c.w), 0.9 + ag * 2.0, 0.8 + ag * 1.7, 0.07, 0.066, 0.062, Math.min(0.97, ag * 3.0), c.r + ag * 0.3, i % 4);
     }
     landSm.commit();
     // outside: the 2nd-floor window pours smoke up the front
@@ -310,7 +317,7 @@ export async function create() {
         poseInes(() => {
           const hand = id === 'hand';
           stand(ines, { pos: id === 'hand' ? V(4.2, Y0, -3.82) : (id === 'etsi' || id === 'open' || id === 'rewind') ? V(3.55, Y0, -3.85) : IP, yaw: (id === 'etsi' || id === 'open' || id === 'rewind') ? DOORYAW - 0.35 : DOORYAW, breath: t * 0.33, lean: id === 'face' ? 0.04 : 0.08,
-            armR: hand ? (sh2, fwd, left, up) => ({ hand: V(4.3, Y0 + 1.3, ROOM.Z0 + 0.05), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.6), F: up.clone(), N: fwd.clone().negate(), curl: 0.04 })
+            armR: hand ? (sh2, fwd, left, up) => ({ hand: V(4.3, Y0 + 1.3, ROOM.Z0 + 0.024), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.6), F: up.clone(), N: fwd.clone().negate(), curl: 0.02 })
               : (id === 'etsi' || id === 'open' || id === 'rewind') ? (sh2, fwd, left, up) => { const lv = room.door.localToWorld(V(-(ROOM.DX1 - ROOM.DX0) + 0.14, 1.02, 0.09)); return { hand: lv, pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.6), F: left.clone().negate(), N: up.clone().negate(), curl: 0.7 }; }
               : torchHand(aimAt),
             armL: hand || id === 'etsi' || id === 'open' || id === 'rewind' ? torchHand(aimAt) : undefined,
@@ -336,12 +343,12 @@ export async function create() {
       }
       if (id === 'detector') {
         const beep = (t - S.detector.t0) % 2.6, on = beep < 1.5 ? (Math.floor(beep / 0.5) % 2 === 0 ? 1 : 0) : 0;
-        room.led.material.emissiveIntensity = 6 * on; which.gap = true; smokeLit(0.12); fogTo(0.09, '#2a2723');
+        room.led.material.emissiveIntensity = 6 * on; which.gap = true; which.ceil = true; smokeLit(0.16); fogTo(0.09, '#2a2723');
         poseInes(() => { stand(ines, { pos: V(2.35, Y0, -3.0), yaw: Math.PI * 0.35, breath: t * 0.4, look: V(3.7, ROOM.CEIL, -3.0), lookK: 0.9 }); });
         R.renderer.toneMappingExposure = 1.2;
       } else room.led.material.emissiveIntensity = 0;
       if (id === 'peep') {
-        which.land = 1; W.stairLamp.intensity = 7; W.stair.lamp.material.emissiveIntensity = 3; fogTo(0.32, '#3b3631');
+        which.land = 1; W.stairLamp.intensity = 9; W.stair.lamp.material.emissiveIntensity = 3; fogTo(0.2, '#3b3631'); smokeLit(0.3);
         G.uBarrel.value = 0.55; G.uVignette.value = 0.9; R.renderer.toneMappingExposure = 1.2;
       }
       if (id === 'etsi' || id === 'open' || id === 'well' || id === 'blind' || id === 'stat' || id === 'rewind') {
@@ -352,7 +359,7 @@ export async function create() {
         const to = id === 'open' ? t : S.open.t1 - (t - S.rewind.t0) * ((S.open.t1 - S.open.t0) / (S.rewind.t1 - S.rewind.t0)) * 0.9;
         const ko = clamp((to - S.open.t0 - 0.35) / 0.9); room.setDoor(0.75 * ko * ko * (3 - 2 * ko));
         which.land = 1; which.flood = S.open.t0 + 0.5; W.stairLamp.intensity = 7; W.stair.lamp.material.emissiveIntensity = 3;
-        fogTo(0.05 + 0.5 * clamp((to - S.open.t0 - 0.6) / 1.6), '#2c2824');
+        fogTo(0.05 + 0.45 * clamp((to - S.open.t0 - 0.6) / 1.6), clamp((to - S.open.t0 - 0.6) / 1.6) > 0.5 ? '#161412' : '#2c2824');
         isRew = id === 'rewind'; tt = to;
         updateSmoke(to, which); which = null;
       }

@@ -1,4 +1,4 @@
-# DeatAnimation Render Engine (beta): renders the video named in pc\job.json on the graphics card, checks and encodes it,
+# DeatAnimation Render Engine (beta): renders the video(s) named in pc\job.json on the graphics card, checks and encodes them,
 # leaves it in the videos folder and (if asked) shuts the PC down. Run through RENDER.bat.
 # Program output goes to studio\out\pc_render_log.txt; the window shows the stages, a live progress bar and the
 # GPU/CPU usage. ASCII only (Windows PowerShell 5.1): the block characters are made at run time.
@@ -72,7 +72,8 @@ try {
   Banner $gpuName
   Set-Location $repo
   $job = Get-Content -Raw (Join-Path $pc 'job.json') | ConvertFrom-Json
-  W '   job      ' 'DarkGray'; WL ($job.name + ' (' + $job.ep + ')  ' + $job.note) 'Gray'
+  $jobs = @($job); if ($job.queue) { $jobs = @($job.queue) }                  # job.json: one video, or { "queue": [ ... ] }
+  foreach ($j in $jobs) { W '   job      ' 'DarkGray'; WL ($j.name + ' (' + $j.ep + ')  ' + $j.note) 'Gray' }
   WL
   $shut = Ask-YesNo 'Shut the PC down when the video is ready?' $true 20
   WL
@@ -83,7 +84,7 @@ try {
   if ((Run 'git' @('reset', '--hard', 'origin/claude/whatif-reels')) -ne 0) { Done 'WARN' 'could not update: rendering the version already here'; $warn += 'not updated' }
   else { Done 'OK' ((& git log -1 --format='%h %s') | Select-Object -First 1) }
   $job = Get-Content -Raw (Join-Path $pc 'job.json') | ConvertFrom-Json     # the job may have changed with the update
-  $ep = $job.ep; $name = $job.name; $workers = [int]$job.workers
+  $jobs = @($job); if ($job.queue) { $jobs = @($job.queue) }
 
   # 2. clean up: last runs' videos (the covers are kept: they are part of the project), frames, soundtracks, sheets
   Stage '2/8' 'Clean up'
@@ -108,90 +109,100 @@ try {
   Set-Location $repo
   Done 'OK' ('3D people ready (' + @(Get-ChildItem -Directory (Join-Path $studio 'engine\models\rocketbox') -ErrorAction SilentlyContinue).Count + ')')
 
-  # 4. soundtrack
-  Stage '4/8' 'Soundtrack'
-  $wav = 'studio/out/' + $ep + '_phone.wav'
-  if ((Run 'py' @('-3', ('studio/audio/' + $ep + '.py'), $wav)) -ne 0) { Done 'FAIL' 'the soundtrack failed'; Tail 12; throw 'soundtrack' }
-  $dur = [double]((& ffprobe -v error -show_entries format=duration -of csv=p=0 $wav) | Select-Object -First 1)
-  $nf = [int][Math]::Round($dur * 30)
-  Done 'OK' (('{0:0.0} s, ' -f $dur) + $nf + ' frames')
+  $ready = New-Object System.Collections.ArrayList; $k = 0
+  foreach ($j in $jobs) {
+    $k++; $ep = $j.ep; $name = $j.name; $workers = [int]$j.workers
+    if ($jobs.Count -gt 1) { WL; WL ('  VIDEO ' + $k + '/' + $jobs.Count + ': ' + $name + ' (' + $ep + ')') 'White'; Log ('VIDEO ' + $k + '/' + $jobs.Count + ': ' + $name) }
+    try {
+      # 4. soundtrack
+      Stage '4/8' 'Soundtrack'
+      $wav = 'studio/out/' + $ep + '_phone.wav'
+      if ((Run 'py' @('-3', ('studio/audio/' + $ep + '.py'), $wav)) -ne 0) { Done 'FAIL' 'the soundtrack failed'; Tail 12; throw 'soundtrack' }
+      $dur = [double]((& ffprobe -v error -show_entries format=duration -of csv=p=0 $wav) | Select-Object -First 1)
+      $nf = [int][Math]::Round($dur * 30)
+      Done 'OK' (('{0:0.0} s, ' -f $dur) + $nf + ' frames')
 
-  # 5. render: the workers run in the background (their output in a log), the window shows the progress
-  Stage '5/8' 'Render'
-  WL (' ' + $workers + ' workers on the graphics card') 'DarkGray'
-  $frames = Join-Path $out ('frames_' + $ep)
-  $wlog = Join-Path $out 'render_workers_log.txt'; $werr = Join-Path $out 'render_workers_err.txt'
-  $tr = Get-Date
-  $p = Start-Process -FilePath 'node' -ArgumentList @('studio/tools/renderall.mjs', '--ep', $ep, '--out', ('studio/out/frames_' + $ep), '--workers', [string]$workers, '--gpu') -WorkingDirectory $repo -NoNewWindow -PassThru -RedirectStandardOutput $wlog -RedirectStandardError $werr
-  $null = $p.Handle                                   # keeps the exit code readable after the process ends
-  $row = [Console]::CursorTop; $live = $true
-  try { [Console]::SetCursorPosition(0, $row) } catch { $live = $false }
-  $hist = New-Object System.Collections.ArrayList; $u = Get-Usage; $lastU = Get-Date; $spin = '|/-\'; $tick = 0; $lastPct = -10; $renderer = ''
-  while (-not $p.HasExited) {
-    $n = 0; if (Test-Path -LiteralPath $frames) { $n = [IO.Directory]::GetFiles($frames, 'f_*.jpg').Length }
-    $now = Get-Date; [void]$hist.Add(@($now, $n)); while ($hist.Count -gt 2 -and ($now - $hist[0][0]).TotalSeconds -gt 15) { $hist.RemoveAt(0) }
-    $span = ($now - $hist[0][0]).TotalSeconds; $fps = 0.0; if ($span -gt 0.5) { $fps = ($n - $hist[0][1]) / $span }
-    $eta = -1.0; if ($fps -gt 0.05) { $eta = ($nf - $n) / $fps }
-    if (($now - $lastU).TotalSeconds -ge 3) { $u = Get-Usage; $lastU = Get-Date }
-    if (-not $renderer -and (Test-Path -LiteralPath $wlog)) { $r = Select-String -LiteralPath $wlog -Pattern 'renderer: (.*)$' -List -ErrorAction SilentlyContinue; if ($r) { $renderer = $r.Matches[0].Groups[1].Value } }
-    $f = 0.0; if ($nf -gt 0) { $f = $n / $nf }
-    if ($live) {
-      [Console]::SetCursorPosition(0, $row)
-      if ($n -eq 0) { W ('        ' + $spin[$tick % 4] + ' starting the workers (loading the scene, people and shaders)...').PadRight(88) 'DarkGray'; WL '' }
-      else {
-        W '        '; W (Bar $f 30) 'Red'; W ('  {0,5:0.0}%' -f ($f * 100)) 'White'
-        W ('   {0,4}/{1} frames   {2,5:0.0} fps   ETA {3}' -f $n, $nf, $fps, (Mmss $eta)).PadRight(44) 'Gray'; WL ''
+      # 5. render: the workers run in the background (their output in a log), the window shows the progress
+      Stage '5/8' 'Render'
+      WL (' ' + $workers + ' workers on the graphics card') 'DarkGray'
+      $frames = Join-Path $out ('frames_' + $ep)
+      $wlog = Join-Path $out 'render_workers_log.txt'; $werr = Join-Path $out 'render_workers_err.txt'
+      $tr = Get-Date
+      $p = Start-Process -FilePath 'node' -ArgumentList @('studio/tools/renderall.mjs', '--ep', $ep, '--out', ('studio/out/frames_' + $ep), '--workers', [string]$workers, '--gpu') -WorkingDirectory $repo -NoNewWindow -PassThru -RedirectStandardOutput $wlog -RedirectStandardError $werr
+      $null = $p.Handle                                   # keeps the exit code readable after the process ends
+      $row = [Console]::CursorTop; $live = $true
+      try { [Console]::SetCursorPosition(0, $row) } catch { $live = $false }
+      $hist = New-Object System.Collections.ArrayList; $u = Get-Usage; $lastU = Get-Date; $spin = '|/-\'; $tick = 0; $lastPct = -10; $renderer = ''
+      while (-not $p.HasExited) {
+        $n = 0; if (Test-Path -LiteralPath $frames) { $n = [IO.Directory]::GetFiles($frames, 'f_*.jpg').Length }
+        $now = Get-Date; [void]$hist.Add(@($now, $n)); while ($hist.Count -gt 2 -and ($now - $hist[0][0]).TotalSeconds -gt 15) { $hist.RemoveAt(0) }
+        $span = ($now - $hist[0][0]).TotalSeconds; $fps = 0.0; if ($span -gt 0.5) { $fps = ($n - $hist[0][1]) / $span }
+        $eta = -1.0; if ($fps -gt 0.05) { $eta = ($nf - $n) / $fps }
+        if (($now - $lastU).TotalSeconds -ge 3) { $u = Get-Usage; $lastU = Get-Date }
+        if (-not $renderer -and (Test-Path -LiteralPath $wlog)) { $r = Select-String -LiteralPath $wlog -Pattern 'renderer: (.*)$' -List -ErrorAction SilentlyContinue; if ($r) { $renderer = $r.Matches[0].Groups[1].Value } }
+        $f = 0.0; if ($nf -gt 0) { $f = $n / $nf }
+        if ($live) {
+          [Console]::SetCursorPosition(0, $row)
+          if ($n -eq 0) { W ('        ' + $spin[$tick % 4] + ' starting the workers (loading the scene, people and shaders)...').PadRight(88) 'DarkGray'; WL '' }
+          else {
+            W '        '; W (Bar $f 30) 'Red'; W ('  {0,5:0.0}%' -f ($f * 100)) 'White'
+            W ('   {0,4}/{1} frames   {2,5:0.0} fps   ETA {3}' -f $n, $nf, $fps, (Mmss $eta)).PadRight(44) 'Gray'; WL ''
+          }
+          W '        GPU ' 'DarkGray'; W (Bar ($u.gpu / 100) 10) 'Cyan'; W (' ' + (Pct $u.gpu)) 'White'
+          W '    CPU ' 'DarkGray'; W (Bar ($u.cpu / 100) 10) 'Cyan'; W (' ' + (Pct $u.cpu)) 'White'
+          $vr = 'n/a'; if ($u.vram -ge 0) { $vr = ('{0:0.0} GB' -f $u.vram) }
+          $rm = 'n/a'; if ($u.ram -ge 0) { $rm = ('{0:0.0}/{1:0} GB' -f $u.ram, $u.ramT) }
+          W ('    VRAM ' + $vr + '    RAM ' + $rm).PadRight(40) 'DarkGray'; WL ''
+        } elseif ([int]($f * 10) -gt $lastPct) { $lastPct = [int]($f * 10); WL ('        ' + (Bar $f 30) + ('  {0,3:0}%  ETA {1}' -f ($f * 100), (Mmss $eta))) 'Gray' }
+        $tick++; Start-Sleep -Milliseconds 500
       }
-      W '        GPU ' 'DarkGray'; W (Bar ($u.gpu / 100) 10) 'Cyan'; W (' ' + (Pct $u.gpu)) 'White'
-      W '    CPU ' 'DarkGray'; W (Bar ($u.cpu / 100) 10) 'Cyan'; W (' ' + (Pct $u.cpu)) 'White'
-      $vr = 'n/a'; if ($u.vram -ge 0) { $vr = ('{0:0.0} GB' -f $u.vram) }
-      $rm = 'n/a'; if ($u.ram -ge 0) { $rm = ('{0:0.0}/{1:0} GB' -f $u.ram, $u.ramT) }
-      W ('    VRAM ' + $vr + '    RAM ' + $rm).PadRight(40) 'DarkGray'; WL ''
-    } elseif ([int]($f * 10) -gt $lastPct) { $lastPct = [int]($f * 10); WL ('        ' + (Bar $f 30) + ('  {0,3:0}%  ETA {1}' -f ($f * 100), (Mmss $eta))) 'Gray' }
-    $tick++; Start-Sleep -Milliseconds 500
+      $p.WaitForExit(); $code = $p.ExitCode
+      if ($live) { [Console]::SetCursorPosition(0, $row + 2) }
+      foreach ($l in @(Get-Content -LiteralPath $wlog -ErrorAction SilentlyContinue) + @(Get-Content -LiteralPath $werr -ErrorAction SilentlyContinue)) { Log $l }
+      $rmin = ((Get-Date) - $tr).TotalMinutes
+      $n = 0; if (Test-Path -LiteralPath $frames) { $n = [IO.Directory]::GetFiles($frames, 'f_*.jpg').Length }
+      W '        '; W (Bar ($n / [Math]::Max(1, $nf)) 30) 'Red'; WL ('  ' + $n + ' frames in ' + (Mmss ($rmin * 60)) + (' ({0:0.0} fps)' -f ($n / [Math]::Max(1, $rmin * 60)))) 'White'
+      if ($renderer) { WL ('        ' + $renderer) 'DarkGray' }
+      if ($code -ne 0 -or $n -lt $nf) {
+        WL '        RENDER FAILED. Last lines of the workers:' 'Red'
+        Get-Content -LiteralPath $wlog -Tail 14 -ErrorAction SilentlyContinue | ForEach-Object { WL ('        ' + $_) 'DarkRed' }
+        throw 'render'
+      }
+
+      # 6. every frame exists, decodes, and has no black hole (a NaN blurred by the bloom)
+      Stage '6/8' 'Check frames'
+      $c6 = Run 'py' @('-3', 'studio/tools/checkframes.py', ('studio/out/frames_' + $ep), [string]$nf)
+      $black = @($script:LastOut | Where-Object { $_ -match '^BLACK AREAS' })
+      if ($c6 -ne 0) { Done 'FAIL' 'some frames are missing or broken'; Tail 6; throw 'frames' }
+      if ($black.Count) { Done 'WARN' $black[0]; $warn += 'black areas' } else { Done 'OK' ($nf.ToString() + ' frames, no black areas') }
+
+      # 7. encode (HQ + phone), sound check, flicker check
+      Stage '7/8' 'Encode'
+      $c7 = Run $bash @('studio/encode.sh', ('studio/out/frames_' + $ep), $wav, ('videos/' + $name))
+      $phone = Join-Path $repo ('videos\' + $name + '_phone.mp4')
+      if (-not (Test-Path -LiteralPath $phone)) { Done 'FAIL' 'the encoding failed'; Tail 12; throw 'encode' }
+      $lufs = ''; $pl = @($script:LastOut | Where-Object { $_ -match '^OK .*_phone\.mp4' }) | Select-Object -First 1
+      if ($pl -match '(-?[\d.]+) LUFS') { $lufs = '  ' + $Matches[1] + ' LUFS' }
+      if ($c7 -ne 0) { Done 'WARN' ('sound check: ' + (@($script:LastOut) | Select-Object -Last 1)); $warn += 'sound' }
+      else { Done 'OK' ($name + '_phone.mp4  ' + (Size (Get-Item -LiteralPath $phone).Length) + $lufs) }
+      $fl = @($script:LastOut | Where-Object { $_ -match 'FLICKER CHECK' }) | Select-Object -First 1
+      Stage '   ' 'Flicker check'
+      $secs = @(Get-Content -LiteralPath (Join-Path $repo ('videos\' + $name + '_flicker.txt')) -ErrorAction SilentlyContinue | Where-Object { $_ -match '<--' } | ForEach-Object { Log $_; ($_.Trim() -split '\s+')[0] + ' s' })
+      if (-not $fl) { Done 'SKIP' 'no result' } elseif ($fl -match 'OK') { Done 'OK' 'no flicker' } else { Done 'WARN' ('at ' + ($secs -join ', ') + ': send me the log'); $warn += 'flicker' }
+
+      # 8. contact sheet (1 frame per second, for the review), then the frames go (about 1 GB)
+      Stage '8/8' 'Contact sheet'
+      $sheet = Join-Path $out ($name + '_sheet.jpg')
+      $null = Run 'py' @('-3', 'studio/tools/sheet1fps.py', ('studio/out/frames_' + $ep), ('studio/out/' + $name + '_sheet.jpg'))
+      $fsz = (Get-ChildItem -LiteralPath $frames -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+      Remove-Item -Recurse -Force -LiteralPath $frames -ErrorAction SilentlyContinue
+      if (Test-Path -LiteralPath $sheet) { Done 'OK' ('studio\out\' + $name + '_sheet.jpg  (frames deleted: ' + (Size $fsz) + ')') } else { Done 'WARN' 'no sheet' }
+      [void]$ready.Add($phone)
+    } catch {
+      Log ('STOPPED ' + $name + ': ' + $_); WL ('        ' + $name + ' stopped (' + $_ + '); the next video still runs') 'Red'; $warn += ($name + ' failed')
+    }
   }
-  $p.WaitForExit(); $code = $p.ExitCode
-  if ($live) { [Console]::SetCursorPosition(0, $row + 2) }
-  foreach ($l in @(Get-Content -LiteralPath $wlog -ErrorAction SilentlyContinue) + @(Get-Content -LiteralPath $werr -ErrorAction SilentlyContinue)) { Log $l }
-  $rmin = ((Get-Date) - $tr).TotalMinutes
-  $n = 0; if (Test-Path -LiteralPath $frames) { $n = [IO.Directory]::GetFiles($frames, 'f_*.jpg').Length }
-  W '        '; W (Bar ($n / [Math]::Max(1, $nf)) 30) 'Red'; WL ('  ' + $n + ' frames in ' + (Mmss ($rmin * 60)) + (' ({0:0.0} fps)' -f ($n / [Math]::Max(1, $rmin * 60)))) 'White'
-  if ($renderer) { WL ('        ' + $renderer) 'DarkGray' }
-  if ($code -ne 0 -or $n -lt $nf) {
-    WL '        RENDER FAILED. Last lines of the workers:' 'Red'
-    Get-Content -LiteralPath $wlog -Tail 14 -ErrorAction SilentlyContinue | ForEach-Object { WL ('        ' + $_) 'DarkRed' }
-    throw 'render'
-  }
-
-  # 6. every frame exists, decodes, and has no black hole (a NaN blurred by the bloom)
-  Stage '6/8' 'Check frames'
-  $c6 = Run 'py' @('-3', 'studio/tools/checkframes.py', ('studio/out/frames_' + $ep), [string]$nf)
-  $black = @($script:LastOut | Where-Object { $_ -match '^BLACK AREAS' })
-  if ($c6 -ne 0) { Done 'FAIL' 'some frames are missing or broken'; Tail 6; throw 'frames' }
-  if ($black.Count) { Done 'WARN' $black[0]; $warn += 'black areas' } else { Done 'OK' ($nf.ToString() + ' frames, no black areas') }
-
-  # 7. encode (HQ + phone), sound check, flicker check
-  Stage '7/8' 'Encode'
-  $c7 = Run $bash @('studio/encode.sh', ('studio/out/frames_' + $ep), $wav, ('videos/' + $name))
-  $phone = Join-Path $repo ('videos\' + $name + '_phone.mp4')
-  if (-not (Test-Path -LiteralPath $phone)) { Done 'FAIL' 'the encoding failed'; Tail 12; throw 'encode' }
-  $lufs = ''; $pl = @($script:LastOut | Where-Object { $_ -match '^OK .*_phone\.mp4' }) | Select-Object -First 1
-  if ($pl -match '(-?[\d.]+) LUFS') { $lufs = '  ' + $Matches[1] + ' LUFS' }
-  if ($c7 -ne 0) { Done 'WARN' ('sound check: ' + (@($script:LastOut) | Select-Object -Last 1)); $warn += 'sound' }
-  else { Done 'OK' ($name + '_phone.mp4  ' + (Size (Get-Item -LiteralPath $phone).Length) + $lufs) }
-  $fl = @($script:LastOut | Where-Object { $_ -match 'FLICKER CHECK' }) | Select-Object -First 1
-  Stage '   ' 'Flicker check'
-  $secs = @(Get-Content -LiteralPath (Join-Path $repo ('videos\' + $name + '_flicker.txt')) -ErrorAction SilentlyContinue | Where-Object { $_ -match '<--' } | ForEach-Object { Log $_; ($_.Trim() -split '\s+')[0] + ' s' })
-  if (-not $fl) { Done 'SKIP' 'no result' } elseif ($fl -match 'OK') { Done 'OK' 'no flicker' } else { Done 'WARN' ('at ' + ($secs -join ', ') + ': send me the log'); $warn += 'flicker' }
-
-  # 8. contact sheet (1 frame per second, for the review), then the frames go (about 1 GB)
-  Stage '8/8' 'Contact sheet'
-  $sheet = Join-Path $out ($name + '_sheet.jpg')
-  $null = Run 'py' @('-3', 'studio/tools/sheet1fps.py', ('studio/out/frames_' + $ep), ('studio/out/' + $name + '_sheet.jpg'))
-  $fsz = (Get-ChildItem -LiteralPath $frames -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
-  Remove-Item -Recurse -Force -LiteralPath $frames -ErrorAction SilentlyContinue
-  if (Test-Path -LiteralPath $sheet) { Done 'OK' ('studio\out\' + $name + '_sheet.jpg  (frames deleted: ' + (Size $fsz) + ')') } else { Done 'WARN' 'no sheet' }
-  $ok = $true
+  $ok = $ready.Count -gt 0
 } catch {
   Log ('STOPPED: ' + $_)
 } finally {
@@ -200,8 +211,9 @@ try {
   WL
   WL ('  ' + ('=' * 76)) 'DarkGray'
   if ($ok) {
-    W '  VIDEO READY' 'Green'; WL ('   ' + $name + '_phone.mp4   (total ' + $tm + ')') 'White'
-    WL ('  ' + $phone) 'Gray'
+    W '  VIDEO READY' 'Green'; WL ('   ' + $ready.Count + ' of ' + @($jobs).Count + ' videos   (total ' + $tm + ')') 'White'
+    foreach ($ph in $ready) { WL ('  ' + $ph) 'Gray' }
+    $phone = $ready[$ready.Count - 1]
     if ($warn.Count) { WL ('  warnings: ' + ($warn -join ', ') + '. Send me the log: studio\out\pc_render_log.txt') 'Yellow' }
     WL '  Play it from Photos with the volume up.' 'DarkGray'
   } else {

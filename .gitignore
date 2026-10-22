@@ -5,3 +5,6 @@ __pycache__/
 studio/engine/models/
 videos/*_flicker.txt
 pc/setup_log.txt
+
+# per-line narration takes (tools/vo_kyutai.py); only the aligned WAV + JSON are committed
+studio/audio/vo/ep*_*/

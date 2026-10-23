@@ -1,18 +1,7 @@
 {
-  "queue": [
-    {
-      "ep": "ep19",
-      "name": "post13_beauty",
-      "cover": "videos/post13_cover.jpg",
-      "workers": 3,
-      "note": "Post 13 (last What if): beauty standards reversed for 5 years (68 s, Piccadilly Circus)."
-    },
-    {
-      "ep": "ep20",
-      "name": "12pct_p1_fumee",
-      "cover": "videos/12pct_p1_cover.jpg",
-      "workers": 3,
-      "note": "12 % Partie 1 : La fumee (French serial thriller, ~107 s)."
-    }
-  ]
+  "ep": "ep20",
+  "name": "12pct_p1_fumee",
+  "cover": "videos/12pct_p1_cover.jpg",
+  "workers": 3,
+  "note": "12 % Partie 1 : La fumee v2 (frame review fixes: hook, captions, flicker, end card; ~107 s)."
 }

@@ -7,12 +7,13 @@ const CSS = `
   #s12 { position: absolute; inset: 0; pointer-events: none; font-family: 'Inter', sans-serif; color: #fff; }
   #s12 .kara { position: absolute; left: 0; right: 0; top: 57%; margin: 0 auto; width: 920px; text-align: center; font-weight: 800; font-size: 74px;
     line-height: 1.06; letter-spacing: -0.005em; text-transform: uppercase; text-wrap: balance;
-    text-shadow: 0 3px 0 rgba(0,0,0,.55), 0 0 18px rgba(0,0,0,.75), 0 0 3px rgba(0,0,0,.9); -webkit-text-stroke: 2px rgba(0,0,0,.35); }
+    text-shadow: 0 0 3px #000, 0 0 2px #000, 0 4px 0 rgba(0,0,0,.7), 0 0 26px rgba(0,0,0,.8); -webkit-text-stroke: 2px rgba(0,0,0,.6); }
   #s12 .kara span { opacity: 1; transition: none; }
-  #s12 .kara .w0 { color: rgba(255,255,255,.42); }
+  /* unspoken words: opaque grey with a hard dark outline, so they read over a bright floor or a lit wall too */
+  #s12 .kara .w0 { color: #b4b4b8; }
   #s12 .kara .w1 { color: #fff; }
-  #s12 .kara .r1 { color: #ff2e2e; text-shadow: 0 3px 0 rgba(0,0,0,.55), 0 0 22px rgba(255,46,46,.45), 0 0 3px rgba(0,0,0,.9); }
-  #s12 .kara .r0 { color: rgba(255,120,120,.5); }
+  #s12 .kara .r1 { color: #ff2e2e; }
+  #s12 .kara .r0 { color: #d98a8a; }
   #s12 .stat { position: absolute; right: 70px; top: 196px; display: flex; align-items: center; gap: 16px; padding: 12px 22px; border-radius: 30px;
     background: rgba(8,9,12,.52); backdrop-filter: blur(6px); font-weight: 650; font-size: 31px; font-variant-numeric: tabular-nums; letter-spacing: .01em;
     box-shadow: 0 2px 14px rgba(0,0,0,.35); }
@@ -60,6 +61,7 @@ export function chunks(lines) {
     let cur = [], len = 0;
     const flush = () => { if (cur.length) out.push(cur); cur = []; len = 0; };
     ln.units.forEach((u, i) => {
+      if (/^[»”)]+$/.test(u.shown) && !cur.length && out.length) { out[out.length - 1].push(u); return; }   // a closing quote stays with its words
       const L = u.shown.length;
       if (cur.length && (len + L > 18 || cur.length >= 4)) flush();
       cur.push(u); len += L + 1;
@@ -68,7 +70,7 @@ export function chunks(lines) {
     flush();
   }
   // each chunk shows from its first word's start (-0.08 s) until the next chunk starts (or 0.35 s after its last word)
-  return out.map((c, i) => ({ units: c, t0: c[0].t0 - 0.08, t1: Math.min(out[i + 1] ? out[i + 1][0].t0 - 0.08 : 1e9, c[c.length - 1].t1 + 0.6) }));
+  return out.map((c, i) => ({ units: c, t0: i === 0 ? 0 : c[0].t0 - 0.08, t1: Math.min(out[i + 1] ? out[i + 1][0].t0 - 0.08 : 1e9, c[c.length - 1].t1 + 0.6) }));
 }
 
 export class Overlay12 {

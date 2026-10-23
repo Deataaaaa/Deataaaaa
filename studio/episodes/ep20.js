@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { createRenderer, rng, smooth, clamp, CamPath } from '../engine/core.js';
 import { TEX_PENDING, orientHand } from '../engine/elevator.js';
-import { fadeShadowBorders, Sparks, Billboards, smokeAtlas, fireStripAtlas, SIMPLEX } from '../engine/fx.js';
+import { fadeShadowBorders, Streaks, Billboards, smokeAtlas, fireStripAtlas, SIMPLEX } from '../engine/fx.js';
 import { loadAvatar } from '../engine/rocketbox.js';
 import { stand, kneel, walk, cloneAvatar, lookAt } from '../engine/poses.js';
 import { clone as skClone } from 'three/addons/utils/SkeletonUtils.js';
@@ -53,7 +53,7 @@ export async function create() {
     ['blind', cut(Lw(13, 'Elle'))], ['stat', cut(L(14))], ['rewind', cut(L(15))], ['bolt', cut(L(16))], ['sink', cut(Lw(16, 'mouille'))],
     ['towels', cut(Lw(16, 'et'))], ['splash', cut(L(17))], ['call', cut(Lw(17, 'Et'))], ['speaker', cut(L(18))], ['low', cut(L(19))],
     ['street', cut(L(20))], ['door', cut(Lw(20, 'Au'))], ['neigh', cut(L(21))], ['ladder', cut(L(22))], ['news', cut(L(23))],
-    ['crowd', cut(L(24))], ['man2', cut(L(25))], ['manclose', cut(L(26))], ['msg', cut(L(27))], ['black', END0], ['end', END0 + 1.9],
+    ['crowd', cut(L(24))], ['man2', cut(L(25))], ['manclose', cut(L(26))], ['msg', cut(L(27))], ['end', END0],
   ].map(([id, t0], i, a) => ({ id, t0, t1: a[i + 1] ? a[i + 1][1] : DUR }));
   const S = Object.fromEntries(SH.map((s) => [s.id, s]));
   const shotAt = (t) => { let s = SH[0]; for (const x of SH) if (t >= x.t0) s = x; return s; };
@@ -146,10 +146,17 @@ export async function create() {
   const beaconLights = [V(-0.5 + 4.5, 2.8, 6.1), V(-0.5 - 4.6, 2.5, 7.3), V(-11.5 + 3.6, 2.8, 6.3)].map((p) => { const l = new THREE.PointLight('#3a66ff', 0, 30, 2); l.position.copy(p); scene.add(l); return l; });
   const water = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.008, 0.36, 10, 1, true), new THREE.MeshStandardMaterial({ color: '#cfe6ff', roughness: 0.05, transparent: true, opacity: 0.55 }));
   water.position.copy(room.anchors.spout).add(V(0, -0.18, 0)); scene.add(water);
-  const drops = new Sparks(900, { additive: false, minPx: 1.6, maxPx: 8, near: 0.1 }); scene.add(drops.points);
-  { const r = rng(77); let n = 0;
-    for (let k = 0; k < 520; k++) { const b = 0.02 * k; drops.set(n++, 3.75 + r() * 0.12, Y0 + 1.05 + r() * 0.1, -3.85 + r() * 0.1, 0.9 + r() * 0.6, 1.2 + r() * 1.2, -1.6 - r() * 0.6, 0.75, 0.82, 0.9, 0.006 + r() * 0.008, 1000 + b * 0.0, 0.6 + r() * 0.3, r()); }
-    drops.commit(); drops.u.uAcc.value.set(0, -9.8, 0); drops.u.uAccT0.value = 0; }
+  // the water she throws at the door: streaks blurred over a whole frame (360-degree shutter; points strobed), each one ends at the door
+  const drops = new Streaks(520, { widthPx: 2.6, additive: false, renderOrder: 7 }); scene.add(drops.mesh);
+  { const r = rng(77);
+    for (let k = 0; k < 520; k++) { const z0 = -3.85 + r() * 0.1, vz = -1.6 - r() * 0.6, life = (z0 - (ROOM.Z0 + 0.03)) / -vz;
+      drops.set(k, 3.75 + r() * 0.12, Y0 + 1.05 + r() * 0.1, z0, 0.9 + r() * 0.6, 1.2 + r() * 1.2, vz, 0.78, 0.84, 0.92, 0.8 + r() * 0.6, S.splash.t0 + 0.25 + k * 0.0008, life, r()); }
+    drops.commit(); drops.u.uAcc.value.set(0, -9.8, 0); drops.u.uAccT0.value = 0; drops.u.uTrail.value = 1 / 30; drops.u.uNear.value = 0.2; drops.u.uSpread.value = 0.45; }
+  // a soft contact shadow under the phone when it lies on the floor
+  const phoneShadow = (() => { const cv = document.createElement('canvas'); cv.width = cv.height = 128; const c = cv.getContext('2d'); const g = c.createRadialGradient(64, 64, 6, 64, 64, 64);
+    g.addColorStop(0, 'rgba(0,0,0,0.8)'); g.addColorStop(0.5, 'rgba(0,0,0,0.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(0, 0, 128, 128);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(0.105, 0.19), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+    scene.add(m); return m; })();
   const towelWet = new THREE.Mesh(new THREE.IcosahedronGeometry(0.12, 2), new THREE.MeshStandardMaterial({ color: '#2f5f7c', roughness: 0.7 }));
   { const p = towelWet.geometry.attributes.position; const r = rng(3); for (let i = 0; i < p.count; i++) { const v = V(p.getX(i), p.getY(i), p.getZ(i)); v.multiplyScalar(0.8 + 0.35 * r()); v.y *= 0.45; p.setXYZ(i, v.x, v.y, v.z); } towelWet.geometry.computeVertexNormals(); }
   scene.add(towelWet);
@@ -160,14 +167,31 @@ export async function create() {
   sign.style.cssText = 'position:absolute;left:50%;top:640px;transform:translateX(-50%);background:#22397a;border:8px solid #2e6b4a;outline:5px solid #e8e6df;border-radius:16px;padding:30px 60px;text-align:center;min-width:640px;font-family:Inter,sans-serif;color:#fff';
   sign.innerHTML = `<div style="display:inline-block;background:#ff2e2e;font-weight:800;font-size:30px;padding:6px 14px;border-radius:8px;letter-spacing:.06em">12 %</div>
     <div style="font-weight:800;font-size:46px;margin-top:18px;letter-spacing:.03em">PARTIE 2</div><div style="font-weight:800;font-size:80px;line-height:1;margin-top:6px">L'ESCALIER</div>`;
+  const ask = document.createElement('div');
+  ask.style.cssText = 'position:absolute;left:0;right:0;top:330px;text-align:center;font:800 70px/1.08 Inter,sans-serif;color:#fff;text-transform:uppercase;text-shadow:0 0 3px #000,0 4px 0 rgba(0,0,0,.7)';
+  ask.innerHTML = 'Et vous,<br>vous auriez <span style="color:#ff2e2e">ouvert</span> ?';
+  endEl.appendChild(ask);
   const fine = document.createElement('div');
-  fine.style.cssText = 'position:absolute;left:0;right:0;top:1560px;text-align:center;font:500 21px Inter,sans-serif;color:rgba(255,255,255,.5);line-height:1.5';
+  fine.style.cssText = 'position:absolute;left:60px;right:60px;top:1000px;text-align:center;font:500 29px Inter,sans-serif;color:rgba(255,255,255,.8);line-height:1.45';
   fine.innerHTML = 'Fiction. Conseils vérifiés : sapeurs-pompiers (pompiers.fr), ministère de l\'Intérieur.<br>Voix : Kyutai TTS (CC BY 4.0).';
   endEl.querySelector('.t').innerHTML = ''; endEl.querySelector('.n').innerHTML = '';
   endEl.appendChild(sign); endEl.appendChild(fine);
   const tag = makeEndTag({ text: 'Abonne-toi pour la suite', ssaa: globalThis.SSAA });
 
   await Promise.all(TEX_PENDING);
+  // the stock firefighter texture prints a surname (« ARMSTRONG ») across the back and on the chest tag: paint both out
+  { const done = new Set();
+    for (const f of firemen) f.root.traverse((o) => { for (const mt of [o.material].flat()) {
+      const tx = mt && mt.map, img = tx && tx.image; if (!img || done.has(tx) || !/m138_body_color/.test(img.src || '')) continue; done.add(tx);
+      const cv = document.createElement('canvas'); cv.width = img.width; cv.height = img.height; const c = cv.getContext('2d'); c.drawImage(img, 0, 0);
+      const u = img.width / 2048, q = (x) => Math.round(x * u);
+      c.drawImage(img, q(916), q(414), q(220), q(54), q(916), q(468), q(220), q(54));            // the back: plain cloth from just above
+      const d = c.getImageData(q(824), q(1002), q(88), q(26)), a = d.data; let n = 0, m = [0, 0, 0];
+      for (let i = 0; i < a.length; i += 4) if (a[i] + a[i + 1] + a[i + 2] < 210) { m[0] += a[i]; m[1] += a[i + 1]; m[2] += a[i + 2]; n++; }
+      for (let i = 0; i < a.length; i += 4) if (a[i] + a[i + 1] + a[i + 2] >= 210) { a[i] = m[0] / n; a[i + 1] = m[1] / n; a[i + 2] = m[2] / n; }   // the tag's letters
+      c.putImageData(d, q(824), q(1002));
+      tx.image = cv; tx.needsUpdate = true; } });
+  }
 
   // ---------- poses ----------
   const BL = [5.1, 8.2, 12.6, 19.9, 24.4, 31.2, 35.8, 44.9, 56.1, 61.3, 66.2, 70.8, 75.5, 96.3, 99.2];
@@ -187,40 +211,42 @@ export async function create() {
   const P2 = (s, a, b, ta, tb, fa, fb = fa) => new CamPath([[s.t0, a, ta, fa], [s.t1, b, tb, fb]], { easeIn: false, easeOut: false, arc: true });
   const CAM = {
     hook: P2(S.hook, V(4.62, Y0 + 0.3, -3.25), V(4.55, Y0 + 0.27, -3.5), V(4.22, Y0 + 0.12, -4.38), V(4.24, Y0 + 0.12, -4.38), 52, 48),
-    face: P2(S.face, V(4.33, Y0 + 1.5, -4.18), V(4.31, Y0 + 1.52, -4.06), V(4.22, Y0 + 1.56, -3.5), V(4.22, Y0 + 1.57, -3.5), 36, 32),
+    face: P2(S.face, V(4.34, Y0 + 1.4, -4.2), V(4.32, Y0 + 1.42, -4.08), V(4.22, Y0 + 1.45, -3.5), V(4.22, Y0 + 1.46, -3.5), 44, 40),
     ext: P2(S.ext, V(6.8, 1.7, 11.9), V(6.6, 1.75, 11.6), V(3.6, 13.5, 0), V(3.4, 17.0, 0), 58, 52),
     flash: P2(S.flash, V(1.95, 1.62, 3.7), V(1.8, 1.62, 3.45), V(0.35, 1.45, -0.7), V(0.35, 1.45, -0.7), 42, 40),
     man: P2(S.man, V(1.05, 1.66, 0.75), V(0.95, 1.66, 0.55), V(0.33, 1.66, -0.82), V(0.33, 1.66, -0.82), 30, 27),
     detector: P2(S.detector, V(3.35, Y0 + 1.75, -2.45), V(3.4, Y0 + 1.8, -2.55), V(3.7, ROOM.CEIL - 0.04, -3.0), V(3.7, ROOM.CEIL - 0.04, -3.0), 30, 27),
     apple: P2(S.apple, V(3.45, Y0 + 0.3, -3.35), V(3.5, Y0 + 0.28, -3.45), V(4.02, Y0 + 0.16, -4.05), V(4.02, Y0 + 0.16, -4.05), 40, 36),
     gap: P2(S.gap, V(4.62, Y0 + 0.24, -3.72), V(4.6, Y0 + 0.22, -3.8), V(4.24, Y0 + 0.04, -4.36), V(4.24, Y0 + 0.04, -4.36), 46, 42),
-    hand: P2(S.hand, V(3.9, Y0 + 1.42, -3.98), V(3.93, Y0 + 1.41, -4.02), V(4.3, Y0 + 1.3, -4.37), V(4.3, Y0 + 1.3, -4.37), 34, 31),
+    hand: P2(S.hand, V(4.77, Y0 + 1.4, -4.15), V(4.75, Y0 + 1.39, -4.18), V(4.3, Y0 + 1.3, -4.37), V(4.3, Y0 + 1.3, -4.37), 42, 39),
     peep: P2(S.peep, V(4.295, Y0 + 1.55, -4.47), V(4.295, Y0 + 1.55, -4.5), V(6.1, Y0 + 1.0, -5.5), V(6.1, Y0 + 1.0, -5.5), 110, 110),
     etsi: P2(S.etsi, V(3.22, Y0 + 1.75, -2.72), V(3.23, Y0 + 1.75, -2.75), V(4.15, Y0 + 1.15, -4.45), V(4.15, Y0 + 1.15, -4.45), 50, 49),
     open: P2(S.open, V(2.95, Y0 + 1.62, -2.45), V(3.0, Y0 + 1.6, -2.6), V(4.3, Y0 + 1.15, -4.4), V(4.3, Y0 + 1.2, -4.4), 52, 50),
     well: P2(S.well, V(6.25, LV[6] + 1.45, -5.82), V(6.25, LV[6] + 1.4, -5.9), V(6.25, LV[3], -7.0), V(6.25, LV[3], -7.1), 72, 70),
     blind: P2(S.blind, V(4.62, Y0 + 1.6, -4.95), V(4.75, Y0 + 1.6, -5.0), V(6.6, Y0 + 0.9, -5.3), V(6.6, Y0 + 0.85, -5.3), 60, 58),
-    stat: P2(S.stat, V(4.75, Y0 + 1.6, -5.0), V(4.85, Y0 + 1.58, -5.05), V(6.6, Y0 + 0.85, -5.3), V(6.6, Y0 + 0.8, -5.3), 58, 56),
+    stat: P2(S.stat, V(6.25, LV[6] + 1.45, -5.86), V(6.25, LV[6] + 1.42, -5.9), V(6.25, LV[3], -7.05), V(6.25, LV[3], -7.1), 74, 54),
     bolt: P2(S.bolt, V(3.6, Y0 + 1.36, -4.02), V(3.62, Y0 + 1.35, -4.06), V(3.97, Y0 + 1.24, -4.33), V(3.97, Y0 + 1.24, -4.33), 36, 33),
     sink: P2(S.sink, V(4.52, Y0 + 1.5, -1.85), V(4.5, Y0 + 1.48, -1.95), V(4.45, Y0 + 0.92, -2.85), V(4.45, Y0 + 0.92, -2.85), 46, 43),
     towels: P2(S.towels, V(3.58, Y0 + 0.36, -4.02), V(3.62, Y0 + 0.34, -4.06), V(4.3, Y0 + 0.1, -4.33), V(4.3, Y0 + 0.1, -4.33), 50, 47),
-    splash: P2(S.splash, V(4.75, Y0 + 1.25, -2.95), V(4.72, Y0 + 1.23, -3.02), V(3.95, Y0 + 0.9, -4.2), V(3.95, Y0 + 0.9, -4.2), 48, 46),
+    splash: P2(S.splash, V(4.4, Y0 + 1.3, -2.9), V(4.38, Y0 + 1.28, -2.97), V(3.95, Y0 + 0.9, -4.2), V(3.95, Y0 + 0.9, -4.2), 48, 46),
     call: P2(S.call, V(3.92, Y0 + 0.58, -3.68), V(3.93, Y0 + 0.54, -3.72), V(3.97, Y0, -3.98), V(3.97, Y0, -3.98), 40, 38),
-    speaker: P2(S.speaker, V(4.02, Y0 + 0.62, -4.18), V(4.03, Y0 + 0.64, -4.15), V(4.3, Y0 + 1.05, -3.72), V(4.3, Y0 + 1.06, -3.72), 42, 40),
-    low: P2(S.low, V(4.3, Y0 + 0.75, -2.15), V(4.25, Y0 + 0.73, -2.08), V(3.2, Y0 + 0.65, -1.2), V(3.2, Y0 + 0.65, -1.2), 48, 45),
+    speaker: P2(S.speaker, V(3.78, Y0 + 1.28, -4.22), V(3.8, Y0 + 1.27, -4.2), V(4.28, Y0 + 1.0, -3.74), V(4.28, Y0 + 0.99, -3.74), 52, 49),
+    low: P2(S.low, V(3.78, Y0 + 0.74, -0.98), V(3.76, Y0 + 0.72, -1.01), V(3.15, Y0 + 0.92, -1.52), V(3.15, Y0 + 0.9, -1.52), 56, 52),
     street: P2(S.street, V(3.2, ROOM.SILL + 0.45, 0.02), V(3.2, ROOM.SILL + 0.47, 0.08), V(-0.5, 0, 7.0), V(-0.6, 0, 6.9), 62, 60),
     door: P2(S.door, V(3.0, 1.6, 3.7), V(2.8, 1.6, 3.5), V(0, 1.7, -0.4), V(0, 1.7, -0.4), 50, 48),
     neigh: P2(S.neigh, V(9.6, 3.4, 6.6), V(9.4, 3.3, 6.3), V(6.4, 0.35, 1.5), V(6.4, 0.35, 1.5), 40, 38),
-    ladder: P2(S.ladder, V(-2.2, 1.45, 9.8), V(-2.0, 1.5, 9.6), V(1.2, 12.5, 2.6), V(1.6, 14.5, 2.2), 62, 60),
+    ladder: P2(S.ladder, V(4.9, ROOM.SILL + 0.9, 2.5), V(4.95, ROOM.SILL + 0.8, 2.65), V(-1.4, 7.0, 5.0), V(-0.6, 9.0, 4.4), 62, 60),
     news: P2(S.news, V(-1.0, 3.2, 10.6), V(-1.2, 3.3, 10.3), V(FIRE_BAY, 10.5, 0), V(FIRE_BAY, 11.5, 0), 46, 43),
     crowd: P2(S.crowd, V(-1.6, 1.85, 12.75), V(-1.5, 1.88, 12.6), V(1.0, 5.6, 0), V(1.2, 6.4, 0), 62, 58),
     man2: P2(S.man2, V(6.9, 1.7, 9.7), V(7.0, 1.72, 10.0), V(7.6, 1.8, 11.5), V(7.6, 1.8, 11.5), 34, 30),
     manclose: P2(S.manclose, V(7.22, 1.86, 10.86), V(7.27, 1.86, 10.92), V(7.6, 1.86, 11.5), V(7.6, 1.86, 11.5), 26, 24),
-    msg: P2(S.msg, V(3.02, Y0 + 0.98, -1.0), V(3.03, Y0 + 0.99, -1.03), V(3.18, Y0 + 1.22, -1.48), V(3.18, Y0 + 1.22, -1.48), 38, 34),
+    msg: P2(S.msg, V(3.02, Y0 + 0.94, -0.98), V(3.03, Y0 + 0.95, -1.01), V(3.18, Y0 + 1.2, -1.48), V(3.18, Y0 + 1.2, -1.48), 46, 42),
   };
   const camTmp = new THREE.PerspectiveCamera(30, 1080 / 1920, 0.03, 100);
   const fill = new THREE.PointLight('#a9b9d8', 0, 5, 2); scene.add(fill);                 // a soft bounce near the lens, set per shot
+  const rim = new THREE.PointLight('#c8d4ff', 0, 3, 2); scene.add(rim);                   // a back light that gives her hair its shape (close-ups)
   const smokeLit = (v) => { for (const bb of [gapSm, landSm]) { bb.u.uLitCol.value.setScalar(v); bb.u.uShadeCol.value.setScalar(v * 0.25); } };
+  const FOG_OPEN0 = new THREE.Color('#2c2824'), FOG_OPEN1 = new THREE.Color('#1a1714'), fogA = new THREE.Color();
   const fogTo = (d, col) => { scene.fog.density = d; scene.fog.color.set(col); for (const bb of [gapSm, landSm, fireSm, flames]) { bb.u.uFogD.value = d; bb.u.uFogCol.value.set(col); } };
   const rsm = rng(909);
   const GAP = Array.from({ length: 90 }, (_, i) => ({ b: i * 0.13, x: (rsm() - 0.5) * 0.7, vx: (rsm() - 0.5) * 0.06, vz: 0.12 + rsm() * 0.1, vy: 0.012 + rsm() * 0.03, s: 0.22 + rsm() * 0.25, r: rsm() * 6.28, life: 7 + rsm() * 3 }));
@@ -255,7 +281,7 @@ export async function create() {
     // the doorway flood when she opens (cards pushed in toward the camera)
     if (which.flood != null) for (let i = 0; i < 80; i++) {
       const c = LAND[i], tb = which.flood + i * 0.03, ag = t - tb; if (ag < 0) { landSm.hide(i); continue; }
-      landSm.set(i, 4.3 + (c.x - 4.6) * 0.16 * (1 + ag), Y0 + 1.95 - 0.35 * ag * ag + c.y * 0.25, ROOM.Z0 + 0.15 + ag * (1.1 + c.w), 0.9 + ag * 2.0, 0.8 + ag * 1.7, 0.07, 0.066, 0.062, Math.min(0.97, ag * 3.0), c.r + ag * 0.3, i % 4);
+      landSm.set(i, 4.3 + (c.x - 4.6) * 0.16 * (1 + ag), Y0 + 1.95 - 0.35 * ag * ag + c.y * 0.25, ROOM.Z0 + 0.15 + ag * (1.1 + c.w), 0.9 + ag * 2.0, 0.8 + ag * 1.7, 0.3, 0.28, 0.26, Math.min(0.97, ag * 3.0), c.r + ag * 0.3, i % 4);
     }
     landSm.commit();
     // outside: the 2nd-floor window pours smoke up the front
@@ -283,9 +309,9 @@ export async function create() {
     frame(t, opts = {}) {
       curT = t;
       const sh = shotAt(t), id = sh.id, k = (t - sh.t0) / Math.max(0.001, sh.t1 - sh.t0);
-      hideAll(); phone.screen.material.emissiveIntensity = 1.0; apple.root.visible = false; phone.visible = false; water.visible = false; towelWet.visible = false; drops.points.visible = false;
+      hideAll(); phone.screen.material.emissiveIntensity = 1.0; apple.root.visible = false; phone.visible = false; water.visible = false; towelWet.visible = false; drops.mesh.visible = false; phoneShadow.visible = false; rim.intensity = 0;
       torch.intensity = 0; beamMat.uniforms.uI.value = 0; screenGlow.intensity = 0; W.stairLamp.intensity = 0; W.stair.lamp.material.emissiveIntensity = 0;
-      W.blueSpot.intensity = 0; fireLight.intensity = 0; wellLight.intensity = 0; beaconLights.forEach((l) => (l.intensity = 0));
+      W.blueSpot.intensity = 0; landSm.u.uNearK.value = 1; fireLight.intensity = 0; wellLight.intensity = 0; beaconLights.forEach((l) => (l.intensity = 0));
       room.setDoor(0); room.setBolt(t >= S.bolt.t0 + 0.6 ? 1 : 0); room.openWindow(0); room.rolled.visible = t >= gapStop; room.towelsHung.visible = t < S.sink.t0;
       room.setKitchen(t >= S.sink.t0 ? 1 : 0);
       W.hero.userData.setDoor(0); if (W.hero.userData.hallLight) W.hero.userData.hallLight.intensity = 0;
@@ -299,34 +325,35 @@ export async function create() {
       if (inRoom) { fill.intensity = 1.0; G.uAberr.value = 0.0012; }
       const fire = t < S.ext.t0 ? 0 : 1;
       const beaconsOn = t >= S.street.t0;
-      // the night outside: beacons, fire glow
-      if (beaconsOn) { updateBeacons(W.epa.beacons, t); updateBeacons(W.fpt.beacons, t); beaconLights.forEach((l, i) => (l.intensity = 900 * pulse(t, i * 0.33))); W.blueSpot.intensity = 26 * pulse(t, 0.2); }
+      // the night outside: beacons (dimmed in the ladder shot: from above they paint blobs on the truck roofs), fire glow
+      if (beaconsOn) { const bk = id === 'ladder' ? 0.3 : 1; updateBeacons(W.epa.beacons, t, bk); updateBeacons(W.fpt.beacons, t, bk); beaconLights.forEach((l, i) => (l.intensity = (id === 'ladder' ? 160 : 900) * pulse(t, i * 0.33))); W.blueSpot.intensity = 26 * pulse(t, 0.2); }
       fireLight.intensity = fire ? 160 * (0.8 + 0.2 * Math.sin(t * 7.3) * Math.sin(t * 3.1 + 1)) : 0;
       let which = { gap: t >= smokeStart && inRoom, land: 0, fire: fire && !inRoom ? 1 : 0, flood: null };
       let isRew = false, tt = t;
       // ---- per shot ----
-      if (id === 'hook' || id === 'apple') {
-        apple.root.visible = true; apple.root.position.set(id === 'hook' ? 4.42 : 3.92, Y0, id === 'hook' ? -3.9 : -3.9); apple.root.rotation.y = id === 'hook' ? Math.PI + 1.15 : -Math.PI / 2 - 0.35; apple.update(t, { look: V(4.3, Y0 + 0.05, -4.4) });
-        torch.intensity = 0; // a standalone torch from where she stands, behind the camera
-        phone.visible = true; phone.position.set(4.32, Y0 + 1.25, -3.05); phone.lookAt(V(4.28, Y0 + 0.02, -4.35)); phone.rotateY(Math.PI); phone.updateMatrixWorld(true);
-        torch.intensity = id === 'apple' ? 14 : 70; beamMat.uniforms.uI.value = 0.35; smokeLit(id === 'apple' ? 0.15 : 0.3); fill.intensity = id === 'apple' ? 0.25 : 1.2;
+      if (id === 'apple') {
+        apple.root.visible = true; apple.root.position.set(3.92, Y0, -3.9); apple.root.rotation.y = -Math.PI / 2 - 0.35; apple.update(t, { look: V(4.3, Y0 + 0.05, -4.4) });
+        phone.visible = true; phone.position.set(4.32, Y0 + 1.25, -3.05); phone.lookAt(V(4.28, Y0 + 0.02, -4.35)); phone.rotateY(Math.PI); phone.updateMatrixWorld(true);   // her torch, behind the camera
+        torch.intensity = 14; beamMat.uniforms.uI.value = 0.35; smokeLit(0.15); fill.intensity = 0.25;
         R.renderer.toneMappingExposure = 1.1;
       }
-      if (id === 'face' || id === 'gap' || id === 'hand' || id === 'etsi' || id === 'open' || id === 'rewind') {
+      const atDoor = id === 'etsi' || id === 'open' || id === 'rewind' || id === 'hook';   // the hook is a flash-forward of « ET SI… »: she opens
+      if (id === 'face' || id === 'gap' || id === 'hand' || atDoor) {
         let aimAt = V(4.3, Y0 + 0.05, -4.35);
         poseInes(() => {
           const hand = id === 'hand';
-          stand(ines, { pos: id === 'hand' ? V(4.2, Y0, -3.82) : (id === 'etsi' || id === 'open' || id === 'rewind') ? V(3.55, Y0, -3.85) : IP, yaw: (id === 'etsi' || id === 'open' || id === 'rewind') ? DOORYAW - 0.35 : DOORYAW, breath: t * 0.33, lean: id === 'face' ? 0.04 : 0.08,
-            armR: hand ? (sh2, fwd, left, up) => ({ hand: V(4.3, Y0 + 1.3, ROOM.Z0 + 0.024), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.6), F: up.clone(), N: fwd.clone().negate(), curl: 0.02 })
-              : (id === 'etsi' || id === 'open' || id === 'rewind') ? (sh2, fwd, left, up) => { const lv = room.door.localToWorld(V(-(ROOM.DX1 - ROOM.DX0) + 0.14, 1.02, 0.09)); return { hand: lv, pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.6), F: left.clone().negate(), N: up.clone().negate(), curl: 0.7 }; }
+          stand(ines, { pos: hand ? V(4.2, Y0, -3.82) : atDoor ? V(3.55, Y0, -3.85) : IP, yaw: atDoor ? DOORYAW - 0.35 : DOORYAW, breath: t * 0.33, lean: id === 'face' ? 0.04 : 0.08,
+            // the back of her hand on the door, fingers relaxed
+            armR: hand ? (sh2, fwd, left, up) => ({ hand: V(4.3, Y0 + 1.3, ROOM.Z0 + 0.021), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.6), F: up.clone().addScaledVector(left, 0.25).normalize(), N: fwd.clone().negate(), curl: 0.16 })
+              : atDoor ? (sh2, fwd, left, up) => { const lv = room.door.localToWorld(V(-(ROOM.DX1 - ROOM.DX0) + 0.14, 1.02, 0.09)); return { hand: lv, pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.6), F: left.clone().negate(), N: up.clone().negate(), curl: 0.7 }; }
               : torchHand(aimAt),
-            armL: hand || id === 'etsi' || id === 'open' || id === 'rewind' ? torchHand(aimAt) : undefined,
-            look: id === 'face' ? V(4.3, Y0 + 0.6, -4.4) : V(4.3, Y0 + 1.0, -4.4), lookK: 0.8 });
+            armL: hand || atDoor ? torchHand(aimAt) : undefined,
+            look: id === 'face' ? V(4.3, Y0 + 1.05, -4.4) : V(4.3, Y0 + 1.0, -4.4), lookK: 0.8 });
         });
-        phone.visible = true; phoneFit(ines, (id === 'hand' || id === 'etsi' || id === 'open' || id === 'rewind') ? 'Left' : 'Right');
-        torch.intensity = id === 'hand' ? 12 : id === 'gap' ? 26 : 70; beamMat.uniforms.uI.value = 0.25 + 0.4 * roomSmoke; screenGlow.intensity = 0.5; smokeLit(id === 'gap' ? 0.55 : 0.28); fill.intensity = id === 'hand' || id === 'gap' ? 0.3 : 1.5;
+        phone.visible = true; phoneFit(ines, id === 'hand' || atDoor ? 'Left' : 'Right');
+        torch.intensity = id === 'hand' ? 7 : id === 'gap' ? 26 : 70; beamMat.uniforms.uI.value = id === 'hook' || id === 'open' ? 0.4 : 0.25 + 0.4 * roomSmoke; screenGlow.intensity = 0.5; smokeLit(id === 'gap' ? 0.55 : 0.28); fill.intensity = id === 'hand' || id === 'gap' ? 0.3 : 1.5;
       }
-      if (id === 'face') { drawPhone('torch', t); R.renderer.toneMappingExposure = 1.15; }
+      if (id === 'face') { drawPhone('torch', t); R.renderer.toneMappingExposure = 1.15; rim.position.set(4.05, Y0 + 1.95, -3.05); rim.intensity = 1.6; }
       if (id === 'ext') { which.fire = 1; R.renderer.toneMappingExposure = 1.0; phone.visible = true; phone.position.set(4.3, Y0 + 1.25, -3.4); phone.lookAt(V(4.3, Y0, -4.4)); phone.rotateY(Math.PI); phone.updateMatrixWorld(true); torch.intensity = 70; }
       if (id === 'flash' || id === 'man') {
         // 22:41, earlier tonight: he holds the door; she walks in. Cooler, softer picture
@@ -351,28 +378,28 @@ export async function create() {
         which.land = 1; W.stairLamp.intensity = 9; W.stair.lamp.material.emissiveIntensity = 3; fogTo(0.2, '#3b3631'); smokeLit(0.3);
         G.uBarrel.value = 0.55; G.uVignette.value = 0.9; R.renderer.toneMappingExposure = 1.2;
       }
-      if (id === 'etsi' || id === 'open' || id === 'well' || id === 'blind' || id === 'stat' || id === 'rewind') {
+      if (atDoor || id === 'well' || id === 'blind' || id === 'stat') {
         G.uSat.value = 0.6; G.uTint.value.set(1.06, 0.96, 0.94);
       }
       if (id === 'etsi') { tt = S.etsi.t0 + 0.25; G.uSat.value = 0.35; }
-      if (id === 'open' || id === 'rewind') {
-        const to = id === 'open' ? t : S.open.t1 - (t - S.rewind.t0) * ((S.open.t1 - S.open.t0) / (S.rewind.t1 - S.rewind.t0)) * 0.9;
+      if (id === 'open' || id === 'rewind' || id === 'hook') {
+        // the hook replays the door opening in slow motion (a third of real time), the black wave already pouring in
+        const to = id === 'open' ? t : id === 'hook' ? S.open.t0 + 0.8 + t * 0.28 : S.open.t1 - (t - S.rewind.t0) * ((S.open.t1 - S.open.t0) / (S.rewind.t1 - S.rewind.t0)) * 0.9;
         const ko = clamp((to - S.open.t0 - 0.35) / 0.9); room.setDoor(0.75 * ko * ko * (3 - 2 * ko));
-        which.land = 1; which.flood = S.open.t0 + 0.5; W.stairLamp.intensity = 7; W.stair.lamp.material.emissiveIntensity = 3;
-        fogTo(0.05 + 0.45 * clamp((to - S.open.t0 - 0.6) / 1.6), clamp((to - S.open.t0 - 0.6) / 1.6) > 0.5 ? '#161412' : '#2c2824');
-        isRew = id === 'rewind'; tt = to;
+        which.land = 1; which.flood = S.open.t0 + 0.5; W.stairLamp.intensity = 12; W.stair.lamp.material.emissiveIntensity = 3;
+        const fk = clamp((to - S.open.t0 - 0.6) / 1.6);
+        fogTo(0.05 + (id === 'hook' ? 0.16 : 0.4) * fk, fogA.copy(FOG_OPEN0).lerp(FOG_OPEN1, smooth(0.2, 0.8, fk)));   // the hook stays readable
+        smokeLit(0.24); landSm.u.uNearK.value = 0.3; isRew = id === 'rewind'; tt = to;
         updateSmoke(to, which); which = null;
       }
-      if (id === 'well') { which.land = 1; wellLight.intensity = 90 * (0.85 + 0.15 * Math.sin(t * 5.1)); W.stairLamp.intensity = 4; fogTo(0.16, '#2e2925'); smokeLit(0.22); R.renderer.toneMappingExposure = 1.25; }
-      if (id === 'blind' || id === 'stat') {
+      if (id === 'well' || id === 'stat') { which.land = 1; wellLight.intensity = 90 * (0.85 + 0.15 * Math.sin(t * 5.1)); W.stairLamp.intensity = 4; fogTo(id === 'stat' ? 0.13 : 0.16, '#2e2925'); smokeLit(0.22); R.renderer.toneMappingExposure = 1.25; }
+      if (id === 'blind') {
         poseInes(() => { stand(ines, { pos: V(4.5, Y0, -5.0), yaw: Math.PI / 2 + 0.25, breath: t * 0.6, lean: 0.15,
           armR: (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(fwd, 0.55).addScaledVector(up, -0.05), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.5), F: fwd.clone(), N: left.clone(), curl: 0.25 }),
           armL: torchHand(V(6.6, Y0 + 0.8, -5.3)) }); });
         phone.visible = true; phoneFit(ines, 'Left'); torch.intensity = 50; beamMat.uniforms.uI.value = 0.9; smokeLit(0.2);
-        which.land = 1; W.stairLamp.intensity = 2;
-        const dk = id === 'stat' ? smooth(0, 0.85, k) : 0;
-        fogTo(0.6 + 0.9 * (id === 'blind' ? k : 1), id === 'stat' ? '#0d0c0b' : '#1d1a17');
-        torch.intensity = 50 * (1 - dk); beamMat.uniforms.uI.value = 0.9 * (1 - dk); G.uFade.value = 0.9 * dk;
+        which.land = 1; W.stairLamp.intensity = 2; smokeLit(0.34); R.renderer.toneMappingExposure = 1.25;
+        fogTo(0.3 + 0.3 * k, '#2a2521');
       }
       if (id === 'rewind') { G.uScan.value = 1.0; G.uSat.value = 0.5; G.uAberr.value = 0.012; }
       if (id === 'bolt') {
@@ -399,31 +426,32 @@ export async function create() {
         room.rolled.visible = true;
       }
       if (id === 'splash') {
-        phone.visible = true; phone.position.set(4.02, Y0 + 0.03, -3.72); phone.lookAt(V(4.3, Y0 + 1.1, -4.4)); phone.rotateY(Math.PI); phone.updateMatrixWorld(true); torch.intensity = 22;
+        phone.visible = true; phone.position.set(4.02, Y0 + 0.03, -3.72); phone.lookAt(V(4.3, Y0 + 1.1, -4.4)); phone.rotateY(Math.PI); phone.updateMatrixWorld(true); torch.intensity = 3;
         poseInes(() => { stand(ines, { pos: V(3.55, Y0, -3.55), yaw: DOORYAW + 0.7, breath: t * 0.6, lean: 0.2,
           armR: (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(fwd, 0.45 - 0.2 * smooth(0.0, 0.25, k)).addScaledVector(up, -0.25), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.5), curl: 0.6 }),
           armL: (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(fwd, 0.45 - 0.2 * smooth(0.0, 0.25, k)).addScaledVector(up, -0.25).addScaledVector(left, 0.18), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, 0.5), curl: 0.6 }),
           look: V(4.3, Y0 + 1.0, -4.4) }); });
-        drops.points.visible = true; drops.u.uAccT0.value = S.splash.t0 + 0.25;
-        for (let i = 0; i < 520; i++) drops.prm[i * 4 + 1] = S.splash.t0 + 0.25 + i * 0.0008;
-        drops.commit();
+        drops.mesh.visible = true;
         room.rolled.visible = true;
       }
       if (id === 'call' || id === 'speaker') {
-        phone.visible = true; phone.position.set(3.97, Y0 + 0.006, -3.98); phone.rotation.set(-Math.PI / 2, 0, 0.35); phone.updateMatrixWorld(true);
-        drawPhone('call', t); screenGlow.intensity = 0.35; phone.screen.material.emissiveIntensity = 0.55; room.rolled.visible = true;
+        phone.visible = true; phone.position.set(3.97, Y0 + 0.0041, -3.98); phone.rotation.set(-Math.PI / 2, 0, 0.35); phone.updateMatrixWorld(true);
+        phoneShadow.visible = true; phoneShadow.position.set(3.97, Y0 + 0.0008, -3.98); phoneShadow.rotation.set(-Math.PI / 2, 0, 0.35);
+        drawPhone('call', t); screenGlow.intensity = 0.15; phone.screen.material.emissiveIntensity = 0.7; room.rolled.visible = true;
         poseInes(() => { kneel(ines, { pos: V(4.32, Y0, -3.72), yaw: DOORYAW + 0.35, hipH: 0.55, lean: 0.25, breath: t * 0.7, look: id === 'speaker' ? V(3.97, Y0, -3.98) : V(4.3, Y0 + 0.3, -4.4), lookK: 0.9 }); });
         if (beaconsOn) W.blueSpot.intensity = 26 * pulse(t, 0.2);
-        R.renderer.toneMappingExposure = 1.25;
+        R.renderer.toneMappingExposure = id === 'speaker' ? 1.05 : 1.25; if (id === 'speaker') room.setKitchen(0.35);
       }
       if (id === 'low' || id === 'msg') {
         room.openWindow(id === 'low' ? smooth(0.55, 0.85, k) : 1);
         apple.root.visible = true; apple.root.position.set(3.75, Y0, -1.55); apple.root.rotation.y = -0.6; apple.update(t, { look: V(3.2, Y0 + 1.0, -1.4) });
-        poseInes(() => { kneel(ines, { pos: V(3.18, Y0, -1.5), yaw: 0.0, hipH: id === 'low' ? 0.42 : 0.6, lean: id === 'low' ? 0.35 : 0.1, breath: t * 0.55,
-          armR: id === 'msg' ? (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(fwd, 0.3).addScaledVector(up, -0.3).addScaledVector(left, 0.12), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.6), F: up.clone().addScaledVector(fwd, 0.4), N: up.clone().addScaledVector(fwd, -1).normalize(), curl: 0.55 }) : undefined,
+        poseInes(() => { kneel(ines, { pos: V(3.18, Y0, -1.5), yaw: 0.0, hipH: id === 'low' ? 0.4 : 0.6, lean: id === 'low' ? 0.3 : 0.1, breath: t * 0.55,
+          armR: id === 'msg' ? (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(fwd, 0.3).addScaledVector(up, -0.3).addScaledVector(left, 0.12), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.6), F: up.clone().addScaledVector(fwd, 0.4), N: up.clone().addScaledVector(fwd, -1).normalize(), curl: 0.55 })
+            : (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(fwd, 0.275).addScaledVector(up, 0.03).addScaledVector(left, 0.15), pole: sh2.clone().addScaledVector(up, -0.5).addScaledVector(left, -0.4), F: up.clone().addScaledVector(left, 0.7).normalize(), N: fwd.clone().negate(), curl: 0.38 }),
+          armL: id === 'low' ? (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(fwd, 0.34).addScaledVector(up, -0.42).addScaledVector(left, -0.04), pole: sh2.clone().addScaledVector(up, -0.4).addScaledVector(left, 0.5), F: fwd.clone(), N: up.clone().negate(), curl: 0.4 }) : undefined,
           look: id === 'msg' ? V(3.12, Y0 + 0.9, -1.15) : V(3.2, ROOM.SILL + 0.4, -0.4), lookK: 0.9 }); });
-        if (id === 'msg') { phone.visible = true; phoneFit(ines, 'Right'); drawPhone('msg', t); screenGlow.intensity = 0.12; phone.screen.material.emissiveIntensity = 0.5; }
-        W.blueSpot.intensity = 30 * pulse(t, 0.2); R.renderer.toneMappingExposure = 1.3;
+        if (id === 'msg') { phone.visible = true; phoneFit(ines, 'Right'); drawPhone('msg', t); screenGlow.intensity = 0.12; phone.screen.material.emissiveIntensity = 0.5; rim.position.set(3.35, Y0 + 1.6, -2.0); rim.intensity = 1.4; }
+        W.blueSpot.intensity = (id === 'msg' ? 11 : 24) * pulse(t, 0.2); R.renderer.toneMappingExposure = id === 'msg' ? 1.05 : 1.2;
       }
       if (id === 'street') { room.openWindow(1); which.fire = 1; }
       if (['street', 'door', 'neigh', 'ladder', 'news', 'crowd', 'man2', 'manclose'].includes(id)) {
@@ -456,30 +484,32 @@ export async function create() {
         }
         man.root.visible = true;
         stand(man, { pos: MAN_P, yaw: Math.atan2(HERO_BAY - MAN_P.x, 0 - MAN_P.z), breath: t * 0.28, look: V(HERO_BAY, ROOM.SILL + 0.6, -0.3), lookK: 1.0, cache: {} });
-        if (id === 'manclose') { const fl = Math.abs(t - (S.manclose.t0 + 0.5)) < 0.25; if (fl) { G.uFadeWhite.value = 0.85 * (1 - Math.abs(t - (S.manclose.t0 + 0.5)) / 0.25); } }
         R.renderer.toneMappingExposure = id === 'man2' || id === 'manclose' ? 1.2 : 1.05;
       }
-      if (id === 'black' || id === 'end') { G.uFade.value = 1; }
+      if (id === 'end') { G.uFade.value = 1; }
       // smoke and fire
-      if (which) updateSmoke(id === 'hook' ? S.gap.t0 + 2 + t : tt, id === 'hook' ? { ...which, gap: true } : which);
+      if (which) updateSmoke(tt, which);
       for (const bb of [gapSm, landSm, fireSm, flames]) bb.update(cam, R.renderer.getPixelRatio(), V(0.3, 1, 0.2).normalize());
-      drops.update(t, cam, R.renderer.getPixelRatio()); beamMat.uniforms.uTime.value = t;
+      drops.update(t); drops.u.uFogD.value = scene.fog.density; beamMat.uniforms.uTime.value = t;
       // camera
-      const C = CAM[id === 'rewind' ? 'open' : id] || CAM.msg;
-      C.apply(cam, isRew || id === 'etsi' ? tt : t);
+      const C = CAM[id === 'rewind' || id === 'hook' ? 'open' : id] || CAM.msg;
+      C.apply(cam, isRew || id === 'etsi' || id === 'hook' ? tt : t);
+      // depth range per shot: outside, a 3 cm near plane z-fights the kerbs and the pavement (post P1 v1: the kerb face flickered at 76 s)
+      const outside = ['ext', 'flash', 'man', 'door', 'neigh', 'ladder', 'news', 'crowd', 'man2', 'manclose'].includes(id);
+      cam.near = outside ? 0.3 : id === 'street' ? 0.12 : 0.03; cam.far = outside || id === 'street' ? 3000 : 400; cam.updateProjectionMatrix();
       if (id === 'hand') cam.lookAt(wp(ines.bones.RightHand).add(V(0, 0.02, 0)));
       fill.position.copy(cam.position).add(V(0, 0.25, 0));
       // overlay
       const endK = smooth(S.end.t0, S.end.t0 + 0.6, t);
-      ov.apply({ t, time: fmtClock(clockAt(t)), bat: batAt(t), statA: id === 'black' || id === 'end' ? 0 : 1, serA: id === 'end' ? 0 : 1, part: 'PARTIE 1',
-        capA: id === 'end' ? 0 : 1, capY: ['face', 'man', 'man2', 'manclose', 'speaker', 'low'].includes(id) ? 66 : 57,
+      ov.apply({ t, time: fmtClock(clockAt(t)), bat: batAt(t), statA: id === 'end' ? 0 : 1, serA: id === 'end' ? 0 : 1, part: 'PARTIE 1',
+        capA: id === 'end' ? 0 : 1, capY: id === 'face' || id === 'msg' ? 71 : ['man', 'man2', 'manclose', 'speaker', 'low'].includes(id) ? 66 : 57,
         plate: id === 'ext' ? { a: 'INÈS, 20 ANS', b: '6e ÉTAGE · PARIS 18e', k: smooth(S.ext.t0 + 0.2, S.ext.t0 + 0.6, t) * (1 - smooth(S.ext.t1 - 0.4, S.ext.t1, t)) } : null,
         etsi: id === 'etsi' ? smooth(0, 0.25, k) : id === 'open' ? 1 - smooth(0, 0.3, k) : 0,
         rew: id === 'rewind' ? 1 : 0,
         news: id === 'news' ? { a: 'RUE ERLANGER · PARIS 16e', b: '5 février 2019 · incendie volontaire · 10 morts', k: smooth(0.04, 0.12, k) } : null,
         capHtml: opts.cover ? '<span class="w1">De la </span><span class="r1">fumée</span><span class="w1"> sous votre porte…</span><br><span class="w1">vous </span><span class="r1">sortez ?</span>' : null,
         notif: id === 'msg' && t >= L(27) + 0.9 ? { from: 'Numéro inconnu', when: 'maintenant', msg: 'Tu es restée. Dommage.', k: smooth(L(27) + 0.9, L(27) + 1.25, t) } : null,
-        peep: id === 'peep' ? 1 : 0, black: id === 'black' ? 1 : 0 });
+        peep: id === 'peep' ? 1 : 0, black: 0 });
       endEl.style.opacity = String(endK);
       tag.update(t, S.end.t0 + 0.6, endK);
       R.composer.render();

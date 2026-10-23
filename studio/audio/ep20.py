@@ -24,7 +24,7 @@ S = dict(hook=0, face=cut(L(1)), ext=cut(L(2)), flash=cut(L(3)), man=cut(L(5)), 
          hand=cut(L(9)), peep=cut(L(10)), etsi=cut(L(11)), open=cut(L(12)), well=cut(L(13)), blind=cut(Lw(13, 'Elle')), stat=cut(L(14)),
          rewind=cut(L(15)), bolt=cut(L(16)), sink=cut(Lw(16, 'mouille')), towels=cut(Lw(16, 'et')), splash=cut(L(17)), call=cut(Lw(17, 'Et')),
          speaker=cut(L(18)), low=cut(L(19)), street=cut(L(20)), door=cut(Lw(20, 'Au')), neigh=cut(L(21)), ladder=cut(L(22)), news=cut(L(23)),
-         crowd=cut(L(24)), man2=cut(L(25)), manclose=cut(L(26)), msg=cut(L(27)), black=END0, end=END0 + 1.9)
+         crowd=cut(L(24)), man2=cut(L(25)), manclose=cut(L(26)), msg=cut(L(27)), black=END0, end=END0)
 m = Mix(DUR, seed=20)
 rng = np.random.default_rng(2020)
 
@@ -99,11 +99,10 @@ shape = env_at(tt(DUR), [0, S['face'], S['detector'], S['etsi'], S['stat'], S['r
                [0.8, 0.6, 0.85, 1.0, 0.25, 0.4, 0.7, 0.8, 1.0, 0.5, 0.0])
 m.add(0.0, (dr[0] * shape, dr[1] * shape), gain=0.07, rev=0.45)
 
-# ---------- hook: a hit on frame 1, the alarm, the cat's hiss, a riser into the cut ----------
+# ---------- hook (a flash-forward: she opens, the black wave): a hit on frame 1, the alarm, the smoke's roar, a riser into the cut ----------
 m.add(0.0, boom(rng, 3.0, 50, 24, 1.8, 0.5, 1.0), gain=0.8, rev=0.5)
 alarm(0.15, S['face'] - 0.1, gain=0.035)
-m.add(1.2, norm(bp(noise(0.7, rng, 'white'), 2500, 9000)) * np.exp(-tt(0.7) / 0.25), gain=0.06, pan=-0.2, rev=0.2)   # Apple hisses
-m.add(0.0, fade(roar(S['face'] + 0.2, rng), 0.3, 0.3), gain=0.05, rev=0.4)
+m.add(0.0, fade(roar(S['face'] + 0.2, rng), 0.05, 0.3), gain=0.1, rev=0.4)
 m.add(S['face'] - 0.9, riser(rng, 0.9, 200, 3500, 2.0) * np.linspace(1, 0.2, int(0.9 * SR)), gain=0.12, rev=0.3)
 m.add(S['face'], thud(rng, 46, 0.7), gain=0.5, rev=0.3)
 heart(S['face'] + 0.2, S['ext'], 66, 72, 0.18)

@@ -169,7 +169,10 @@ export function makeRoom() {
   const poster = posterTex();
   const pm = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.7), new THREE.MeshStandardMaterial({ map: poster, roughness: 0.8 })); pm.position.set(R.X0 + 0.01, R.Y0 + 1.45, -3.2); pm.rotation.y = Math.PI / 2; F.push([pm]);
   F.push([merge([new THREE.CylinderGeometry(0.07, 0.055, 0.12, 16).translate(R.AX0 + 0.22, R.SILL + 0.06, -0.72).toNonIndexed()], new THREE.MeshStandardMaterial({ color: '#b5603e', roughness: 0.8 }))]);
-  F.push([merge([new THREE.IcosahedronGeometry(0.11, 1).translate(R.AX0 + 0.22, R.SILL + 0.2, -0.72).toNonIndexed()], fabricMat('#3f6b35', 0.8))]);
+  // a small aloe in the pot: a rosette of thick leaves (the old ball of foliage read as a beach ball)
+  { const leaves = []; for (let i = 0; i < 11; i++) { const h = 0.12 + 0.06 * ((i * 7) % 5) / 4, a = i * 2.39996, tilt = 0.25 + 0.5 * (i % 4) / 3;
+      const g = new THREE.ConeGeometry(0.014, h, 6, 1).translate(0, h / 2, 0).scale(1, 1, 0.45); g.rotateZ(tilt); g.rotateY(a); g.translate(R.AX0 + 0.22, R.SILL + 0.11, -0.72); leaves.push(g.toNonIndexed()); }
+    F.push([merge(leaves, new THREE.MeshStandardMaterial({ color: '#58804a', roughness: 0.55 }))]); }
   const det = new THREE.Group(); det.position.set(3.7, R.CEIL - 0.001, -3.0); g.add(det);
   const detBody = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.065, 0.035, 32), new THREE.MeshStandardMaterial({ color: '#f3f2ee', roughness: 0.5 })); detBody.position.y = -0.018; det.add(detBody);
   const led = new THREE.Mesh(new THREE.SphereGeometry(0.004, 8, 6), new THREE.MeshStandardMaterial({ color: '#000', emissive: '#ff2020', emissiveIntensity: 0 })); led.position.set(0.03, -0.037, 0); det.add(led);

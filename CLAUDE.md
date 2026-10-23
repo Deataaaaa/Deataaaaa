@@ -129,7 +129,12 @@ rules below, they win; every other rule still holds (realism, loud phone sound, 
 - Cover image with the title (pick a frame where the title doesn't cover a face), `videos/postN_cover.jpg`.
 - Send the phone MP4 + cover in the chat, with a caption ready to paste (hook, question, "Part N+1 tomorrow
   👀" naming the topic only if already approved, 5 hashtags) and a comment to pin.
-- Update the posting-plan artifact (https://claude.ai/artifact/X86z6ej3oYC7859hXUjTeo).
+- Update the « 12 % » plan artifact (https://claude.ai/artifact/TcsWtVTKEgFuciW9pqsygU, newest video first; owner, 23 Oct 2026).
+  Its parts live in the page's database, collection `parts`, doc `pN` (n, title, status pitch|build|render|ready|posted,
+  statusNote, duration, battery [start, end], clock [start, end], cover `covers/pN.jpg`, files, hook, notes, caption, pin,
+  facts [{k, v}]): write them with `ArtifactData` (pin `if_version`), never by republishing; a new cover is a `files` publish of
+  the page (source kept in the artifact; read it first from another session). The owner types Instagram numbers into `stats`
+  on the page: read them back before planning the next part. The What if plan (X86z6ej3oYC7859hXUjTeo) is archived.
 - Commit and push to branch `claude/whatif-reels` (no pull request unless asked).
 
 ## Episodes

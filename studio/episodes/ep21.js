@@ -312,7 +312,7 @@ export async function create() {
     flash: P2(S.flash, V(1.05, 1.66, 0.75), V(0.95, 1.66, 0.55), V(0.33, 1.66, -0.82), V(0.33, 1.66, -0.82), 30, 27),
     run: P2(S.run, V(7.05, LV5 + 1.65, -5.25), V(7.05, LV5 + 1.6, -5.3), V(7.0, LV5 - 0.4, -7.6), V(7.0, LV5 - 0.1, -6.9), 58, 56),
     runH: P2(S.runH, V(7.32, LV4 - 1.5 + 0.35 + 3.0 - 3.0, -8.75), V(7.3, LV4 - 1.5 + 0.38, -8.7), V(7.0, LV4 - 1.5 + 1.0, -6.6), V(7.0, LV4 - 1.5 + 1.2, -6.4), 60, 58),
-    keys: P2(S.keys, V(3.62, LV6 + 1.42, -4.95), V(3.64, LV6 + 1.36, -4.94), V(3.99, LV6 + 1.16, -4.47), V(4.01, LV6 + 0.85, -4.5), 44, 46),
+    keys: P2(S.keys, V(3.5, LV6 + 1.5, -5.25), V(3.52, LV6 + 1.45, -5.22), V(4.0, LV6 + 0.7, -4.5), V(4.0, LV6 + 0.6, -4.5), 58, 56),
     grope: P2(S.grope, V(4.16, LV6 + 0.5, -4.52), V(4.17, LV6 + 0.5, -4.54), V(4.25, LV6 + 0.88, -4.92), V(4.25, LV6 + 0.86, -4.92), 50, 48),
     lock: P2(S.lock, V(3.72, LV6 + 1.5, -4.84), V(3.73, LV6 + 1.48, -4.82), V(3.96, LV6 + 1.21, -4.42), V(3.97, LV6 + 1.19, -4.4), 38, 35),
     block: P2(S.block, V(3.5, LV6 + 1.32, -3.74), V(3.53, LV6 + 1.3, -3.77), V(3.97, LV6 + 1.17, -4.07), V(3.97, LV6 + 1.17, -4.07), 48, 44),
@@ -351,7 +351,7 @@ export async function create() {
     duration: DUR, fps: 30, captions: [],
     frame(t, opts = {}) {
       curT = t;
-      let sh = shotAt(t), id = sh.id, tt = t, rideQ = null;
+      let sh = shotAt(t), id = sh.id, tt = t, rideQ = null, keysU = 0;
       if (id === 'rewind') { const r = (t - S.rewind.t0) / (S.rewind.t1 - S.rewind.t0); tt = S.run.t1 - r * (S.run.t1 - S.run.t0); id = 'run'; sh = S.run; }
       const k = (tt - sh.t0) / Math.max(0.001, sh.t1 - sh.t0);
       hideAll(); apple.root.visible = false; phone.visible = false; keys.visible = false; keyIn.visible = false; police.group.visible = false; fl1.g.visible = fl2.g.visible = false;
@@ -493,8 +493,9 @@ export async function create() {
           // the keys slip out of her hand at the lock and fall
           const u = clamp((t - S.keys.t0 - 0.35) / 0.55), y = lerp(kp.y, LV6 + 0.012, u * u);
           show(ines, () => stand(ines, { pos: V(4.18, LV6, -4.98), yaw: 0, breath: t * 1.2, lean: 0.1, armR: (sh2, fwd, left, up) => ({ hand: kp.clone().add(V(-0.03, 0.02, -0.09)), pole: sh2.clone().addScaledVector(up, -0.5).addScaledVector(left, -0.5), F: fwd.clone(), N: left.clone(), curl: u > 0 ? 0.15 : 0.6 }),
-            armL: torchHand(kp, -1), look: kp }));
+            armL: torchHand(V(kp.x + 0.03 * u, y, kp.z - 0.05 * u), -1), look: V(kp.x, lerp(kp.y, LV6, smooth(0, 1, u)), kp.z) }));
           keys.visible = true; keys.position.set(kp.x + 0.03 * u, y, kp.z - 0.05 * u); keys.rotation.set(1.2 * u, 0.4, 2.0 * u); keys.updateMatrixWorld(true);
+          keysU = u;
         } else if (id === 'grope') {
           const gx = 4.3 + 0.1 * Math.sin(t * 2.3), gz = -4.74 + 0.05 * Math.cos(t * 1.9);
           show(ines, () => kneel(ines, { pos: V(4.25, LV6, -5.12), yaw: 0, hipH: 0.5, lean: 0.6, breath: t * 1.3,
@@ -520,7 +521,7 @@ export async function create() {
             body((sh2, fwd, left, up) => { const a = keySpec(sh2, fwd, left, up), c = palmSpec(sh2, fwd, left, up);
               return { hand: wK.clone().lerp(c.hand, bl), pole: a.pole, F: a.F.lerp(c.F, bl).normalize(), N: a.N.lerp(c.N, bl).normalize(), curl: lerp(a.curl, c.curl, bl), idx: lerp(a.idx, c.idx, bl), thumb: lerp(a.thumb, c.thumb, bl) }; }); });
         }
-        phone.visible = true; phoneFit(ines, 'Left'); drawPhone('torch', t); torch.intensity = id === 'grope' ? 1.0 : 0.6; beamP.uniforms.uI.value = 0.04; fill.intensity = 0.15;
+        phone.visible = true; phoneFit(ines, 'Left'); drawPhone('torch', t); torch.intensity = id === 'grope' ? 1.0 : id === 'keys' ? lerp(0.6, 2.4, keysU) : 0.6; beamP.uniforms.uI.value = 0.04; fill.intensity = 0.15;
         cold.intensity = 2.0; cold.position.set(4.6, LV6 + 2.0, -5.4);
         G.uSat.value = 0.45; G.uTint.value.set(1.06, 0.96, 0.94); R.renderer.toneMappingExposure = 1.35;
       }

@@ -1,0 +1,413 @@
+# Fact sheet (sources & math behind every on-screen claim)
+
+## EP01 — What if Earth stopped spinning for 1 second?
+
+| Claim on screen | Number used | How it was checked |
+|---|---|---|
+| Paris moves at 1,104 km/h | 306.6 m/s | ω·N(φ)·cos φ with ω = 7.2921e-5 rad/s, WGS84 ellipsoid, φ = 48.858° (Eiffel Tower) |
+| Equator 1,674 km/h, poles 0 | 465.1 m/s | same formula, φ = 0° and 90° |
+| Earth has been spinning for 4.5 billion years | 4.54 Gyr | age of the Earth (radiometric dating) |
+| Everything not bolted down keeps going east at 1,104 km/h | inertia | objects keep their velocity; ground friction (μ≈0.6) only removes ~6 m/s per second |
+| The Eiffel Tower is ripped off its feet | 10,100 t moving at 307 m/s | kinetic energy ≈ 4.7e11 J ≈ 113 t of TNT; the legs cannot stop it |
+| Wind twice as fast as any tornado ever recorded | 1,104 km/h vs ~486 km/h | Bridge Creek–Moore 1999 Doppler measurement (~135 m/s) |
+| The Atlantic pulls away from New York and slams into Europe | water keeps moving east | east coasts of the Americas lose water, west-facing coasts (France, Iberia, Africa) get hit |
+| A kid mid-jump feels nothing / lands 300 m away | 307 m | airborne objects share the air's motion; 1 s × 306.6 m/s. Needs ≥1.23 m jump height (≥1 s airtime) |
+| Planes don't feel a thing | — | the plane and the air around it keep the same velocity; airspeed unchanged |
+| Everything that crashed gets hit a second time | — | when the ground restarts, stopped objects are again 307 m/s slower than the ground |
+| Earth is now 1 second late / leap second | UT1 − UTC jumps by 1 s | leap seconds keep UTC within 0.9 s of Earth's rotation (UT1); shown as 23:59:60 |
+
+## EP02 — What if you fell into a black hole? (Sagittarius A*) — built, not published
+
+| Claim on screen | Number used | How it was checked |
+|---|---|---|
+| Center of our galaxy, 27,000 light-years away | 8.18 kpc ≈ 26,700 ly | GRAVITY collaboration (2019–2022) |
+| Weighs as much as 4 million Suns | 4.3 × 10⁶ M☉ | GRAVITY / EHT 2022 |
+| Event horizon 18× wider than the Sun | 2r_s = 25.4 million km; Sun 1.39 million km | r_s = 2GM/c² = 2.95 km × 4.3e6 |
+| Gravity bends light into rings | — | rendered with real null-geodesic tracing (Schwarzschild metric) |
+| No wall, no flash, you feel nothing at the horizon | tidal stretch ≈ 0.0001 g over 2 m | Δa = 2GM·L/r³ at r = r_s |
+| 28 seconds left after crossing | (4/3)·GM/c³ = 28.2 s | proper time from horizon to singularity, falling from rest far away |
+| The center is a moment in your future | — | inside r_s the radial coordinate is timelike; all future paths reach r = 0 |
+| Friends see you slow down, freeze, redden, fade | — | gravitational time dilation + redshift seen by distant observers |
+| A small black hole shreds you far outside the edge | 10 M☉: 1 g of stretch at ~8,000 km, horizon 30 km | Δa formula |
+| This one waits until the last tenth of a second | 10 g of stretch ≈ 0.1 s before the end | τ from r to 0 = (2/3) r^{3/2} / (c √r_s) |
+
+Simplifications stated plainly: Sgr A* is treated as non-spinning; the accretion disk is brighter than the real (dim) one for visibility; the "inside" visuals are artistic.
+
+## EP07 (posted as Day 2) — What if your elevator's cable snapped?
+
+| Claim on screen | Number used | How it was checked |
+|---|---|---|
+| 16th floor, 50 m above the ground | 15 storeys × ~3.1–3.3 m + pit ≈ 50 m | typical floor-to-floor height of offices/apartments; the fall is modelled as exactly 50 m |
+| Free fall: you weigh nothing for 3 seconds | t = √(2h/g) = 3.19 s | h = 50 m, g = 9.81 m/s²; air drag on the car over 50 m is negligible |
+| You'd hit the bottom at 113 km/h | v = √(2gh) = 31.3 m/s = 112.8 km/h | same numbers; the real-time plunge shot uses this exact curve (16 floors in 3.19 s) |
+| Your phone floats out of your hand | — | in free fall everything accelerates together; the arm was still pushing up, so the phone drifts up relative to you |
+| Jumping at the last second doesn't help: no floor to push off | — | while floating you have no contact force to push against |
+| Even a perfect jump only takes off ~10% of the speed | ~3 m/s vs 31 m/s | a 0.45 m vertical jump gives √(2·9.81·0.45) ≈ 3.0 m/s |
+| Elevators hang from 4 to 8 steel ropes; any one can usually hold the car | safety factor ≥ 12 on the rope set (EN 81-20) | with 6 ropes each rope alone breaks at ≥ 2× the full static load |
+| Brakes clamp onto the rails if the car falls too fast | overspeed governor + progressive safety gear | governor trips at ~115–125% of rated speed and pulls the safety gear's wedges up against the guide rail |
+| You'd drop a meter or two, then stop | 1.2 m in the simulation | trips at 3 m/s (0.46 m of free fall) then brakes at 0.6 g (0.77 m); codes cap the average deceleration at 1 g |
+| Elisha Otis showed this off in 1854 by having his own rope cut | Crystal Palace exhibition, New York, 1854 | his ratchet-and-spring safety catch held the platform; it dropped a few centimetres |
+| Longest elevator fall survived: 75 floors, 1945 | Betty Lou Oliver, Empire State Building, 28 July 1945 | B-25 crash damaged the cables; Guinness World Records lists it as the longest survived elevator fall |
+
+Simplifications stated plainly: the time-slowed sections run 8× slower than reality (the HUD says so); the
+real-time plunge is the "no brakes" hypothetical; the 1854 tower is a reconstruction from period engravings.
+
+## EP08 (post 2) — What if your plane's window broke at 11,000 m?
+
+| Claim on screen | Number used | How it was checked |
+|---|---|---|
+| Cruising at 11,000 m, 880 km/h | FL360, Mach ~0.8 | typical narrow-body cruise (A320/737) |
+| Outside −56 °C, air 22% of sea level | −56.5 °C, 22.7 kPa | International Standard Atmosphere at 11 km |
+| ≈ 500 kg on your window | Δp ≈ 0.52 bar × ~0.09 m² ≈ 4.7 kN | cabin kept at ~2,400 m (75 kPa) vs 22.7 kPa outside; window ~25 × 36 cm |
+| The cabin fills with fog in a split second | adiabatic cooling | rapid decompression makes the cabin air expand and cool below its dew point |
+| The masks drop | above ~4,300 m cabin altitude | masks deploy automatically before the cabin passes 14,000–15,000 ft |
+| 15 to 30 s before you stop thinking clearly | TUC at FL350–400 | FAA: 30–60 s at 35,000 ft, 15–20 s at 40,000 ft; rapid decompression can halve it |
+| Put your own mask on first | — | standard safety briefing, because of the time above |
+| Each mask: about 12 minutes of oxygen | chemical generators, 12–15 min | enough to cover the emergency descent |
+| Windows have three layers; the middle one holds if the outer breaks | outer + middle (fail-safe) + inner scratch pane | the middle pane is designed to take the full pressure load |
+| The tiny hole keeps the middle layer as a spare | breather (bleed) hole | equalises pressure so the outer pane carries the load in normal flight; also stops fogging |
+| Pilots dive to air you can breathe, ~4 minutes | to ~3,000 m (10,000 ft) | emergency descent procedure |
+| 1990: a pilot sucked halfway out of his window; held for 20 minutes; survived | British Airways 5390, 10 June 1990, ~5,300 m | cockpit windscreen fitted with wrong bolts; captain Tim Lancaster survived |
+| v2: the air rushes out at the speed of sound (≈ 1,100 km/h) | choked flow | cabin/outside pressure ratio 0.75/0.23 ≈ 3.3 > 1.89, so the flow through the hole is sonic at first (≈ 310 m/s ≈ 1,100 km/h at the throat) |
+| v2: that half ton now pushes you into the hole (≈ 500 kg) | Δp × area | the same ≈ 0.52 bar over ≈ 0.09 m², as soon as a body blocks the opening |
+| v2: masks drop, ~7.6 s after the break in the cut | cabin altitude passes ~4,300 m | timing chosen inside the few seconds a window-size hole takes |
+| v2: countdown 0:18 → 0:00 | TUC 15–30 s | shown 3× fast (labelled "shown fast") |
+| v2: the pilots dive toward air you can breathe, ~4 minutes | to ~3,000 m | emergency descent; shown fast (labelled) |
+| v2: 2018, Southwest 1380, 9,800 m | 17 April 2018, ~32,000 ft (9,750 m), climbing | fan blade fatigue failure; the inlet cowl hit the fuselage and broke the row 14 window (NTSB AAR-19/03, press coverage) |
+| v2: a passenger was pulled partly out of the window; she didn't survive | window seat, row 14, lap belt on | others pulled her back in; blunt impact trauma (coroner) |
+| Pinned comment: back flying less than 5 months later | frostbite, broken arm, wrist and thumb | accounts of the AAIB report (e.g. migflug.com, Wikipedia); first officer Alastair Atchison landed at Southampton |
+
+Simplifications stated plainly: the break is shown 6× slowed then 2×; the countdown and the dive are shown sped up ("shown fast");
+the 1990 scene is a reconstruction (generic livery, mannequin-style figures); the sequence after the break is compressed for time.
+
+## EP09 (post 3) — What if a whale swallowed you? (point of view)
+
+| Claim on screen | Number used | How it was checked |
+|---|---|---|
+| Diving off Cape Cod, 14 meters down | ~45 ft ≈ 14 m | Michael Packard's own account of his dive depth off Provincetown (WBZ-TV, AP); other accounts say ~30 ft, so "you" are placed at his figure |
+| Catching lobsters | commercial lobster diving | Packard is a commercial lobster diver (AP, NPR, Provincetown Independent) |
+| Thousands of tiny fish | sand lance (Ammodytes) | the Center for Coastal Studies suggested the whale was feeding on sand lance; sand lance and striped bass were around Packard on his descent |
+| A 30-tonne humpback | adults 25–40 t, 12–16 m | NOAA Fisheries (up to ~60 ft / 40 tons), NPS (males ~46 ft / 25 tons, females ~49 ft / 35 tons); HUD "14 m long" |
+| Charging at 11 km/h | ≈ 3 m/s lunge | tag studies: humpbacks reach ~3 m/s at the start of a lunge (Simon, Johnson & Madsen 2012, J. Exp. Biol.) |
+| Its mouth is open so wide, it can't see you | forward view blocked when the mouth is open | Jooke Robbins (Center for Coastal Studies): with its mouth open a lunging whale can't see what is in front of it; she called Packard's case "a mistake and an accident" |
+| In one gulp: 20 tonnes of water | engulfed water up to ~70% of body mass | tag-based studies of humpback lunges; 0.7 × 30 t ≈ 21 t ≈ 20,000 litres; HUD "70% of its weight" |
+| Everything goes black, you're inside its mouth | engulfed, mouth closed | Packard: "it was completely black", he could feel the whale squeezing with its mouth muscles |
+| It squeezes the water out | ventral pouch contracts, water forced out through the baleen | how rorquals filter-feed after every lunge |
+| Up or down? | it rose to the surface | Packard: the whale rose to the surface and shook its head; his crewmate Josiah Mayo saw it come up |
+| Timer 0:00 → 0:38, "shown 3× fast" | 30–40 s inside | Packard's own estimate (Facebook post, AP, NPR) |
+| Then it surfaces… and spits you out | thrown out, landed in the water | Packard's account; Mayo pulled him into the boat |
+| 2021, off Cape Cod; 30 to 40 seconds in a humpback's mouth | 11 June 2021, off Herring Cove, Provincetown | AP / NPR / Boston Globe / Smithsonian coverage |
+| He survived (bruised, dislocated knee, no broken bones) | soft-tissue damage, no broken bones | NBC News, AP; early "broken leg" reports were corrected |
+| And went back to diving | back to lobster diving | NYT (he planned to return once healed); Cape Cod Times feature about three years later |
+| 2025, a whale engulfed a kayaker in Chile, on camera | 8 February 2025, Bahía El Águila, Strait of Magellan | Adrián Simancas, 24, engulfed with his yellow kayak for ~3 s, filmed by his father Dell (NPR, CNN, Reuters) |
+
+Simplifications stated plainly: the gulp is shown slowed (0.45×) and the time inside is shown 3× fast (labelled); "swallowed" is the
+everyday word the news used: a humpback's throat is far too narrow to swallow a person, the video shows it holding you in its mouth.
+The reconstructions are generic (the real whale and boats are not modelled from footage).
+
+## EP10 (post 4) — What if light became instant for 5 seconds?
+
+Premise: only the travel speed of light changes (c → ∞ for 5 s); everything else is left as it is. Consequence used: every
+photon already on its way arrives at once, and while light is instant, new light arrives at once too.
+
+| On screen | Value | Source / calculation |
+|---|---|---|
+| Sunlight needs 8 min 19 s to get here / this light left the Sun 8 minutes ago | 499 s | 1 AU / c = 1.496e11 m / 2.998e8 m/s = 499.0 s |
+| 8 minutes of sunlight hit at once (8 min 19 s of sunlight in 1 instant) | 68 J/cm² at the top of the atmosphere | solar constant 1361 W/m² (Kopp & Lean 2011) × 499 s = 6.79e5 J/m². v2 is set at 17:45 on a June afternoon (sun 38° high, azimuth 262°, computed for Paris, lat 48.86°, declination 23.44°): direct beam through 1.62 air masses ≈ 830 W/m² (Meinel: 1353 × 0.7^(AM^0.678)) → 41 J/cm² face-on, × sin 38° = 25.5 J/cm² ≈ 6.1 cal/cm² on the flat lawn; grass blades and leaves facing the sun get up to 41 J/cm² ≈ 9.9 cal/cm² |
+| Enough to set the grass on fire | fine grass ignites at 5 cal/cm² | Glasstone & Dolan, *The Effects of Nuclear Weapons* (1977), Table 7.40: fine grass 5 / 8 / 10 cal/cm² for 35 kt / 1.4 Mt / 20 Mt pulses, beech leaves 4 / 6 / 8. Shorter pulses ignite at lower exposures; an instantaneous pulse is shorter than any of them |
+| The light of every star lands too / HUD: Milky Way light: up to 80,000 years old | ≈ 77,000 ly | the Sun is 26,700 ly from the galactic centre (GRAVITY Collaboration 2019, 8.18 kpc) and the stellar disk reaches ~50,000 ly from the centre, so the far side of the Milky Way is ~77,000 light-years away: its light, still in transit, is up to ~80,000 years old. (Light from other galaxies, millions to billions of years old, lands too; the HUD only quotes our galaxy) |
+| Light from 13.8 billion years ago (the afterglow of the Big Bang) | 13.8 Gyr | the cosmic microwave background was released 380,000 years after the Big Bang; age of the universe 13.787 ± 0.020 Gyr (Planck 2018) |
+| HUD: Microwaves · shown in false colour | label | the CMB peaks at 160 GHz (1.9 mm): invisible; the sky shows it with the Planck colour map, as Planck's all-sky maps do (the real temperature differences are ~1 part in 100,000, exaggerated by the colour map, as in every published map) |
+| ≥ 1 kiloton of TNT on every square metre | 1.1 kt/m² | CMB energy density u = aT⁴ = 7.566e-16 × 2.7255⁴ = 4.17e-14 J/m³ (0.26 eV/cm³). Photons heading for Earth from a shell at distance r carry u·πR²·dr, so from the observable universe (comoving radius 46.5 Gly = 4.40e26 m) Earth receives u·L·πR²: per m² of surface u·L/4 = 4.59e12 J/m² = 1.10 kt (1 kt = 4.184e12 J). A lower bound: a larger universe gives more (Olbers' paradox) |
+| The air gets hotter than the Sun's surface | > 10,000 K | the atmosphere is opaque to much of the CMB spectrum at sea level (the 60 GHz O₂ band, the 118 GHz O₂ and 183 GHz H₂O lines, and most of the ~21 % of CMB energy above 300 GHz); even 20 % absorbed puts 9e11 J/m² into 1.03e4 kg/m² of air = 9e7 J/kg, ~3× the energy to dissociate all N₂ (3.4e7 J/kg) → a partly ionised plasma, far hotter than the photosphere (5,772 K) |
+| HUD: Iron boils at 2,862 °C (the tower vaporising) | 2,862 °C | boiling point of iron 3,134 K = 2,861-2,862 °C (CRC Handbook of Chemistry and Physics); the air at > 10,000 K (row above) is far hotter |
+| Enough to boil two thirds of the oceans | 66 % | total on Earth 4.59e12 J/m² × 5.10e14 m² = 2.34e27 J; boiling all oceans: 1.335e21 kg × (4.0e3 J/kg/K × 96.5 K + 2.257e6 J/kg) = 3.53e27 J |
+| And to blow the air off into space | 7× | escape energy of the whole atmosphere: 5.15e18 kg × GM/R (6.26e7 J/kg) = 3.2e26 J; 2.34e27 / 3.2e26 = 7.3 (energy comparison, not a simulation) |
+| Then the Sun goes black for 8 minutes / all its light already arrived | 499 s | when light slows back down, the space between the Sun and Earth holds no light: the next sunlight needs 8 min 19 s to arrive |
+| The stars vanish too, for years / Alpha Centauri: back in 4.4 years | 4.37 ly | Alpha Centauri A/B distance 4.37 light-years (Proxima 4.24 ly) |
+| 299,792 km/s again | c | 299,792.458 km/s |
+| Time slowed down 1,000× / real time / time sped up 50× | — | 28 s on screen for 0.028 s; then 5.0 s for the last 4.97 s; 499 s shown in 9.9 s (×50.4) |
+| In 1964, two scientists heard a strange hiss / from everywhere in the sky / they blamed pigeons | May 1964 | Arno Penzias and Robert Wilson, Bell Labs horn antenna, Holmdel, New Jersey: a hiss from every direction; they evicted nesting pigeons and cleaned their droppings, the hiss stayed: the CMB (AMNH; Nokia Bell Labs). Nobel Prize in Physics 1978 |
+| End card: the Big Bang's glow is all around you, right now | — | the CMB fills the universe: ~410 photons per cm³ |
+
+Simplifications stated plainly (v2 adds the visual effects below): the tower boils away from the top down over a few slowed seconds, while the air heats everywhere at once (artistic order); the burning lawn, embers and fireballs are frozen in slow motion; the Milky Way is shown blazing in the daylight sky because all of its light in transit lands at once (shown with the camera's exposure adapting); the light front of the black Sun is drawn as a glowing shell, a diagram, since light itself is invisible in empty space; the Earth is shown burning with glowing cracks (artistic). The three kinds of light arrive in the same instant; the video shows them one after the other
+(slowed 1,000×) and says "the same instant" in the HUD timer that barely moves. People are shown frozen (time slowed), never hurt
+on screen. The 1964 scene is a generic reconstruction (the antenna is simplified, the two figures are not likenesses).
+
+## EP11 (post 5) — What if every radioactive atom decayed at once?
+
+Premise: every radioactive nucleus decays in the same instant, and so does every radioactive daughter it produces, down
+to a stable nucleus (each U-238 atom goes all the way to Pb-206, each Th-232 to Pb-208). Energies are the heat each
+isotope will still release, neutrinos excluded: heat production per kg of isotope (Turcotte & Schubert, *Geodynamics*:
+U-238 9.46e-5, U-235 5.69e-4, Th-232 2.64e-5, K-40 2.92e-5 W/kg) × mean life (half-life / ln 2: 4.468, 0.704, 14.05,
+1.248 Gyr) = 1.924e13, 1.824e13, 1.689e13 and 1.659e12 J per kg of isotope. K-40 is 0.01197% of natural potassium by
+mass. 1 kg TNT = 4.184e6 J.
+
+| On screen | Value | Source / calculation |
+|---|---|---|
+| Your body: about 8,000 decays a second | ~4,400 Bq K-40 + ~3,700 Bq C-14 | 140 g of potassium in a 70 kg adult → 0.0168 g K-40 → 4,442 Bq (half-life 1.248 Gyr); C-14 ≈ 3.7 kBq (ICRP 23 reference man; standard background-radiation tables) |
+| Your body, all at once: 28 MJ, about 7 kg of TNT | 2.78e7 J | 1.676e-5 kg K-40 × 1.659e12 J/kg = 2.78e7 J = 6.6 kg TNT (C-14 adds a few joules). ≈ 400,000 Gy in 70 kg (a lethal dose is ~5 Gy) |
+| Your banana: about 20 g of TNT | 8.3e4 J | a medium banana holds ~0.42 g of potassium ("banana equivalent dose") → 5.0e-8 kg K-40 × 1.659e12 = 8.3e4 J = 20 g TNT |
+| Its black sand is radioactive / HUD: up to 20 µSv/h, ~100× normal | 20 µSv/h (spots up to 55-131) | Guarapari's black monazite sand: ~6% rare earths + thorium (Química Nova 28 (2005), doi 10.1590/S0100-40422005000200013); press and travel reports quote ~20 µSv/h on the sand (Idealista 2023, Amusing Planet 2021); normal ground 0.1-0.3 µSv/h |
+| People lie in it to feel better | tradition | visitors lie on or cover themselves with the sand for rheumatism, a "therapy" promoted by physician Silva Mello (Amusing Planet 2021, Oddity Central); no proven benefit |
+| The sand under your towel: a kiloton | ~1 kt | taking a conservative 0.1% thorium in the black sand (reports up to 0.116% Th-232; ~10% monazite with ~3% Th fits 0.3%): 1e-3 kg Th × 1.689e13 = 1.7e10 J per kg = 4 t TNT per kg; a towel's footprint 10 cm deep (1.8 × 0.9 × 0.1 m at 1,600 kg/m³ = 259 kg) → 1.05 kt |
+| A kilo of granite: 80 kg of TNT | 3.4e8 J/kg | typical granite: 4 ppm U, 15 ppm Th, 3.5% K → 7.6e7 + 0.05e7 + 25.3e7 + 0.7e7 = 3.37e8 J/kg = 80.6 kg TNT |
+| The sea flashes blue and warms by 36 °C | +36 K | seawater: 0.399 g K and 3.3 µg U per kg → 7.9e4 + 6.3e4 = 1.42e5 J/kg ÷ 3,990 J/(kg·K) = 36 K. The flash: K-40 betas (up to 1.31 MeV) exceed the 0.26 MeV Cherenkov threshold in water: the blue glow of reactor pools |
+| The continents flash into rock vapour | 29 kg TNT per kg of crust | bulk continental crust 1.3 ppm U, 5.6 ppm Th, 1.5% K (Rudnick & Gao 2003) → 1.23e8 J/kg, ~8× the ~1.6e7 J/kg needed to heat, melt and boil silicate rock; whole continental crust (2.2e22 kg) 2.7e30 J |
+| 1.3 million years of sunlight, in one instant | 7.1e30 J | bulk silicate Earth 20 ppb U, 80 ppb Th, 240 ppm K (McDonough & Sun 1995), 4.0e24 kg → 7.1e30 J; sunlight intercepted by Earth 1.74e17 W → 4.1e13 s = 1.3 Myr. (3% of Earth's gravitational binding energy: the planet stays whole; enough to melt its surface back into a magma ocean) |
+| 1987, Goiânia: the powder inside glowed blue / 4 people died | Goiânia accident | 13 Sept 1987, scavengers took a radiotherapy head from the abandoned Instituto Goiano de Radioterapia; the capsule held ~93 g of caesium-137 chloride (50.9 TBq); opened at a scrapyard, it showed "a deep blue light"; 4 deaths, 249 people contaminated, ~112,000 checked (IAEA, *The Radiological Accident in Goiânia*, 1988) |
+
+EP11 on-screen extras (HUD lines and timer):
+- "Black sand: ~0.1% thorium": the conservative grade used above (reports up to 0.116% Th-232).
+- "Crust: 8× the energy to boil it": 1.23e8 J/kg vs ~1.6e7 J/kg to heat, melt and boil silicate rock (row above).
+- "Released: 7 × 10³⁰ joules": the bulk-silicate-Earth total above (7.1e30 J).
+- "Your body: 4,400 potassium-40 decays a second" (end card): 4,442 Bq (row above).
+- The "time since the decay" timer: slow motion 10⁹× during the blue flash, 10⁶× while the sand heats, 10³× for the blast
+  and the coast, then sped up 10³× in space. Time scales: Cherenkov light is emitted while each beta electron slows down
+  in water or tissue (picoseconds to nanoseconds); the deposited energy is heat within nanoseconds; hot rock vapour
+  expands at a few km/s (about a millimetre per microsecond, metres per millisecond), so the sand only bulges and glows
+  at the microsecond scale and erupts at the millisecond scale, as shown.
+
+## EP12 (post 6) — What if every atom on Earth stopped moving for 1 second?
+
+Premise: for one second every atom on Earth is at rest relative to the ground (thermal jiggling, wind, waves, cars, you;
+Earth itself keeps turning and orbiting, so this is not "Earth stops"). When the second is over the atoms start again
+from rest: the part of the heat that was motion is gone. Temperature measures exactly that motion, so at the restart
+everything is at absolute zero. In solids and liquids the bonds between atoms were stretched at that instant and give
+part of the energy back within picoseconds (in a harmonic solid, half the thermal energy is potential), so they re-warm
+part of the way; a gas has no bonds between molecules and stays at absolute zero until it falls (below).
+
+| On screen | Value | Source / calculation |
+|---|---|---|
+| Air molecules: about 500 m/s → 0 | 507 m/s rms (467 m/s mean) | N2 at 15 °C: v_rms = √(3RT/M) = √(3 × 8.314 × 288 / 0.028) |
+| No sound: sound is atoms moving | definition | a sound wave is a travelling pattern of molecular motion; with every molecule at rest, nothing carries it |
+| Everything at −273.15 °C (absolute zero) | 0 K at the restart | temperature is the mean kinetic energy of the atoms' random motion; at the restart it is zero everywhere |
+| The water in the air falls as snow: 13 trillion tonnes | 1.27e16 kg | water vapour in the atmosphere ≈ 12,900 km³ of liquid water (USGS / Shiklomanov), 25 mm averaged over Earth; at 0 K it can only condense |
+| Nothing holds the sky up | air pressure = molecular impacts | the atmosphere is held up by its own pressure, i.e. by molecules moving; at rest, every molecule simply falls |
+| Air from 10 km up hits at up to 1,600 km/h | 443 m/s after 45 s | free fall from 10 km (all the air below falls with it at the same rate, so it falls through near-vacuum): v = √(2gh), t = √(2h/g). "Up to": it lands on the air already piled up near the ground |
+| The air's fall: 100 million megatons of heat | 4.3e23 J | potential energy of the atmosphere = surface pressure × scale height per m² = 101,325 Pa × 8.4 km = 8.5e8 J/m² × 5.1e14 m² = 4.3e23 J = 1.0e8 Mt TNT. It turns into heat in the fallen air, which ends up around 80 K (−190 °C): 82.7 kJ/kg ÷ (cv + R) |
+| Times Square: 330,000 people a day | Times Square Alliance | pedestrian counts, "more than 330,000 people pass through on a typical day" |
+| Earth turns white | within minutes | the snowed-out water vapour, frost on every surface and frozen sea surface (water re-warms only to about its freezing point), then the fallen air itself: 99 % of the atmosphere's mass lies below 30 km, which falls in √(2 × 30,000 / 9.81) = 78 s, so the air is down within ~2 minutes |
+| HUD in space: 21 s → 1 h, "time sped up" | log time-lapse | the space shot runs from 21 s after the restart to 1 hour (the whitening above happens in its first minutes) |
+| HUD: time slowed down 6× | 1 s shown in 6.4 s | the frozen second lasts from 10.6 s to 17.0 s on screen |
+| HUD: Times Square, 6:42 pm | blue hour | sunset in New York on 10 October ≈ 6:29 pm EDT (NOAA solar calculator); at 6:42 pm the sun is about 2-3° below the horizon |
+| The cloud deck (not a number on screen) | 2.3 km base, free fall | reaches the rooftops (~240 m) after √(2 × 2,080 / 9.81) = 20.6 s, i.e. at 37.6 s in the video, just as the white-out ends the shot |
+| Absolute zero is 184 degrees colder | 183.95 K | −89.2 − (−273.15) = 183.95 |
+| Snowball Earth, about 700 million years ago | 717-635 Ma | Sturtian (717-660 Ma) and Marinoan (~650-635 Ma) glaciations: ice reached the tropics (Hoffman et al., Science 1998; Rooney et al. 2015) |
+| Coldest temperature ever measured on Earth: −89.2 °C, Vostok, 1983 | 21 July 1983 | WMO Weather and Climate Extremes Archive, Vostok station, Antarctica |
+
+## EP13 (post 7) — What if the air stopped turning with Earth for 30 seconds?
+
+Premise: for 30 s the atmosphere stops sharing Earth's rotation (it stays still in space) while the ground keeps turning
+under it, so every place on Earth feels a wind equal to its own rotation speed, from the east. The wind blows toward the
+west, away from west-facing coasts like San Francisco's, then stops dead.
+
+| On screen | Value | Source / calculation |
+|---|---|---|
+| The air turns with Earth at 1,320 km/h (San Francisco) | 1,323 km/h | equatorial speed 40,075 km / 23.934 h = 1,674 km/h × cos(37.8°) |
+| Equator: 1,670 km/h | 1,674 km/h | as above |
+| Strongest gust ever measured: 408 km/h | 10 April 1996 | Barrow Island, Australia, Tropical Cyclone Olivia (WMO Weather and Climate Extremes Archive) |
+| In 1940, a 64 km/h wind tore a bridge apart | 7 November 1940 | Tacoma Narrows Bridge, Washington: collapsed in a wind of about 40 mph (64 km/h) |
+| This one is 20 times stronger | 20.6 | 1,323 / 64 |
+| Golden Gate towers: 227 m | 227 m (746 ft) above the water | Golden Gate Bridge Highway and Transportation District |
+| Tallest wave ever: 524 m, Alaska, 1958 | 9 July 1958 | Lituya Bay megatsunami: run-up of 524 m (1,720 ft) after a rockslide (USGS) |
+| "This one is bigger." | scene | The wave on screen is 440 m tall when it appears and about 770 m when it reaches you (`heightAt` × the along-shore wobble in `engine/sf7.js`): over 524 m from 56 s on, when the caption shows. Fiction, no number on screen |
+| Baker Beach, 6:31 pm | golden hour | sunset in San Francisco mid-October ≈ 6:35 pm PDT (NOAA solar calculator) |
+
+## EP14 (post 8) — What if 1 gram of antimatter appeared in front of you?
+
+| On screen | Value | Source / calculation |
+|---|---|---|
+| Up to 3,000 people cross at once | ~3,000 per green light | Commonly cited for Shibuya Scramble Crossing (Japan National Tourism Organization, city guides): "up to 3,000 people at a time" |
+| 1 gram of antimatter (+ 1 g of air) → 1.8 × 10¹⁴ J | 1.798 × 10¹⁴ J | E = mc² with m = 2 g (the antimatter and the same mass of matter it annihilates): 0.002 × (2.998e8)² |
+| 43 kilotons of TNT | 42.97 kt | 1.798e14 J / 4.184e12 J per kiloton |
+| 3 times Hiroshima / "Hiroshima, 1945: 15 kilotons" | 15 kt | Little Boy yield ~15 kt (US DOE / Los Alamos); 43 / 15 = 2.9 |
+| From 4 km away, at Tokyo Tower | 4.07 km | Shibuya Crossing (35.6595 N, 139.7005 E) to Tokyo Tower (35.6586 N, 139.7454 E): Δlon 0.0449° × 90.6 km/° = 4.07 km |
+| Zoomed in a billion times | ~10⁹ | Street frame ~1 m tall → atomic frame ~1 nm tall |
+| Air molecule meets anti-aluminium | – | The bead: 1 g of anti-aluminium (density 2.70 g/cm³ → 0.37 cm³, a 4.5 mm radius sphere); air = N₂ (bond 1.10 Å) and O₂ (1.21 Å); Al fcc lattice a = 4.05 Å |
+| One gram: a paperclip's weight | ~1 g | A standard small paperclip weighs about 1 g |
+| All the antimatter ever made: < 10 ng | < 10 nanograms | CERN: the total antimatter produced in its history is less than 10 nanograms (CERN, "Angels and Demons" FAQ) |
+| Cost of 1 gram: $62.5 trillion (NASA estimate, 1999) | $62.5 × 10¹² | NASA (1999): producing 1 g of antihydrogen would cost about $62.5 trillion |
+| Time since it appeared (femto/pico/nano/micro/milliseconds, s) | – | Story clock; fireball radius from Sedov-Taylor R = 1.03 (E t²/ρ)^(1/5) in the millisecond shot (40 m at ~0.7 ms, 170 m at 30 ms); the nanosecond ball size is art-directed (radiation-dominated phase) |
+
+## EP15 (post 9): What if air became as thick as honey for 5 seconds? (London, Tower Bridge)
+- Viscosity: air 1.8 × 10⁻⁵ Pa·s at 20 °C; honey 2–10 Pa·s at 20 °C (thick honey ≈ 10). 10 / 1.8e-5 ≈ 5.6 × 10⁵: "about 500,000 times". Only the viscosity changes (density, pressure and composition stay air's).
+- Raindrops stop dead: Stokes terminal speed v = (2/9)(ρw − ρa) g r² / μ; r = 1 mm, μ = 10 Pa·s: 2.2 × 10⁻⁴ m/s (0.2 mm/s), reached in τ = 2ρw r²/(9μ) ≈ 2 × 10⁻⁵ s. Normal terminal speed of a 2 mm drop ≈ 6.5 m/s; 4 mm ≈ 8.8 m/s (Gunn & Kinzer 1949).
+- Birds hang: a pigeon (0.35 kg, body ~0.1 m radius) in Stokes drag 6πμRv sinks at v = mg/(6πμR) ≈ 3.4/(6π·10·0.1) ≈ 0.18 m/s; at Re = ρvL/μ ≈ 0.01 its wings cannot push air.
+- You can't breathe in: airway flow at a given pressure difference scales with 1/μ (Poiseuille), so a normal breath would take ~500,000 times longer; gas diffusion in the lungs slows the same way (Stokes–Einstein D ∝ 1/μ).
+- Sound dies within a metre: classical absorption α = 2ω²μ/(3ρc³); 1 kHz, μ = 10: α ≈ 5.4 Np/m (amplitude), so −47 dB after 1 m; at 100 Hz α ≈ 0.054/m (low rumble carries a few tens of metres).
+- Fuel engines choke: intake flow through filters, ports and compressors scales with 1/μ; a turbofan compressor blade (0.1 m chord, 300 m/s) drops from Re ≈ 2 × 10⁶ to ≈ 4: no compression, flame-out. Electric motors are not affected.
+- Big things keep moving: Stokes/Oseen drag on a 12 t bus at 30 km/h ≈ 3–9 kN (0.03–0.08 g); an A320 (65 t, 70 m/s) loses ~0.3 g to skin friction (Cf ≈ 1.33/√Re, Re ≈ 34) and its lift collapses: it slows and sinks, it does not stop. Hurricanes (Re ~ 10⁵–10⁶ even in honey-air) keep turning: not shown.
+- Heathrow: ~1,300 flights a day (2019: 475,000 movements/yr ≈ 1,300/day, ~650 arrivals); westerly operations (~70 % of the year) bring arrivals over central London; peak ~45 arrivals/h per runway → "a plane passes over every 90 seconds" (conservative). Over Tower Bridge (≈ 24 km from runway 27L) on a 3° slope: ≈ 1,260 m (≈ 4,100 ft).
+- Planes in the air at any moment: ~10,000 commercial flights (FlightRadar24 counts 15,000–20,000 tracked aircraft at peak including private and cargo).
+- People: 8.2 billion (UN, 2025–26): "8 billion".
+- Real anchor: British Airways Flight 9, 24 June 1982, Boeing 747-200 "City of Edinburgh": all four engines flamed out in volcanic ash from Mount Galunggung over Java at 37,000 ft. "In 1982, a 747 lost all 4 engines."
+- Tower Bridge: opened 1894; 244 m long; towers 65 m tall; high-level walkways 42 m above high water; central span 61 m; Victorian steel frame clad in Cornish granite and Portland stone; steelwork painted blue and white.
+- Meme ending (62-69.6 s, owner's request, not physics): "River level: −4 m" and "Wave height: ~400 m" are the joke's
+  numbers (the drawback before a tsunami is real; a 400 m wall of water up the Thames is not). For scale: the tallest
+  tsunami run-up ever measured is 524 m (Lituya Bay, Alaska, 9 July 1958, a landslide wave in a fjord).
+
+## EP16 (post 10): What if Earth's magnetic field flipped in 5 seconds? (Giza at night)
+- Premise: the field everywhere reverses in 5 s, smoothly (B(t) = B0·cos(π t / 5)). Real reversals take ~1,000–10,000 years
+  (Clement 2004, Nature 428: ~7,000 yr on average); the last one, Brunhes–Matuyama, was ~780,000 years ago (773 ka, Singer et al.
+  2019). End card: "The field last flipped 780,000 years ago".
+- "Giza, Egypt · 8:40 pm", 19 Oct 2026: Egypt is UTC+3 → 17:40 UTC; the Sun is 2.7 h below the western horizon (night). The Milky
+  Way's band runs from the south-west through the zenith to the north-east at that hour (gN/gC vectors in ep16.js).
+- "Field here: 43 µT, pointing north": NOAA WMM2025 at Giza (29.98° N, 31.13° E): total intensity ≈ 43.3 µT, horizontal ≈ 31 µT,
+  inclination ≈ 44° down, declination ≈ +5° (east). Compass readout: you face the pyramids, ~40° east of magnetic north ("40° NE");
+  after the flip the same needle says you face ~220° ("SW").
+- HUD during the flip: the signed field along the old north (43 → 0 → −43 µT), zero at 2.5 s.
+- "Every long wire becomes a generator" / "Induced: ~80,000 V per km of wire": for a dipole the induced electric field around a
+  (geomagnetic) latitude circle is E = −∂A/∂t with A = H·R at the surface (Faraday's law over the cap: EMF = d/dt(2π R² B0 sin²θ),
+  divided by the circle 2π R sinθ). R = 6,371 km, H ≈ 31 µT reversing in 5 s → mean dH/dt = 12.4 µT/s → E ≈ 79 V/m ≈ 80,000 V/km
+  (east–west wires; north–south wires see far less); peak (cosine profile) ≈ 124 V/m. Severe real storms: ~1–10 V/km.
+- "A 50 km line: ~4 million volts": 80 V/m × 50 km = 4.0 MV (a 400 kV line's insulators are built for ~1.4 MV lightning impulses).
+- "Transformers blow across Cairo": quasi-DC currents through grounded transformer neutrals saturate the cores → overheating,
+  harmonics, relays trip (1989: Salem nuclear plant's step-up transformer in New Jersey was destroyed). Flash timings: 44 events
+  (audio/ep16_events.json).
+- "Greater Cairo: 22 million people" / "22 million people, in the dark": UN World Urbanization Prospects, Cairo agglomeration
+  ≈ 22.6 million (2023), ~23 million (2025).
+- "Stars visible: ~2,500 (was ~100)": ~9,100 stars down to magnitude 6.5 over the whole sky (Yale Bright Star Catalogue); about half
+  are above the horizon and extinction dims those near it → ~2,500 at a dark site. A big-city sky (limiting magnitude ~3.5–4) has
+  ~300–500 stars over the whole sky → ~100 above the horizon.
+- "The radiation belts rain down" / "Radiation belts: falling into the air": trapped particles stay trapped only while the field
+  changes slowly compared with their gyration, bounce and drift (adiabatic invariants); a field that goes through zero in seconds
+  cannot hold them, so they precipitate. The inner belt's field lines (L ≈ 1.2–2) come down at geomagnetic latitudes ~24–45°;
+  Giza is at ~27° (L ≈ 1.26), right under it. Outer belt (L ≈ 3–7): ~55–68°. That is why the space shot shows two rings per
+  hemisphere ("Auroras circle the whole planet").
+- "Aurora: 100–300 km up": green oxygen line 557.7 nm, mostly 100–150 km; red oxygen line 630.0 nm, 200–300+ km (NOAA SWPC).
+- "Every power grid on Earth: down": E ∝ sin(geomagnetic colatitude): tens of V/m everywhere except near the geomagnetic poles,
+  thousands of times what took down Hydro-Québec.
+- "~7.5 billion people, no power": 8.2 billion people (UN, 2025) minus ~0.7 billion without any electricity access (IEA 2024: ~730 M).
+- "In 1989, a far weaker storm hit Quebec" / "Quebec · 13 March 1989" / "The grid collapsed in 90 seconds": at 2:44 a.m. EST on
+  13 March 1989 the Hydro-Québec grid collapsed within about 90 seconds; ~6 million people were without power for ~9 hours
+  (NASA, "The Day the Sun Brought Darkness", 2009; Boteler 2019, Space Weather, doi:10.1029/2019SW002278; Wikipedia, March 1989
+  geomagnetic storm).
+- "Field change ~150× smaller, over hours" / end card "A storm 150× weaker": the storm's Dst minimum was −589 nT (14 March,
+  02 UT), built up over hours; the flip changes the field at Giza by 86,000 nT (43 → −43 µT) in 5 s: 86,000 / 589 ≈ 146.
+- "Big transformers: years to replace": large power transformer lead times ~2–4 years (US DOE, 2024 supply-chain report: 120–210 weeks).
+
+## EP17 (post 11): What if every sneeze was twice as strong as the last? (Venice, the Molo)
+- "A normal sneeze: ~0.05 J": a sneeze pushes out ~1–1.5 L of air (~1.2–1.8 g) at a peak flow of a few L/s through a
+  3–4 cm² opening, ~9 m/s (Gupta et al. 2009, Indoor Air 19:517: sneeze peak flow ~3–4.5 L/s): ½ × 0.0012 kg × (9 m/s)² ≈ 0.05 J.
+  (The popular "160 km/h sneeze" is a myth.) Sneeze n carries E = 0.05 J × 2^(n−1); every sneeze holds more energy than all
+  the earlier ones together (2^(n−1) > 2^(n−1) − 1).
+- HUD "N× a normal sneeze": 2^(n−1) (sneeze 10: 512×). TNT = 4,184 J/g.
+- "Sneeze 20: six grams of TNT": 0.05 × 2^19 = 26.2 kJ = 6.3 g.
+- "Sneeze 25: a hand grenade": 0.84 MJ ≈ 200 g of TNT; an M67 grenade holds 180 g of Composition B (~1.3× TNT) ≈ 0.98 MJ.
+- "Sneeze 30: the lagoon erupts": 26.8 MJ ≈ 6.4 kg of TNT.
+- "Sneeze 40: 7 tonnes of TNT": 27.5 GJ ≈ 6.6 t.
+- "Sneeze 45 drops the bell tower": 880 GJ ≈ 210 t of TNT. Real anchor: St Mark's Campanile (98.6 m) collapsed on its own
+  on 14 July 1902 and was rebuilt "where it was, as it was" by 1912.
+- "Sneeze 51: Hiroshima": 56 TJ ≈ 13 kt (Little Boy ~15 kt ≈ 63 TJ).
+- "Sneeze 63: the biggest bomb ever": 2.3 × 10¹⁷ J ≈ 55 Mt; Tsar Bomba (1961) was ~50 Mt ≈ 2.1 × 10¹⁷ J.
+- "Sneeze 84: the dinosaur asteroid": 4.8 × 10²³ J ≈ 115 teratons; the Chicxulub impact is estimated at ~10²³–5 × 10²³ J
+  (~100 teratons is the common figure).
+- "Sneeze 97 boils the oceans": 4.0 × 10²⁷ J; the oceans (1.35 × 10²¹ kg) need ~2.6 MJ/kg (heat from ~15 °C to 100 °C +
+  2.26 MJ/kg to boil) ≈ 3.5 × 10²⁷ J.
+- "Sneeze 113 would blow Earth apart": 2.6 × 10³² J ≥ Earth's gravitational binding energy, 2.24 × 10³² J (3GM²/5R).
+- "One girl sneezed for 976 days straight": Donna Griffiths (UK), aged 12, sneezed from 13 January 1981 to 16 September 1983,
+  976 days, an estimated million sneezes in the first year (Guinness World Records).
+- Visual scales (not on screen): blast fronts follow Sedov–Taylor, R = 1.03 (E t²/ρ)^(1/5), then 343 m/s; fireball radius
+  ≈ 60 m × Y(kt)^0.4 (Hiroshima ~180 m, Tsar Bomba ~4.6 km). Venice sunset on 20 October is ~18:20 CEST: at "6:05 pm" the sun
+  is a few degrees up in the west-southwest, behind the Salute from the Molo.
+
+## EP18 (post 12): What if all the ice on Earth melted in 5 seconds? (Diamond Beach, Iceland)
+- Premise model (ours): the melt eats into all ice from its surface at a depth d(τ) = 0.03 m × e^(3(τ − 1)) after τ seconds, so
+  the thinnest ice goes first: 1.5 mm at the start, 3 cm after 1 s (ice cubes, half-thickness ~1.3 cm), 2.7 m after 2.5 s
+  (beach blocks), ~240 m after 4 s, 4.9 km at 5 s (the thickest ice on Earth). The HUD "Melting X deep" is d(τ).
+- "4:45 pm": 21 October 2026, 16:45 UTC at Jökulsárlón (64.05° N, 16.18° W): Sun 3.0° up at azimuth 237° (NOAA solar
+  formulas); sunset ~17:20.
+- "Every block of ice here fell off a glacier": Diamond Beach (Breiðamerkursandur) ice calves from Breiðamerkurjökull into
+  Jökulsárlón, drifts out through the Jökulsá to the sea and washes back ashore.
+- "Ice on land: 30 million km³": Antarctic ice sheet 26.5 million km³ (Bedmap2, Fretwell et al. 2013) + Greenland 2.9 million
+  km³ (BedMachine, Morlighem et al. 2017: 2.99) + glaciers and ice caps ~0.16 million km³ (Farinotti et al. 2019) ≈ 29.6.
+- "Ice cubes: 1.3 cm", "Beach ice: up to 1.5 m": half-thicknesses of the cubes (2.6 cm) and of the largest blocks in the scene.
+- "The glacier: 300 m": Breiðamerkurjökull near its front, order of magnitude (its bed lies 200–300 m below sea level under the
+  lagoon; Björnsson et al. 2001, Jökull). "Vatnajökull: 950 m": maximum ice thickness ~950 m (Björnsson & Pálsson 2008).
+  "Antarctica: 4.9 km": thickest ice measured 4,897 m (Bedmap2, Astrolabe Subglacial Basin).
+- "Then the glacier, then the ice cap": Vatnajökull, Europe's largest ice cap by volume, ~7,700 km² (2019) and ~3,100 km³ of
+  ice (Björnsson & Pálsson 2008); as water 3,100 × 0.917 ≈ 2,840 km³ ("Vatnajökull: 2,800 km³ of water").
+- "800 times the great flood of 1996": the Gjálp eruption's jökulhlaup from Grímsvötn (5–7 Nov 1996), ~3.2–3.8 km³ of water,
+  peak ~45,000–53,000 m³/s; 2,840 / 3.5 ≈ 810. "That one swept away bridges on this coast": it destroyed the Gígjukvísl bridge
+  and damaged the Skeiðará bridge on Route 1 (Skeiðarársandur, ~50 km west).
+- Flood front (HUD "310 km/h", "70 m tall"): our estimate. Dam-break front speed 2√(g h₀) with h₀ ≈ 190 m of meltwater above
+  the lagoon gives 86 m/s ≈ 310 km/h (Ritter's solution, frictionless: an upper bound). Vatnajökull's 2,840 km³ over its
+  7,700 km² is a 370 m layer of water; a front tens of metres to ~100 m high near the coast is the right order.
+- "Greenland pours into the sea" / "Greenland: 2.9 million km³ of ice": as above. "Waves taller than any ever recorded": our
+  estimate. A 2 km dome of water draining over the ice-sheet margin flows at critical depth h = (q/√g)^(2/3) with
+  q ≈ (8/27)√g h₀^1.5 (h₀ = 2,000 m): q ≈ 83,000 m²/s per metre of margin, h ≈ 890 m. The record is Lituya Bay, Alaska,
+  9 July 1958: run-up 524 m ("Tallest wave ever recorded: 524 m").
+- "Then Antarctica: 26 million km³ of ice" (26.5, Bedmap2).
+- "In three days, the seas rise 66 metres": sea-level equivalents 58.3 m (Antarctica) + 7.4 m (Greenland) + 0.32 m (glaciers)
+  ≈ 66 m (IPCC AR6 WG1 ch. 9). Timing is our estimate: long waves cross ocean basins at √(g·4,000 m) ≈ 200 m/s, a few
+  thousand km per 6 h; the meltwater drains off the ice sheets in hours to days. HUD sea level = 66 m × (1 − e^(−h/18 h))
+  normalised to reach 66 m at 72 h.
+- Space map: land below ~66 m from NASA's GEBCO elevation map (gebco_08_rev_elev, 25 m steps: levels 0–1 flooded, level 2
+  weighted 0.64); ice from the Blue Marble texture's white at high latitudes. Sun at 16:45 UTC: subsolar point 10.9° S, 75° W.
+- "London, New York, Shanghai: gone": central London mostly below 30 m; most of New York City below 30 m (its high points,
+  e.g. Bennett Park in Manhattan at 81 m, stay dry); Shanghai averages ~4 m. All largely under a 66 m rise.
+- "1 billion people live under 10 m above the sea": Kulp & Strauss 2019 (Nature Communications 10, 4844): ~1 billion people
+  live on land less than 10 m above current high-tide lines.
+- End card: "All the ice on Earth = 66 m of sea" (above), "Vatnajökull: 3,100 km³ of ice" (above).
+- WTF (not a claim): a polar bear on Diamond Beach doing the "6-7" meme. (Polar bears do reach Iceland on drift ice: ~600
+  recorded since settlement, the last in 2024.)
+
+## EP19 (post 13): What if beauty standards were reversed for 5 years? (Piccadilly Circus, London)
+- Set: building footprints, levels, road centrelines, crossings, the Lights' curve and the fountain from OpenStreetMap
+  (api.openstreetmap.org, map data © OpenStreetMap contributors, ODbL); credited on the end card and in the post caption.
+- "Piccadilly Lights: 783 m² of LEDs" (HUD): Landsec/Ocean Outdoor 2017 spec: one curved screen 17.56 m x 44.62 m = 783 m²
+  (most press says ~790 m²), 5,490 x 2,160 px at 8 mm pitch; it can split into six sections. Our screen: 17.56 m tall,
+  44.6 m along the OSM curve.
+- "Year 1: a $446-billion industry" / HUD "Beauty industry: $446 bn a year": McKinsey, "The beauty boom and beyond" (2024):
+  global beauty retail sales $446 billion in 2023 (skin care, fragrance, make-up, hair care).
+- "35 million procedures a year" / HUD "Procedures: 34.9 million a year" / end card: ISAPS Global Survey 2023 (published
+  June 2024): 34.9 million aesthetic procedures (15.8 million surgical, 19.1 million non-surgical).
+- "In the 1920s, a tan went from shameful to chic": before the 1920s pale skin signalled status in Western Europe and the
+  US (a tan meant outdoor labour); in the 1920s tanning became fashionable on the Riviera (the oft-told 1923 Coco Chanel
+  sunburn in Cannes is a popular, partly legendary, marker). The screen's "RIVIERA 1923" poster is an illustration.
+- New Year's Eve countdown on the Lights: the screen does run New Year countdowns; ours is drawn for the story.
+- Day count: 1 Jan 2027 to 1 Jan 2032 = 1,826 days (2028 is a leap year).
+- Story numbers (not claims about the real world, they happen in the premise): "3 million likes" on your photo (HUD
+  3,214,559), "48 million" followers. Brands on the screen are invented (LUMIÈRE, PRO-AGE, YELLOW, PORES+, FRIZZ, Frame).
+- WTF (not a claim): a man in a suit drops his litter next to an empty Westminster bin every time we see him; his pile
+  grows over five years to a 2.5 m heap and the bin stays empty.
+
+## EP20 (« 12 % » Partie 1 · La fumée): smoke under the door at 3:12 am (Paris 18e). Fiction; the advice and the numbers are real
+- What to do when the fire is elsewhere in the building and the stairwell is full of smoke: stay home, shut the door, wet it,
+  seal the gap with wet cloths, show yourself at the window, call 18 or 112; never cross smoke, never take the lift. National
+  firefighters' guide (pompiers.fr, "sqv_incendiedom.pdf": smoke invades corridors and stairs and makes them impassable; close,
+  wet and seal your door); a Paris fire-brigade (BSPP) doctor quoted by Allodocteurs (wet cloths at the bottom of the doors);
+  évous Paris guide (leave only if the corridor/stairwell is smoke-free; a hot door must not be opened); Oise prefecture leaflet
+  (signal at the window, open it in short bursts and close it again; 18/112); Dieburg fire brigade leaflet in French (evacuating
+  through a smoke-filled stairwell is a classic mistake); Brussels fire service after the Anderlecht fire (avoid smoke-filled
+  stairwells, the Saint-Gilles resident who stayed in and signalled from a window). Stay low: fresher air near the floor (same sources).
+- "8 morts sur 10, c'est la fumée": joint press release of the housing and interior ministries with the firefighters' federation,
+  28 Jan 2015 ("80 % des décès sont dus à l'intoxication par les fumées"); MAIF citing the ministry of the Interior (~80 %).
+- Smoke alarm in her flat: at least one detector mandatory in every French home since 8 March 2015 (same press release; arrêté du
+  14 mars 2013).
+- "En 2019, rue Erlanger à Paris, un incendie volontaire a bloqué les escaliers. 10 morts." Wikipedia, "February 2019 Paris fire":
+  5 Feb 2019, 17 bis rue Erlanger (16e), set deliberately on the 2nd floor, at least 10 dead and 36 injured, "smoke and flames
+  had obstructed stairwells", more than 50 people trapped, over 30 rooftop rescues by ladder, ~250 firefighters; a resident was
+  convicted of arson (25 years).
+- Fiction (not claims): Inès, 20, 6th floor without a lift in the 18e, here for 9 days; the man who held the door; the times
+  (22:41, 3:12 → 3:31) and her battery (34 % at 22:41, 12 % → 9 → 6 → 3 %); the neighbours from the 4th; the text message.
+- Voice: Kyutai TTS 1.6B en_fr (CC BY 4.0, credited on the end card), Kyutai's own CC0 voices (unmute-prod-website).
+
+## EP21 (« 12 % » Partie 2 · L'escalier): followed up the stairwell at 4:20 am. Fiction; the advice and the numbers are real
+- "Le 114, c'est le 17 quand on ne peut pas parler. Gratuit, jour et nuit." justice.fr (fiches « violences physiques et
+  psychologiques », « alerter les secours »): the 114 is the national emergency number by SMS (also chat, video, the « urgence 114 »
+  app), free, 24/7, for deaf or hard-of-hearing people and for anyone who cannot speak for their safety (e.g. the attacker is in
+  the same room); it replaces the 17 for them; give your name, precise address and the reason. Gendarmerie prevention sheet on
+  harassment: « Si votre situation nécessite une intervention urgente : appelez le 17 ou par SMS au 114. »
+- "On ne mène jamais quelqu'un jusqu'à chez soi" / make noise, knock, wake the neighbours: police prevention leaflets — go toward
+  safe, busy places and ask bystanders for help directly (police crime-prevention programme leaflet in French, LKA NRW 2022:
+  « Dirigez-vous vers des endroits sûrs… Adressez-vous directement aux personnes non impliquées… demandez de l'aide »); French
+  public-safety advice relayed by service-public tools: if you are still followed, head for a populated area and attract attention;
+  arretonslesviolences.gouv.fr / CAF « Réagir face au harcèlement de rue »: safe places (« Demandez Angela »), 17 / 112 / SMS 114.
+- "76 % des Françaises ont déjà été suivies dans la rue": Ville de Paris, « La nuit est à tous » (paris.fr), citing a study by the
+  Haut Conseil à l'égalité entre les femmes et les hommes (« 76 % des Françaises ont été suivies au moins une fois dans la rue »).
+- Paris stair timers (« minuterie »): the lights stay on for a set time after the button is pressed, then go out (the orange lit
+  push buttons of old buildings). The "2 minutes" in the script is the story's timer, not a rule.
+- Fiction (not claims): the times (4:20 → 4:27), her battery (3 % → 2 → 1 %), the follower, the neighbour, the 114 exchange on
+  screen (a dramatisation of the reply), the man living on the 5th floor.

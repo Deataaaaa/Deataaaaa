@@ -1,0 +1,4 @@
+# Windows render PC (pc/): .bat and .ps1 need CRLF; bash scripts break with CRLF (Git for Windows converts by default)
+*.sh text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf

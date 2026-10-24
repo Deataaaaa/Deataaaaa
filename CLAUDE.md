@@ -137,6 +137,8 @@ rules below, they win; every other rule still holds (realism, loud phone sound, 
   The page (French, owner 24 Oct 2026) has a TikTok / Instagram / YouTube switch and the stats plan per platform; the owner types
   each platform's numbers into `stats.{tt,ig,yt}`: read them back before planning the next part. Posting order on the day:
   TikTok 19:00, Instagram 19:15, YouTube 19:30. The What if plan (X86z6ej3oYC7859hXUjTeo) is archived.
+- Post kit: write `pc/posts/pN.txt` (TikTok/IG/YouTube texts, times, pin) and set `"post"` in `pc/job.json`; RENDER.bat copies it to
+  `videos/<name>_post.txt`. No posting connector exists (checked 24 Oct): the owner schedules in each app's native scheduler.
 - Commit and push to branch `claude/whatif-reels` (no pull request unless asked).
 
 ## Episodes

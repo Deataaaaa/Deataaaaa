@@ -2,7 +2,7 @@
 // the stairwell, the fire trucks, the lights). Used by every part and by the look-dev page episodes/set12view.js.
 import * as THREE from 'three';
 import { LV, STREET, BAYS, HERO_BAY, makeHaussmann, makeStreet, makeLanterns } from './paris12.js';
-import { ROOM, makeRoom, makeStairwell } from './room12.js';
+import { ROOM, makeRoom, makeStairwell, makeStairwellFull } from './room12.js';
 import { makeEPA, makeFPT } from './trucks12.js';
 import { makeNightSky } from './piccadilly.js';
 import { makeCar } from './town5.js';
@@ -10,7 +10,7 @@ import { rng } from './core.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
-export function buildWorld12(renderer, { trucks = true, cars = true } = {}) {
+export function buildWorld12(renderer, { trucks = true, cars = true, stairFull = false } = {}) {
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2('#0b0d12', 0.012);
   const sky = makeNightSky(); scene.add(sky.mesh || sky);
@@ -41,7 +41,7 @@ export function buildWorld12(renderer, { trucks = true, cars = true } = {}) {
   }
   // the room and the stairwell
   const room = makeRoom(); scene.add(room.group);
-  const stair = makeStairwell(); scene.add(stair.group);
+  const stair = stairFull ? makeStairwellFull() : makeStairwell(); scene.add(stair.group);   // Part 2: every floor
   // trucks: the ladder truck in front of the building, the pump engine behind it
   let epa = null, fpt = null;
   if (trucks) {
@@ -60,7 +60,7 @@ export function buildWorld12(renderer, { trucks = true, cars = true } = {}) {
   const blueSpot = new THREE.SpotLight('#3a6cff', 0, 9, 0.66, 0.8, 2); blueSpot.position.set(HERO_BAY - 0.15, ROOM.SILL - 0.3, -0.1);
   blueSpot.target.position.set(HERO_BAY, ROOM.CEIL, -3.0); scene.add(blueSpot, blueSpot.target);
   const roomFill = new THREE.PointLight('#ffcf9a', 0.6, 6, 2); roomFill.position.set(3.0, ROOM.Y0 + 2.2, -2.8); scene.add(roomFill);
-  const stairLamp = new THREE.PointLight('#ffd49a', 0, 9, 2); stairLamp.position.copy(stair.lamp.position).add(V(0, -0.15, -0.2)); scene.add(stairLamp);
+  const stairLamp = new THREE.PointLight('#ffd49a', 0, 9, 2); stairLamp.position.copy((stair.lamp || stair.lamps[6]).position).add(V(0, -0.15, -0.2)); scene.add(stairLamp);
   // night environment for reflections (the sky plus a few warm glints), baked once
   const pm = new THREE.PMREMGenerator(renderer), envScene = new THREE.Scene();
   envScene.add(makeNightSky().mesh || makeNightSky());

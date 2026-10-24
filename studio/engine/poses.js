@@ -6,6 +6,9 @@ import { twoBoneIK, aimBone, orientHand } from './elevator.js';
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const wp = (b) => b.getWorldPosition(new THREE.Vector3());
 
+// POSE.lookFirst: turn the head before the arm IK. Rocketbox (Biped) clavicles hang off the Neck, so a look applied after the
+// arms swings them and the hands drift off their targets (P2: up to 10 cm); old episodes keep the old order
+export const POSE = { lookFirst: false };
 export function resetPose(av) {
   for (const [k, b] of Object.entries(av.bones)) b.quaternion.copy(av.rest[k]);
   av.root.updateMatrixWorld(true);
@@ -39,7 +42,7 @@ export function lookAt(av, target, k = 1) {
   }
 }
 // curl the four fingers toward the palm (and the thumb a little)
-export function curlFingers(av, side, curl = 0.35, thumb = 0.2) {
+export function curlFingers(av, side, curl = 0.35, thumb = 0.2, idx = null, pk = null) {
   const B = av.bones, hand = B[side + 'Hand']; if (!hand || !B[side + 'HandMiddle1']) return;
   for (const f of ['Index', 'Middle', 'Ring', 'Pinky']) {
     for (let j = 1; j <= 3; j++) {
@@ -49,7 +52,7 @@ export function curlFingers(av, side, curl = 0.35, thumb = 0.2) {
       const lat = wp(B[side + 'HandIndex1']).sub(wp(B[side + 'HandPinky1'])).normalize();
       const palm = side === 'Right' ? lat.clone().cross(fdir) : fdir.clone().cross(lat);
       const axis = fdir.clone().cross(palm).normalize();
-      rotW(b, axis, curl * (j === 1 ? 0.7 : 1.0));
+      rotW(b, axis, (f === 'Index' && idx != null ? idx : f === 'Pinky' && pk != null ? pk : curl) * (j === 1 ? 0.7 : 1.0));
     }
   }
   const t1 = B[side + 'HandThumb1'];
@@ -198,6 +201,7 @@ export function stand(av, o) {
     twoBoneIK(av, side + 'UpLeg', side + 'Leg', side + 'Foot', foot, pole);
     if (B[side + 'ToeBase']) { const toe = foot.clone().addScaledVector(fwd, 0.15); toe.y = gAt(toe.x, toe.z) + 0.02; aimBone(B[side + 'Foot'], wp(B[side + 'ToeBase']), toe); }
   }
+  if (POSE.lookFirst && o.look) lookAt(av, o.look, o.lookK ?? 1);
   for (const [side, s] of [['Left', 1], ['Right', -1]]) {
     const fn = side === 'Left' ? o.armL : o.armR;
     const sh = wp(B[side + 'Arm']);
@@ -205,9 +209,9 @@ export function stand(av, o) {
     const a = fn ? fn(sh, fwd, left, up) : def;
     twoBoneIK(av, side + 'Arm', side + 'ForeArm', side + 'Hand', a.hand, a.pole);
     if (a.F && a.N) orientHand(av, side, a.F, a.N);
-    curlFingers(av, side, a.curl ?? 0.35, 0.15);
+    curlFingers(av, side, a.curl ?? 0.35, a.thumb ?? 0.15, a.idx, a.pk);
   }
-  if (o.look) lookAt(av, o.look, o.lookK ?? 1);
+  if (!POSE.lookFirst && o.look) lookAt(av, o.look, o.lookK ?? 1);
   if (o.groundAt) { av.root.position.y += 0.004 - lowestAbove(av, o.groundAt); av.root.updateMatrixWorld(true); return; }
   // o.cache (an object): measure the lowest vertex once and reuse its height under the root (still poses in a crowd)
   let low;
@@ -233,15 +237,16 @@ export function kneel(av, o) {
     twoBoneIK(av, side + 'UpLeg', side + 'Leg', side + 'Foot', foot, pole);
     if (B[side + 'ToeBase']) { const toe = foot.clone().addScaledVector(fwd, -0.16); toe.y = gy + 0.03; aimBone(B[side + 'Foot'], wp(B[side + 'ToeBase']), toe); }
   }
+  if (POSE.lookFirst && o.look) lookAt(av, o.look, o.lookK ?? 1);
   for (const [side, s] of [['Left', 1], ['Right', -1]]) {
     const fn = side === 'Left' ? o.armL : o.armR, sh = wp(B[side + 'Arm']);
     const def = { hand: sh.clone().addScaledVector(up, -0.45).addScaledVector(left, s * 0.05).addScaledVector(fwd, 0.22), pole: sh.clone().addScaledVector(up, -0.3).addScaledVector(fwd, -0.5).addScaledVector(left, s * 0.25) };
     const a = fn ? fn(sh, fwd, left, up) : def;
     twoBoneIK(av, side + 'Arm', side + 'ForeArm', side + 'Hand', a.hand, a.pole);
     if (a.F && a.N) orientHand(av, side, a.F, a.N);
-    curlFingers(av, side, a.curl ?? 0.4, 0.15);
+    curlFingers(av, side, a.curl ?? 0.4, a.thumb ?? 0.15, a.idx, a.pk);
   }
-  if (o.look) lookAt(av, o.look, o.lookK ?? 1);
+  if (!POSE.lookFirst && o.look) lookAt(av, o.look, o.lookK ?? 1);
   let low;
   if (o.cache) { if (o.cache.off == null) o.cache.off = lowestY(av) - av.root.position.y; low = av.root.position.y + o.cache.off; } else low = lowestY(av);
   av.root.position.y += (gy + 0.004) - low; av.root.updateMatrixWorld(true);
@@ -269,6 +274,7 @@ export function walk(av, o) {
     twoBoneIK(av, side + 'UpLeg', side + 'Leg', side + 'Foot', foot, pole);
     if (B[side + 'ToeBase']) { const toe = foot.clone().addScaledVector(fwd, 0.15); toe.y = gy + 0.02 + lift * (u < 0.5 ? 0 : 0.6); aimBone(B[side + 'Foot'], wp(B[side + 'ToeBase']), toe); }
   }
+  if (POSE.lookFirst && o.look) lookAt(av, o.look, o.lookK ?? 0.6);
   for (const [side, sd, off] of [['Left', 1, 0.5], ['Right', -1, 0]]) {
     const sh = wp(B[side + 'Arm']), sw = Math.sin(TAU * (ph + off));
     const fn = side === 'Left' ? o.armL : o.armR;
@@ -276,9 +282,55 @@ export function walk(av, o) {
     const a = fn ? fn(sh, fwd, left, up) : def;
     twoBoneIK(av, side + 'Arm', side + 'ForeArm', side + 'Hand', a.hand, a.pole);
     if (a.F && a.N) orientHand(av, side, a.F, a.N);
-    curlFingers(av, side, a.curl ?? 0.4, 0.15);
+    curlFingers(av, side, a.curl ?? 0.4, a.thumb ?? 0.15, a.idx, a.pk);
   }
-  if (o.look) lookAt(av, o.look, o.lookK ?? 0.6);
+  if (!POSE.lookFirst && o.look) lookAt(av, o.look, o.lookK ?? 0.6);
+}
+// climbing a straight flight, rebuilt from rest each frame (a pure function of the body's distance along it). o.flight = { p0 (the
+// flight's bottom edge on the floor it starts from), dir (horizontal unit vector up the flight), base (that floor's height), rise,
+// run, n (treads; tread j's top is base + 0.02 + j * rise, the landing above is base + n * rise) }; o.a = the body's distance along
+// the flight from p0 (m; negative on the floor before it, past n * run on the landing), o.side (m, + to the body's left).
+// Feet: one tread each per step, planted with the ankle 0.27 of a tread from its back edge (the toe stays clear of the next
+// riser), then swung two treads up on an arc that rises in its first half and travels forward over the whole swing, so the toe
+// clears both nosings. Arms swing like walk() unless o.armL / o.armR (stand()'s convention) hold the rail.
+export function climb(av, o) {
+  const B = av.bones, F = o.flight, run = F.run, rise = F.rise, TAU = Math.PI * 2;
+  const top = (k) => (k < 0 ? F.base : k >= F.n ? F.base + F.n * rise : F.base + 0.02 + k * rise);
+  const along = (k) => (k + 0.27) * run;
+  const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  const ph = o.a / (2 * run);
+  const side = F.dir.clone().cross(V(0, 1, 0)).negate();          // the body's left when facing up the flight
+  const at = (d, y) => F.p0.clone().addScaledVector(F.dir, d).addScaledVector(side, o.side ?? 0).setY(y);
+  const feet = {};
+  for (const [nm, off, k0] of [['Left', 0, 0], ['Right', 0.5, -1]]) {
+    const c = Math.floor(ph + off), u = ph + off - c, k = 2 * c + k0;
+    if (u < 0.5) feet[nm] = { d: along(k), y: top(k) };
+    else { const w = (u - 0.5) / 0.5; feet[nm] = { d: along(k) + (along(k + 2) - along(k)) * sm(0, 1, w), y: top(k) + (top(k + 2) - top(k)) * sm(0, 0.5, w) + 0.05 * Math.sin(Math.PI * w), swing: true }; }
+  }
+  resetPose(av);
+  const rootY = F.base + Math.min(F.n, Math.max(0, o.a / run - 0.5)) * rise - 0.02 + 0.012 * Math.cos(2 * TAU * ph);
+  av.root.position.copy(at(o.a, rootY)); av.root.rotation.set(0, Math.atan2(F.dir.x, F.dir.z), 0); av.root.updateMatrixWorld(true);
+  const { fwd, left, up } = bodyFrame(av);
+  rotW(B.Hips, up, 0.06 * Math.sin(TAU * ph)); rotW(B.Spine1, up, -0.04 * Math.sin(TAU * ph));
+  rotW(B.Spine, left, o.lean ?? 0.12);
+  for (const [nm, sd] of [['Left', 1], ['Right', -1]]) {
+    const f = feet[nm], foot = at(f.d, f.y + 0.085).addScaledVector(left, sd * 0.1);
+    const pole = wp(B[nm + 'UpLeg']).addScaledVector(fwd, 1.0).addScaledVector(up, 0.2);
+    twoBoneIK(av, nm + 'UpLeg', nm + 'Leg', nm + 'Foot', foot, pole);
+    if (B[nm + 'ToeBase']) { const toe = foot.clone().addScaledVector(fwd, 0.15); toe.y = foot.y - 0.065 + (f.swing ? 0.02 : 0); aimBone(B[nm + 'Foot'], wp(B[nm + 'ToeBase']), toe); }
+  }
+  if (POSE.lookFirst && o.look) lookAt(av, o.look, o.lookK ?? 0.7);
+  for (const [nm, sd, off] of [['Left', 1, 0.5], ['Right', -1, 0]]) {
+    const sh = wp(B[nm + 'Arm']), sw = Math.sin(TAU * (ph + off));
+    const fn = nm === 'Left' ? o.armL : o.armR;
+    const def = { hand: sh.clone().addScaledVector(up, -0.52).addScaledVector(left, sd * 0.1).addScaledVector(fwd, 0.08 + 0.12 * sw), pole: sh.clone().addScaledVector(up, -0.3).addScaledVector(fwd, -0.6).addScaledVector(left, sd * 0.25) };
+    const a = fn ? fn(sh, fwd, left, up) : def;
+    twoBoneIK(av, nm + 'Arm', nm + 'ForeArm', nm + 'Hand', a.hand, a.pole);
+    if (a.F && a.N) orientHand(av, nm, a.F, a.N);
+    curlFingers(av, nm, a.curl ?? 0.4, a.thumb ?? 0.15, a.idx, a.pk);
+  }
+  if (!POSE.lookFirst && o.look) lookAt(av, o.look, o.lookK ?? 0.7);
+  return feet;
 }
 // a posable copy of an avatar (skeleton clone sharing meshes and textures) with its own bone map
 export function cloneAvatar(av, skClone) {

@@ -74,12 +74,12 @@ export function chunks(lines) {
 }
 
 export class Overlay12 {
-  constructor(vo) {
+  constructor(vo, { etsiSub = 'ELLE SORTAIT' } = {}) {
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     const root = document.createElement('div'); root.id = 's12';
     root.innerHTML = `<div class="peep"></div><div class="rew"><div class="lines"></div><div class="band"></div><div class="ico">◀◀ RETOUR</div></div>
       <div class="news"><div class="a"></div><div class="b"></div></div><div class="notif"><div class="ic"><svg width="46" height="42" viewBox="0 0 46 42"><path d="M23 2C11 2 2 9.6 2 19c0 5.3 2.9 10 7.4 13.1L7 40l9.2-4.7c2.2.6 4.5.9 6.8.9 12 0 21-7.6 21-17S35 2 23 2z" fill="#fff"/></svg></div><div class="tx"><div class="h"><b></b><span></span></div><div class="m"></div></div></div><div class="plate"><div class="a"></div><div class="b"></div></div>
-      <div class="etsi">Et si…<small>ELLE SORTAIT</small></div>
+      <div class="etsi">Et si…<small>${etsiSub}</small></div>
       <div class="ser"><span class="p">12 %</span><span class="n"></span></div>
       <div class="stat"><span class="time"></span><span class="bars"><i style="height:8px"></i><i style="height:12px"></i><i style="height:17px"></i><i style="height:22px"></i></span><span class="pct"></span><span class="bat"><b></b></span></div>
       <div class="kara"></div><div class="black"></div><div class="end"></div>`;

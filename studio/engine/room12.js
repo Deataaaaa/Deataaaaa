@@ -247,3 +247,88 @@ export function makeStairwell() {
   timer.position.set(3.6, LV[6] + 1.2, S.ZC + 0.012); g.add(timer);
   return { group: g, lamp: lampG, top: V((S.XB1 + S.XA0) / 2, LV[6], S.ZC - 0.2), well: V((S.XB1 + S.XA0) / 2, LV[3], (S.ZC + S.ZH) / 2) };
 }
+
+// ---------- Part 2: the whole stairwell, ground floor to the 6th ----------
+// The same U stair as makeStairwell() on every floor, a landing per floor with its doors, a wall lamp (the timer light) and the
+// orange timer switch. Two doors open onto a lit entrance: the 3rd-floor neighbour's (x 6.8) and the 5th-floor flat right under
+// Inès's room. Lights are returned off; the episode switches them (the timer) and opens the doors.
+export function makeStairwellFull() {
+  const S = STAIR, g = new THREE.Group();
+  const wall = plasterMat('#d8cdb8', 'plasterStair12'), stepM = new THREE.MeshStandardMaterial({ color: '#6a4630', roughness: 0.55 });
+  const iron = new THREE.MeshStandardMaterial({ color: '#16171a', roughness: 0.5, metalness: 0.6 }), rail = new THREE.MeshStandardMaterial({ color: '#4a2e1f', roughness: 0.4 });
+  const steps = [], irons = [], rails = [], walls = [], floors = [];
+  for (let f = 6; f >= 1; f--) {
+    const yt = LV[f], yb = LV[f - 1], yh = (yt + yb) / 2, rA = (yt - yh) / S.STEPS;
+    floors.push(box(S.X1 - S.X0, 0.2, S.ZW - S.ZC, (S.X0 + S.X1) / 2, yt - 0.1, (S.ZW + S.ZC) / 2));
+    floors.push(box(S.XA1 - S.XB0, 0.2, S.ZH - S.ZB, (S.XB0 + S.XA1) / 2, yh - 0.1, (S.ZH + S.ZB) / 2));
+    for (let i = 0; i < S.STEPS; i++) {
+      const za = S.ZC - i * S.RUN, ya = yt - (i + 1) * rA;
+      steps.push(box(S.XA1 - S.XA0, 0.16, S.RUN + 0.02, (S.XA0 + S.XA1) / 2, ya - 0.08 + 0.02, za - S.RUN / 2));
+      const zb = S.ZH + i * S.RUN, yb2 = yh - (i + 1) * rA;
+      steps.push(box(S.XB1 - S.XB0, 0.16, S.RUN + 0.02, (S.XB0 + S.XB1) / 2, yb2 - 0.08 + 0.02, zb + S.RUN / 2));
+      for (const [x, z, y] of [[S.XA0 + 0.03, za - S.RUN / 2, ya], [S.XB1 - 0.03, zb + S.RUN / 2, yb2]]) irons.push(box(0.018, 0.9, 0.018, x, y + 0.45, z));
+    }
+    const hr = (x, za, ya, zb, yb3) => { const L = Math.hypot(zb - za, yb3 - ya); const b = new THREE.BoxGeometry(0.05, 0.05, L); b.rotateX(Math.atan2(yb3 - ya, za - zb)); b.translate(x, (ya + yb3) / 2 + 0.92, (za + zb) / 2); rails.push(b.toNonIndexed()); };
+    hr(S.XA0 + 0.03, S.ZC, yt, S.ZH, yh); hr(S.XB1 - 0.03, S.ZH, yh, S.ZC, yb);
+    rails.push(box(S.XA0 - S.XB1 + 0.06, 0.05, 0.05, (S.XA0 + S.XB1) / 2, yt + 0.92, S.ZC - 0.03));
+    for (let x = S.XB1; x <= S.XA0; x += 0.11) irons.push(box(0.018, 0.9, 0.018, x, yt + 0.45, S.ZC - 0.03));
+  }
+  floors.push(box(S.X1 - S.X0, 0.2, S.ZW - S.ZC, (S.X0 + S.X1) / 2, LV[0] - 0.1, (S.ZW + S.ZC) / 2));    // the ground-floor corridor
+  const y0 = LV[0] - 0.1, y1 = LV[6] + 2.6;
+  const wq = (a, b, c, d) => walls.push(quad(a, b, c, d));
+  wq(V(S.XA1 + 0.1, y0, S.ZC), V(S.XA1 + 0.1, y0, S.ZB), V(S.XA1 + 0.1, y1, S.ZB), V(S.XA1 + 0.1, y1, S.ZC));
+  wq(V(S.XB0 - 0.1, y0, S.ZB), V(S.XB0 - 0.1, y0, S.ZC), V(S.XB0 - 0.1, y1, S.ZC), V(S.XB0 - 0.1, y1, S.ZB));
+  wq(V(S.XB0 - 0.1, y0, S.ZB), V(S.XA1 + 0.1, y0, S.ZB), V(S.XA1 + 0.1, y1, S.ZB), V(S.XB0 - 0.1, y1, S.ZB));
+  wq(V(S.X0, y0, S.ZC), V(S.XB0 - 0.1, y0, S.ZC), V(S.XB0 - 0.1, y1, S.ZC), V(S.X0, y1, S.ZC));
+  wq(V(S.X0, y1, S.ZW), V(S.X1, y1, S.ZW), V(S.X1, y1, S.ZB), V(S.X0, y1, S.ZB));
+  wq(V(S.X0, y0, S.ZC), V(S.X0, y0, S.ZW), V(S.X0, y1, S.ZW), V(S.X0, y1, S.ZC));
+  wq(V(S.X1, y0, S.ZW), V(S.X1, y0, S.ZC), V(S.X1, y1, S.ZC), V(S.X1, y1, S.ZW));
+  // the flats' wall along the corridors, with an opening where a door opens (the 6th's is Inès's own door)
+  const D3 = [6.375, 7.225], DH = 2.05;
+  const holes = { 6: [[ROOM.DX0, ROOM.DX1, ROOM.DH]], 5: [[ROOM.DX0, ROOM.DX1, DH]], 3: [[D3[0], D3[1], DH]] };
+  for (let f = 0; f <= 6; f++) {
+    const ya = f === 0 ? y0 : LV[f], yb = f === 6 ? y1 : LV[f + 1];
+    let x = S.X0;
+    for (const [xa, xb, h] of holes[f] || []) {
+      wq(V(xa, ya, S.ZW), V(x, ya, S.ZW), V(x, yb, S.ZW), V(xa, yb, S.ZW));
+      wq(V(xb, ya + h, S.ZW), V(xa, ya + h, S.ZW), V(xa, yb, S.ZW), V(xb, yb, S.ZW)); x = xb;
+    }
+    wq(V(S.X1, ya, S.ZW), V(x, ya, S.ZW), V(x, yb, S.ZW), V(S.X1, yb, S.ZW));
+  }
+  const wm = merge(walls, wall); wm.material.side = THREE.DoubleSide; g.add(wm);
+  g.add(merge(floors, stepM), merge(steps, stepM), merge(irons, iron, { cast: false }), merge(rails, rail));
+  // doors that stay shut (the 6th floor's are the original neighbours' doors)
+  const ndoor = new THREE.MeshStandardMaterial({ color: '#3a2418', roughness: 0.5 }), brass = new THREE.MeshStandardMaterial({ color: '#b58a3c', roughness: 0.3, metalness: 1 });
+  const shut = [];
+  for (let f = 0; f <= 6; f++) {
+    shut.push(box(0.85, 2.05, 0.05, 2.5, LV[f] + 1.025, S.ZC + 0.03));
+    if (f !== 3) shut.push(box(0.85, 2.05, 0.05, 6.8, LV[f] + 1.025, S.ZW - 0.03));
+    if (f >= 1 && f <= 4) shut.push(box(ROOM.DX1 - ROOM.DX0 - 0.02, 2.03, 0.05, (ROOM.DX0 + ROOM.DX1) / 2, LV[f] + 1.015, S.ZW - 0.03));
+  }
+  g.add(merge(shut, ndoor));
+  // the two doors that open (inward, into the flat), each onto a lit entrance hall
+  const hinged = (xa, xb, f) => {
+    const w = xb - xa, hg = new THREE.Group(); hg.position.set(xb, LV[f], S.ZW - 0.03); g.add(hg);
+    const slab = new THREE.Mesh(box(w - 0.02, 2.03, 0.05, -w / 2, 1.015, 0), ndoor); slab.castShadow = slab.receiveShadow = true; hg.add(slab);
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.03, 14, 10), brass); knob.position.set(-w + 0.09, 1.02, -0.05); hg.add(knob);
+    const hall = new THREE.Mesh(new THREE.BoxGeometry(w + 0.9, 2.5, 1.8), new THREE.MeshStandardMaterial({ color: '#d9cdb6', roughness: 0.85, side: THREE.BackSide }));
+    hall.position.set((xa + xb) / 2, LV[f] + 1.25, S.ZW + 0.9); hall.receiveShadow = true; g.add(hall);
+    const coat = new THREE.Mesh(rbox(0.36, 0.9, 0.14, 0.05, xa - 0.25, LV[f] + 1.2, S.ZW + 0.12), new THREE.MeshStandardMaterial({ color: '#2b2f38', roughness: 0.9 })); g.add(coat);
+    const light = new THREE.PointLight('#ffc98a', 0, 6, 2); light.position.set((xa + xb) / 2, LV[f] + 2.1, S.ZW + 1.1); g.add(light);
+    return { group: hg, light, set: (k) => { hg.rotation.y = 1.35 * k; hg.updateMatrixWorld(true); } };
+  };
+  const door3 = hinged(D3[0], D3[1], 3), door5 = hinged(ROOM.DX0, ROOM.DX1, 5);
+  // on every floor: the wall lamp by the stairs (the timer light) and the orange timer switch at the top of the flight
+  const lamps = [], lights = [], timers = [];
+  const lampMat = new THREE.MeshStandardMaterial({ color: '#b9b2a2', roughness: 0.3, emissive: '#ffd9a0', emissiveIntensity: 0 });   // an opal globe, pale when off
+  const timerMat = new THREE.MeshStandardMaterial({ color: '#222', emissive: '#ff8a20', emissiveIntensity: 1.2 });
+  const plateMat = new THREE.MeshStandardMaterial({ color: '#e6dfcb', roughness: 0.45 });
+  for (let f = 0; f <= 6; f++) {
+    const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.11, 20, 14), lampMat); lamp.position.set(5.4, LV[f] + 2.2, S.ZW - 0.14); g.add(lamp); lamps.push(lamp);
+    const l = new THREE.PointLight('#ffd49a', 0, 9, 2); l.position.set(5.4, LV[f] + 2.05, S.ZW - 0.34); g.add(l); lights.push(l);
+    // the switch: a cream plate with a round orange push button (its front at X1 - 0.02)
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.085, 0.085), plateMat); plate.position.set(S.X1 - 0.006, LV[f] + 1.2, -5.15); g.add(plate);
+    const tm = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.008, 24), timerMat); tm.rotation.z = Math.PI / 2; tm.position.set(S.X1 - 0.016, LV[f] + 1.2, -5.15); g.add(tm); timers.push(tm);
+  }
+  return { group: g, lamps, lights, lampMat, timerMat, timers, door3, door5, top: V((S.XB1 + S.XA0) / 2, LV[6], S.ZC - 0.2), well: V((S.XB1 + S.XA0) / 2, LV[3], (S.ZC + S.ZH) / 2) };
+}

@@ -39,3 +39,6 @@ Male_Adult_18
 Female_Adult_11
 Male_Adult_07
 Fire_Male_01
+Police_Male_03
+Police_Male_06
+Male_Adult_14

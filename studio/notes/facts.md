@@ -393,3 +393,21 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
 - Fiction (not claims): Inès, 20, 6th floor without a lift in the 18e, here for 9 days; the man who held the door; the times
   (22:41, 3:12 → 3:31) and her battery (34 % at 22:41, 12 % → 9 → 6 → 3 %); the neighbours from the 4th; the text message.
 - Voice: Kyutai TTS 1.6B en_fr (CC BY 4.0, credited on the end card), Kyutai's own CC0 voices (unmute-prod-website).
+
+## EP21 (« 12 % » Partie 2 · L'escalier): followed up the stairwell at 4:20 am. Fiction; the advice and the numbers are real
+- "Le 114, c'est le 17 quand on ne peut pas parler. Gratuit, jour et nuit." justice.fr (fiches « violences physiques et
+  psychologiques », « alerter les secours »): the 114 is the national emergency number by SMS (also chat, video, the « urgence 114 »
+  app), free, 24/7, for deaf or hard-of-hearing people and for anyone who cannot speak for their safety (e.g. the attacker is in
+  the same room); it replaces the 17 for them; give your name, precise address and the reason. Gendarmerie prevention sheet on
+  harassment: « Si votre situation nécessite une intervention urgente : appelez le 17 ou par SMS au 114. »
+- "On ne mène jamais quelqu'un jusqu'à chez soi" / make noise, knock, wake the neighbours: police prevention leaflets — go toward
+  safe, busy places and ask bystanders for help directly (police crime-prevention programme leaflet in French, LKA NRW 2022:
+  « Dirigez-vous vers des endroits sûrs… Adressez-vous directement aux personnes non impliquées… demandez de l'aide »); French
+  public-safety advice relayed by service-public tools: if you are still followed, head for a populated area and attract attention;
+  arretonslesviolences.gouv.fr / CAF « Réagir face au harcèlement de rue »: safe places (« Demandez Angela »), 17 / 112 / SMS 114.
+- "76 % des Françaises ont déjà été suivies dans la rue": Ville de Paris, « La nuit est à tous » (paris.fr), citing a study by the
+  Haut Conseil à l'égalité entre les femmes et les hommes (« 76 % des Françaises ont été suivies au moins une fois dans la rue »).
+- Paris stair timers (« minuterie »): the lights stay on for a set time after the button is pressed, then go out (the orange lit
+  push buttons of old buildings). The "2 minutes" in the script is the story's timer, not a rule.
+- Fiction (not claims): the times (4:20 → 4:27), her battery (3 % → 2 → 1 %), the follower, the neighbour, the 114 exchange on
+  screen (a dramatisation of the reply), the man living on the 5th floor.

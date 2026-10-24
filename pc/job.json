@@ -1,7 +1,18 @@
 {
-  "ep": "ep20",
-  "name": "12pct_p1_fumee",
-  "cover": "videos/12pct_p1_cover.jpg",
-  "workers": 3,
-  "note": "12 % Partie 1 : La fumee v2 (frame review fixes: hook, captions, flicker, end card; ~107 s)."
+  "queue": [
+    {
+      "ep": "ep20",
+      "name": "12pct_p1_fumee",
+      "cover": "videos/12pct_p1_cover.jpg",
+      "workers": 3,
+      "note": "12 % Partie 1 : La fumee v2 (frame review fixes; ~107 s). Skip if already rendered after 23 Oct."
+    },
+    {
+      "ep": "ep21",
+      "name": "12pct_p2_escalier",
+      "cover": "videos/12pct_p2_cover.jpg",
+      "workers": 3,
+      "note": "12 % Partie 2 : L'escalier (~133 s)."
+    }
+  ]
 }

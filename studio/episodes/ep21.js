@@ -337,7 +337,7 @@ export async function create() {
   const lampsOn = (k, floors = [0, 1, 2, 3, 4, 5, 6]) => { ST.lights.forEach((l, f) => (l.intensity = floors.includes(f) ? 7 * k : 0)); ST.lampMat.emissiveIntensity = 3 * k; };
   // the window right under Inès's dormer (the 5th floor, bay 3): dark until he switches his light on
   const card5 = (W.hero.userData.cards || []).find((c) => c.userData.L === 5 && Math.abs(c.userData.x - HERO_BAY) < 0.2);
-  if (card5) { const m = card5.material; m.emissive.set('#ffffff'); m.emissiveMap = m.emissiveMap || m.map; m.needsUpdate = true; }
+  if (card5) { const m = card5.material; m.emissive.set('#ffffff'); m.emissiveMap = m.map || m.emissiveMap; m.needsUpdate = true; }   // a 'dark' card keeps its warm curtain in .map
 
   console.log('SHOTS ' + SH.map((x) => `${x.id}:${x.t0.toFixed(2)}`).join(' ') + ' DUR ' + DUR);
   if (q.get('flow') === '1') {   // camera flow of every take (tools/camflow.mjs: keep p90 under ~25 px per frame)
@@ -649,6 +649,7 @@ export async function create() {
       tag.update(t, S.end.t0 + 0.6, endK);
       R.bloom.threshold = Math.min(0.85, 0.95 / R.renderer.toneMappingExposure);
       if (DBG) {
+        if (id === 'facade') console.log(`DBG card5 ${card5 ? card5.userData.kind + ' em ' + card5.material.emissiveIntensity.toFixed(2) + ' map ' + !!card5.material.emissiveMap : 'missing'}`);
         const J = (n) => wp(ines.bones[n]);
         if (id === 'knock') { let mz = -9; for (const f of ['Index', 'Middle', 'Ring', 'Pinky']) for (let j = 1; j <= 3; j++) mz = Math.max(mz, J('RightHand' + f + j).z); console.log(`DBG knock t=${t.toFixed(2)} maxz=${mz.toFixed(3)} knuckle=${(J('RightHandMiddle1').z + 0.012).toFixed(3)} door=${(S_.ZW - 0.055).toFixed(3)}`); }
         const tipOf2 = (sd) => tipOf(ines, sd);

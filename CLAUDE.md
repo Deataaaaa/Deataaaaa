@@ -131,10 +131,12 @@ rules below, they win; every other rule still holds (realism, loud phone sound, 
   👀" naming the topic only if already approved, 5 hashtags) and a comment to pin.
 - Update the « 12 % » plan artifact (https://claude.ai/artifact/TcsWtVTKEgFuciW9pqsygU, newest video first; owner, 23 Oct 2026).
   Its parts live in the page's database, collection `parts`, doc `pN` (n, title, status pitch|build|render|ready|posted,
-  statusNote, duration, battery [start, end], clock [start, end], cover `covers/pN.jpg`, files, hook, notes, caption, pin,
-  facts [{k, v}]): write them with `ArtifactData` (pin `if_version`), never by republishing; a new cover is a `files` publish of
-  the page (source kept in the artifact; read it first from another session). The owner types Instagram numbers into `stats`
-  on the page: read them back before planning the next part. The What if plan (X86z6ej3oYC7859hXUjTeo) is archived.
+  statusNote, duration, battery [start, end], clock [start, end], cover `covers/pN.jpg`, files, hook, notes, caption (Instagram),
+  tiktok, youtube {title, description}, pin, facts [{k, v}]; all in French): write them with `ArtifactData` (pin `if_version`), never
+  by republishing; a new cover is a `files` publish of the page (source kept in the artifact; read it first from another session).
+  The page (French, owner 24 Oct 2026) has a TikTok / Instagram / YouTube switch and the stats plan per platform; the owner types
+  each platform's numbers into `stats.{tt,ig,yt}`: read them back before planning the next part. Posting order on the day:
+  TikTok 19:00, Instagram 19:15, YouTube 19:30. The What if plan (X86z6ej3oYC7859hXUjTeo) is archived.
 - Commit and push to branch `claude/whatif-reels` (no pull request unless asked).
 
 ## Episodes

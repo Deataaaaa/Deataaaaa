@@ -147,6 +147,7 @@ export function sit(av, o) {
     if (B[side + 'ToeBase']) aimBone(B[side + 'Foot'], wp(B[side + 'ToeBase']), toe);
   }
   // arms
+  if (POSE.lookFirst && o.look) lookAt(av, o.look, o.lookK ?? 1);
   const arms = o.arms || 'knees';
   for (const [side, s] of [['Left', 1], ['Right', -1]]) {
     let hand, pole, F, N;
@@ -174,9 +175,9 @@ export function sit(av, o) {
     if (o.handR && side === 'Right') ({ hand, pole, F, N } = o.handR(P, fwd, left, up));
     twoBoneIK(av, side + 'Arm', side + 'ForeArm', side + 'Hand', hand, pole);
     if (F && N) orientHand(av, side, F, N);
-    curlFingers(av, side, (side === 'Left' ? o.curlL : o.curlR) ?? o.curl ?? 0.3, (side === 'Left' ? o.thumbL : o.thumbR) ?? 0.15);
+    curlFingers(av, side, (side === 'Left' ? o.curlL : o.curlR) ?? o.curl ?? 0.3, (side === 'Left' ? o.thumbL : o.thumbR) ?? 0.15, null, side === 'Left' ? o.pkL : o.pkR);
   }
-  if (o.look) lookAt(av, o.look, o.lookK ?? 1);
+  if (!POSE.lookFirst && o.look) lookAt(av, o.look, o.lookK ?? 1);
   // rest on the ground: lowest vertex 4 mm above it
   if (legs === 'chair') return;   // the hips sit at pos.y + seat; the feet reach the floor (nothing to lift)
   if (o.groundAt) { av.root.position.y += 0.004 - lowestAbove(av, o.groundAt); av.root.updateMatrixWorld(true); return; }

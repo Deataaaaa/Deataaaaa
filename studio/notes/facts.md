@@ -411,3 +411,24 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
   push buttons of old buildings). The "2 minutes" in the script is the story's timer, not a rule.
 - Fiction (not claims): the times (4:20 → 4:27), her battery (3 % → 2 → 1 %), the follower, the neighbour, the 114 exchange on
   screen (a dramatisation of the reply), the man living on the 5th floor.
+
+## EP22 (« 12 % » Partie 3 · Le 5e): a « policier » knocks at 4:41 am. Fiction; the advice and the numbers are real
+- "Une vraie carte de police a la taille d'une carte bancaire, avec une photo" / ask to see the card, don't open: gendarmerie
+  prevention sheet « Démarchages à domicile : repérer les arnaques » (gendarmerie.interieur.gouv.fr/conseils/habitation/
+  demarchages-a-domicile-reperer-les-arnaques): « N'ouvrez pas la porte et demandez à voir la carte professionnelle (format carte
+  de crédit, avec une photo d'identité) »; « Vous pouvez regarder par le judas ou le visiophone ». Same advice in the Préfecture
+  de la Moselle's press release on fake police officers (moselle.gouv.fr, CP of 1 Sept 2023) and the Puy-de-Dôme leaflet.
+- "Même avec une carte, au moindre doute : on n'ouvre pas, on appelle le 17" / "« Votre nom ? Votre service ? »": same gendarmerie
+  sheet: « Même avec une carte présentée, appelez le service ou la société dont vos interlocuteurs se réclament et/ou appelez les
+  services de la gendarmerie (appel 17) ». The police answer the 17 and can say whether officers were sent.
+- "RIO · 7 chiffres · obligatoire depuis 2014 · en civil, il se porte sur le brassard": the RIO (référentiel des identités et de
+  l'organisation) is a seven-digit number identifying each police officer and gendarme; wearing it is compulsory since 1 Jan 2014
+  (arrêté of 24 Dec 2013); it is on the uniform, and officers in plain clothes wear it on their « POLICE » armband (Assemblée
+  nationale, written questions n° 31827 and 17119, 15th legislature, and the ministry's answers; LDH « Point droit », 2024; written
+  question of 13 Oct 2026: « un matricule à sept chiffres », « Son port est rendu obligatoire depuis le 1er janvier 2014 »).
+- "Se faire passer pour un policier : jusqu'à trois ans de prison" / news card "jusqu'à 3 ans de prison et 45 000 € d'amende ·
+  art. 433-12 du code pénal": article 433-12 (immixtion in a public function, acting without title and performing acts reserved to
+  its holder): three years' imprisonment and a 45,000 € fine. (Article 433-13, creating confusion with a public function, and
+  433-14, wearing a uniform or insignia, carry one year and 15,000 €; "jusqu'à" covers the maximum.)
+- Fiction (not claims): the times (4:28 → 4:46), her battery (1 % → 0 %), the breaker tripped by the night's water, the man, his
+  fake card and armband without a number, the 17 operator's answer (« aucune patrouille »), the duct shared with the flat below.

@@ -61,9 +61,10 @@ export function chunks(lines) {
     let cur = [], len = 0;
     const flush = () => { if (cur.length) out.push(cur); cur = []; len = 0; };
     ln.units.forEach((u, i) => {
-      if (/^[»”)]+$/.test(u.shown) && !cur.length && out.length) { out[out.length - 1].push(u); return; }   // a closing quote stays with its words
+      const mark = /^[»”):;!?…]+$/.test(u.shown);          // a lone mark (a closing quote, French spaced « : » « ? ») stays with its words
+      if (mark && !cur.length && out.length) { out[out.length - 1].push(u); return; }
       const L = u.shown.length;
-      if (cur.length && (len + L > 18 || cur.length >= 4)) flush();
+      if (cur.length && !mark && (len + L > 18 || cur.length >= 4)) flush();
       cur.push(u); len += L + 1;
       if (/[.?!…:»]$/.test(u.shown) && i < ln.units.length - 1) flush();
     });

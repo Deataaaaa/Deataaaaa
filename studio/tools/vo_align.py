@@ -39,12 +39,22 @@ for i, ln in enumerate(lines):
     x = read(f'{d}/{i:02d}.wav'); t += ln.get('gap', 0.3)
     U = units_of(ln['t']); toks = [(k, w) for k, u in enumerate(U) for w in u['sp']]
     a16 = signal.resample_poly(x, 2, 3)
-    segs, _ = model.transcribe(a16, language='fr', word_timestamps=True, beam_size=5, initial_prompt=' '.join(w for _, w in toks))
-    hw = [(norm(w.word), w.start, w.end) for s in segs for w in s.words]
-    sm = difflib.SequenceMatcher(None, [norm(w) for _, w in toks], [h[0] for h in hw], autojunk=False)
-    tt = [None] * len(toks)
-    for a, b, n in sm.get_matching_blocks():
-        for j in range(n): tt[a + j] = (hw[b + j][1], hw[b + j][2])
+    # the text as a prompt usually helps, but it can make whisper return nothing for a line (ep22: 0/11 and 0/17 matched):
+    # transcribe without it too and keep whichever matches more words
+    best = None
+    for prompt in (' '.join(w for _, w in toks), None):
+        segs, _ = model.transcribe(a16, language='fr', word_timestamps=True, beam_size=5, initial_prompt=prompt)
+        hw = []
+        for w in (w for s in segs for w in s.words):                 # whisper splits elisions (« n » + « 'a »): glue them back
+            if hw and w.word.strip()[:1] in "'’": hw[-1] = (hw[-1][0] + norm(w.word), hw[-1][1], w.end)
+            else: hw.append((norm(w.word), w.start, w.end))
+        sm = difflib.SequenceMatcher(None, [norm(w) for _, w in toks], [h[0] for h in hw], autojunk=False)
+        tt = [None] * len(toks)
+        for a, b, n in sm.get_matching_blocks():
+            for j in range(n): tt[a + j] = (hw[b + j][1], hw[b + j][2])
+        if best is None or sum(v is not None for v in tt) > sum(v is not None for v in best): best = tt
+        if sum(v is not None for v in tt) >= 0.8 * len(toks): break
+    tt = best
     dur = len(x) / SR
     known = [j for j, v in enumerate(tt) if v]                       # interpolate the misses by character count
     for j in range(len(toks)):

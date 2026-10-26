@@ -1,8 +1,8 @@
 {
-  "ep": "ep21",
-  "name": "12pct_p2_escalier",
-  "cover": "videos/12pct_p2_cover.jpg",
+  "ep": "ep22",
+  "name": "12pct_p3_le5e",
+  "cover": "videos/12pct_p3_cover.jpg",
   "workers": 3,
-  "note": "12 % Partie 2 : L'escalier (~133 s). Part 1 is already posted.",
-  "post": "pc/posts/p2.txt"
+  "note": "12 % Partie 3 : Le 5e (~125 s). Parts 1 and 2 are already posted.",
+  "post": "pc/posts/p3.txt"
 }

@@ -500,3 +500,10 @@ own series (pitch first, rule 10). Rules that clash with it (3, 5, 11, 16, 17, 2
 - SSMSI counts « cambriolages ou tentatives de cambriolages de logements »: say "cambriolages de logements" or add "tentatives
   comprises", never "N homes burgled".
 - Never `pkill -f` a pattern that is in your own command line (it killed the shell again in P4): kill by PID.
+- Her door open at DOOR_K narrows the way in: a man walking in put his hanging hand 2.2 cm into the leaf. ep23's `manIn(k, P1, P2, ...)`
+  poses the walk-in from a path, and `?insearch=1` scores candidate paths by the worst clearance over the shot (leaf, jamb, furniture).
+- A white blob over a body is not always the beam cone: P4's torch aimed past the jamb lit the wall a few cm away and the bloom spread it
+  over his back. Aim torches through doorways until the holder is through.
+- Flat metal keys mirror a flashlight on the far side straight into a macro lens (P4's keyring glowed like neon): light from the cameras'
+  side, satin steel (roughness 0.5), bloom 0.22 in the macros.
+- `walkFit` can leave a planted foot ~4 mm under the floor at the end of a walk (the IK does not lift it): lift the root by the residual.

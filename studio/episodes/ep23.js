@@ -792,7 +792,8 @@ export async function create() {
           res.sort((a, b) => b[0] - a[0]);
           for (const r of res.slice(0, 14)) console.log(`INSEARCH ${(r[0] * 100).toFixed(1)} cm P1 ${r[1]} P2 ${r[2]} hang ${r[3]} pole ${r[4]} worst at k ${r[5].toFixed(2)} (${r[6]})`);
         }
-        const dk = manIn(k, V(4.24, Y0, -4.28), IN2_P, 0.11, 0.1);
+        // (the search's pick: 0.3 cm at worst, his palm on the edge face; the old path put his hand 2.2 cm into the leaf)
+        const dk = manIn(k, V(4.28, Y0, -4.3), V(3.6, Y0, -3.66), 0.11, 0.1);
         hisPhone.visible = true; phoneFit(man, 'Right', hisPhone); torch.intensity = 9; beamH.uniforms.uI.value = 0; hisGlow.intensity = 0.05;
         G.uSat.value = 0.45; G.uTint.value.set(1.05, 0.97, 0.94);
         // once the door is shut, his torch shows under it from inside

@@ -544,6 +544,7 @@ export async function create() {
       R.renderer.toneMappingExposure = 1.0;
       G.uSat.value = 1.0; G.uContrast.value = 1.05; G.uTint.value.set(1, 1, 1); G.uVignette.value = 0.6; G.uFade.value = 0; G.uFadeWhite.value = 0; G.uScan.value = 0; G.uBarrel.value = 0; G.uAberr.value = 0.0;
       const outside = id === 'window' || id === 'win5';
+      if (outside) W.streetSpot.intensity = 0;                     // its glow on her sill would read as a lamp in her (powerless) flat
       fogTo(outside ? 0.012 : 0.035, outside ? '#0b0d12' : '#14120f');
       if (!outside) { G.uAberr.value = 0.0012; W.hemi.intensity = 0.08; }
       updateSmoke(t, 0, outside ? 0.5 : 0);

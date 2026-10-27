@@ -168,8 +168,11 @@ export function makeHaussmann(o) {
   addWall(xa, x1, 0, gf);
   // mansard: the steep zinc slope with dormers, then the upper roof
   const my = MANS.y0, mb = MANS.back, mh = MANS.h;
-  const slope = new THREE.PlaneGeometry(W, Math.hypot(mb, mh)); slope.rotateX(-Math.atan2(mb, mh)); slope.translate(cx, my + mh / 2, -mb / 2);
-  G.zinc.push(slope);
+  // the slope is one plane, except on the hero building, where it stops either side of Inès's dormer (else, from the street, the zinc
+  // ran across her window: her room was hidden behind it)
+  const slopePart = (xa, xb) => { const g = new THREE.PlaneGeometry(xb - xa, Math.hypot(mb, mh)); g.rotateX(-Math.atan2(mb, mh)); g.translate((xa + xb) / 2, my + mh / 2, -mb / 2); G.zinc.push(g); };
+  if (o.hero && bays.includes(HERO_BAY)) { slopePart(x0, HERO_BAY - DORMER.w / 2); slopePart(HERO_BAY + DORMER.w / 2, x1); }
+  else slopePart(x0, x1);
   const roofD = 7.5, ridgeY = my + mh + 1.6;
   const upper = new THREE.PlaneGeometry(W, Math.hypot(roofD - mb, ridgeY - my - mh)); upper.rotateX(-Math.PI / 2 + Math.atan2(ridgeY - my - mh, roofD - mb));
   upper.translate(cx, (my + mh + ridgeY) / 2, -(mb + roofD) / 2); G.zinc.push(upper);
@@ -185,7 +188,7 @@ export function makeHaussmann(o) {
     cards.push({ x: bx, y: sill + DORMER.win / 2, w: DORMER.ww, h: DORMER.win, kind: bx === HERO_BAY && face === 1 && o.hero ? 'none' : (r() < lit ? 'warm' : 'dark'), s: 3, L: 6, z: dz - 0.2 });
     G.frame.push(box(DORMER.ww + 0.1, 0.07, 0.08, bx, sill, dz - 0.12), box(DORMER.ww + 0.1, 0.07, 0.08, bx, top, dz - 0.12),
       box(0.06, DORMER.win, 0.08, bx - DORMER.ww / 2, sill + DORMER.win / 2, dz - 0.12), box(0.06, DORMER.win, 0.08, bx + DORMER.ww / 2, sill + DORMER.win / 2, dz - 0.12),
-      box(0.045, DORMER.win, 0.06, bx, sill + DORMER.win / 2, dz - 0.12));
+      ...(o.hero && bx === HERO_BAY ? [] : [box(0.045, DORMER.win, 0.06, bx, sill + DORMER.win / 2, dz - 0.12)]));   // Inès's casement has no fixed mullion (its leaves meet)
     if (!(o.hero && bx === HERO_BAY)) G.glass.push(box(DORMER.ww - 0.06, DORMER.win - 0.06, 0.01, bx, sill + DORMER.win / 2, dz - 0.14));
     railsL.push({ x: bx, y: sill - 0.02, w: DORMER.ww + 0.1, h: 0.45, z: dz + 0.02 });
   }

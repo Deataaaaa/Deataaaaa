@@ -432,3 +432,30 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
   433-14, wearing a uniform or insignia, carry one year and 15,000 €; "jusqu'à" covers the maximum.)
 - Fiction (not claims): the times (4:28 → 4:46), her battery (1 % → 0 %), the breaker tripped by the night's water, the man, his
   fake card and armband without a number, the 17 operator's answer (« aucune patrouille »), the duct shared with the flat below.
+
+## EP23 (« 12 % » Partie 4 · Le noir, season 1 finale): a key turns in her lock at 4:47 am. Fiction; the advice and the numbers are real
+- "En France, on compte près de 600 cambriolages de logements par jour" / news card "plus de 210 000 par an · près de 600 par
+  jour, tentatives comprises (SSMSI)": SSMSI (ministère de l'Intérieur), « Chiffres clés · Insécurité et délinquance en 2024 »
+  (édition 2025): « Cambriolages de logement · 218 200 en 2024 » (218 200 / 366 days = 596 a day). The 2025 bilan (édition 2026)
+  reports a 3 % fall, about 211 600 (≈ 580 a day). The SSMSI indicator counts « cambriolages ou tentatives de cambriolages de
+  logements » (SSMSI press release of 16 May 2023: 211 400 in 2022), hence "cambriolages de logements" and "tentatives comprises",
+  never "600 homes burgled".
+- "Quelqu'un essaie d'entrer ? Pas de contact. On se met à l'abri, et on appelle le 17" / card "17 (ou 112)": Préfecture de la
+  Somme, « Contre les cambriolages, ayez les bons réflexes » (somme.gouv.fr): « ne prenez pas de risques inconsidérés »,
+  « Composez le 17 ou le 112 »; Ville de Nice, « Prévenir les intrusions »: never try to intervene yourself, get to safety (with
+  your family, nearby or at a neighbour's) and call the 17; Ermont and Argenteuil (2026) leaflets: « Surtout ne tentez pas de vous
+  interposer »; Préfecture de la Loire leaflet: « Composez le 17 ». "Sans téléphone, il faut que quelqu'un d'autre appelle le 17":
+  the story's logic (her phone is dead), the advice being to get help and have the police called.
+- "En emménageant, on fait changer les serrures" / card "on fait changer la serrure : d'anciens doubles circulent": ministère de
+  l'Intérieur, « Contre les cambriolages, ayez les bons réflexes »: « Changez les serrures de votre domicile si vous venez d'y
+  emménager ou si vous venez de perdre vos clés »; Préfecture de la Somme, same page: « Lorsque vous prenez possession d'un
+  nouvel appartement ou d'une maison, pensez à changer les serrures ».
+- "Sur une boîte aux lettres : le nom. Pas le prénom" / card "le nom seul · jamais le prénom": Préfecture de Lot-et-Garonne,
+  « Guide seniors » (2016, lot-et-garonne.gouv.fr): « sur votre boîte à lettres ou votre porte, ne précisez que votre nom sans
+  faire mention du prénom » (and no « madame », « mademoiselle » or « veuve »); the Ozoir-la-Ferrière police municipale booklet
+  gives the same advice. (The Somme page adds: « N'inscrivez pas vos nom et adresse sur votre trousseau de clés » — his keyring
+  breaks that rule on purpose: his tags name the flats.)
+- The old Paris lock: a mortise lock with a through keyhole (« serrure à gorges ») turned by a bit key from either side, a lever on
+  each side; the bolt she pushed in Part 3 is drawn as a thumb-turn bolt with no key outside, so a copied door key cannot open it.
+- Fiction (not claims): the times (4:47 → 5:10, the 22:41 flashback), her dead phone, the man, his copied key and keyring, his
+  being the studio's previous tenant, the neighbours, the arrest between the 4th and the 5th, the label « Inès MARTIN ».

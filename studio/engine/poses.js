@@ -192,6 +192,8 @@ export function stand(av, o) {
   av.root.position.copy(o.pos); av.root.rotation.set(0, o.yaw || 0, 0); av.root.updateMatrixWorld(true);
   const { fwd, left, up } = bodyFrame(av);
   const ground = o.pos.y, gAt = o.groundAt || (() => ground);
+  // o.hipBend (rad): the pelvis tips forward and the legs come back to the feet (leaning over a sill bends at the hips)
+  if (o.hipBend) rotW(B.Hips, left, o.hipBend);
   if (o.lean) { rotW(B.Spine, left, o.lean * 0.5); rotW(B.Spine1, left, o.lean * 0.5); }
   if (o.twist) { rotW(B.Spine1, up, o.twist * 0.5); rotW(B.Spine2, up, o.twist * 0.5); }
   if (o.breath != null) { const b = Math.sin(o.breath * Math.PI * 2); rotW(B.Spine1, left, b * 0.012); rotW(B.Spine2, left, b * 0.009); }   // breathing
@@ -256,7 +258,8 @@ export function kneel(av, o) {
 // a walking stride, rebuilt from rest each frame (a pure function of the phase): o.pos = the body's ground point now,
 // o.yaw, o.phase in cycles (one cycle = two steps; the caller advances it as distance / (2 * stride)), o.stride (m per step).
 // Feet: planted for the first half of their cycle (sliding back under the body), swung forward with a lift for the
-// second half; hips bob, the pelvis twists against the shoulders, the arms swing opposite to the legs
+// second half; hips bob, the pelvis twists against the shoulders, the arms swing opposite to the legs; o.groundAt (x, z) -> y
+// puts each foot on uneven ground (a rug's 12 mm)
 export function walk(av, o) {
   const B = av.bones, s = o.stride ?? 0.68, ph = o.phase, TAU = Math.PI * 2;
   resetPose(av);
@@ -270,10 +273,10 @@ export function walk(av, o) {
     let along, lift = 0;
     if (u < 0.5) along = s / 2 - s * (u / 0.5);                                    // stance: planted, the body passes over it
     else { const w = (u - 0.5) / 0.5, e = w * w * (3 - 2 * w); along = -s / 2 + s * e; lift = 0.09 * Math.sin(Math.PI * w); }
-    const foot = P.clone().addScaledVector(left, sd * 0.1).addScaledVector(fwd, along); foot.y = gy + 0.085 + lift;
+    const foot = P.clone().addScaledVector(left, sd * 0.1).addScaledVector(fwd, along); foot.y = (o.groundAt ? o.groundAt(foot.x, foot.z) : gy) + 0.085 + lift;
     const pole = wp(B[side + 'UpLeg']).addScaledVector(fwd, 1.0).addScaledVector(up, -0.4);
     twoBoneIK(av, side + 'UpLeg', side + 'Leg', side + 'Foot', foot, pole);
-    if (B[side + 'ToeBase']) { const toe = foot.clone().addScaledVector(fwd, 0.15); toe.y = gy + 0.02 + lift * (u < 0.5 ? 0 : 0.6); aimBone(B[side + 'Foot'], wp(B[side + 'ToeBase']), toe); }
+    if (B[side + 'ToeBase']) { const toe = foot.clone().addScaledVector(fwd, 0.15); toe.y = (o.groundAt ? o.groundAt(toe.x, toe.z) : gy) + 0.02 + lift * (u < 0.5 ? 0 : 0.6); aimBone(B[side + 'Foot'], wp(B[side + 'ToeBase']), toe); }
   }
   if (POSE.lookFirst && o.look) lookAt(av, o.look, o.lookK ?? 0.6);
   for (const [side, sd, off] of [['Left', 1, 0.5], ['Right', -1, 0]]) {
@@ -297,7 +300,7 @@ export function walk(av, o) {
 export function climb(av, o) {
   const B = av.bones, F = o.flight, run = F.run, rise = F.rise, TAU = Math.PI * 2;
   const top = (k) => (k < 0 ? F.base : k >= F.n ? F.base + F.n * rise : F.base + 0.02 + k * rise);
-  const along = (k) => (k + 0.27) * run;
+  const along = (k) => (k + (o.ankle ?? 0.27)) * run;                  // o.ankle: a long boot plants further back on the tread
   const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
   const ph = o.a / (2 * run);
   const side = F.dir.clone().cross(V(0, 1, 0)).negate();          // the body's left when facing up the flight

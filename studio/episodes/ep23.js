@@ -527,10 +527,16 @@ export async function create() {
   const footSets = new Map();
   const footSet = (av, sd) => { const key = av.code + 'F' + sd; if (!footSets.has(key)) { const st = new Set(); av.bones[sd + 'Foot'].traverse((o) => st.add(o)); footSets.set(key, st); } return footSets.get(key); };
   const footPen = (av, sd, g) => { const st = footSet(av, sd); let m = -Infinity; skinPts(av, 1, (v, mesh, i) => { if (st.has(domBone(mesh, i))) m = Math.max(m, g(v.x, v.z) - v.y); }); return m; };
-  const walkFit = (av, o) => { walk(av, o); const pL = footPen(av, 'Left', o.groundAt), pR = footPen(av, 'Right', o.groundAt);
-    if (pL > -0.001 || pR > -0.001) { const aL = wp(av.bones.LeftFoot), aR = wp(av.bones.RightFoot), g0 = o.groundAt;
-      walk(av, { ...o, groundAt: (x, z) => g0(x, z) + Math.max(0, (Math.hypot(x - aL.x, z - aL.z) < Math.hypot(x - aR.x, z - aR.z) ? pL : pR) + 0.001) }); }
-    if (DBG) console.log(`DBG walk feet ${(-footPen(av, 'Left', o.groundAt) * 1000).toFixed(1)} / ${(-footPen(av, 'Right', o.groundAt) * 1000).toFixed(1)} mm above the ground (first pass ${(-pL * 1000).toFixed(1)} / ${(-pR * 1000).toFixed(1)})`); };
+  // (a raised ankle does not raise the sole by as much, the foot rolls with it: up to four passes, each adding what is still sunk)
+  const walkFit = (av, o) => { const g0 = o.groundAt || (() => o.pos.y); let addL = 0, addR = 0, pL = 0, pR = 0, first = null;
+    for (let r = 0; r < 5; r++) {
+      walk(av, r === 0 ? o : { ...o, groundAt: (x, z) => g0(x, z) + (Math.hypot(x - aL.x, z - aL.z) < Math.hypot(x - aR.x, z - aR.z) ? addL : addR) });
+      var aL = aL || wp(av.bones.LeftFoot), aR = aR || wp(av.bones.RightFoot);
+      pL = footPen(av, 'Left', g0); pR = footPen(av, 'Right', g0); if (!first) first = [pL, pR];
+      if (pL < -0.0005 && pR < -0.0005) break;
+      addL += Math.max(0, pL + 0.0015); addR += Math.max(0, pR + 0.0015);
+    }
+    if (DBG) console.log(`DBG walk feet ${(-pL * 1000).toFixed(1)} / ${(-pR * 1000).toFixed(1)} mm above the ground (first pass ${(-first[0] * 1000).toFixed(1)} / ${(-first[1] * 1000).toFixed(1)})`); };
   // the skin's signed distance to the stair treads of flight B (the boxes room12 builds): < 0 inside a tread
   const treadPen = (av, F) => { let worst = Infinity, at = '';
     skinPts(av, 2, (v, mesh, i) => { if (v.x < S_.XB0 - 0.05 || v.x > S_.XB1 + 0.05) return; const d = (v.z - F.p0.z) * F.dir.z; const j0 = Math.floor(d / F.run);
@@ -543,7 +549,7 @@ export async function create() {
   // a body posed on flight F by climb(): lifted so its deepest vertex in a tread box clears it by 2 mm
   const liftOnTreads = (av, F) => { let pen = -Infinity;
     skinPts(av, 1, (v) => { if (v.x < S_.XB0 || v.x > S_.XB1) return; const d = (v.z - F.p0.z) * F.dir.z, j = Math.floor(d / F.run);
-      if (j < 0 || j >= F.n || d - j * F.run < 0.005 || d - j * F.run > F.run - 0.015) return; pen = Math.max(pen, F.base + 0.02 + j * F.rise - v.y); });
+      if (j < 0 || j >= F.n || d - j * F.run > F.run - 0.015) return; pen = Math.max(pen, F.base + 0.02 + j * F.rise - v.y); });
     av.root.position.y += pen + 0.002; av.root.updateMatrixWorld(true); return pen; };
 
   for (const [av, sd] of [[man, 'Left'], [ines, 'Left'], [ines, 'Right']]) flatThumb(av, sd);
@@ -574,7 +580,7 @@ export async function create() {
     lock: P2(S.lock, V(3.87, Y0 + 0.97, -4.14), V(3.88, Y0 + 0.965, -4.17), V(3.965, Y0 + 0.93, -4.345), V(3.965, Y0 + 0.93, -4.345), 40, 36),
     key: P2(S.key, V(2.87, Y0 + 0.84, -3.5), V(2.86, Y0 + 0.84, -3.56), V(2.79, Y0 + 0.76, -4.16), V(2.79, Y0 + 0.76, -4.16), 40, 36),
     handle: P2(S.handle, V(3.99, Y0 + 1.0, -4.02), V(3.995, Y0 + 0.995, -4.06), V(4.0, Y0 + 0.97, -4.4), V(4.0, Y0 + 0.97, -4.4), 44, 41),
-    force: P2(S.force, V(3.55, Y0 + 1.35, -3.05), V(3.57, Y0 + 1.34, -3.12), V(4.27, Y0 + 1.0, -4.4), V(4.27, Y0 + 1.0, -4.4), 50, 47),
+    force: P2(S.force, V(3.72, Y0 + 1.12, -3.86), V(3.73, Y0 + 1.115, -3.9), V(3.96, Y0 + 0.98, -4.37), V(3.96, Y0 + 0.98, -4.37), 48, 45),
     bolt: P2(S.bolt, V(3.92, Y0 + 1.31, -4.12), V(3.925, Y0 + 1.305, -4.15), V(3.965, Y0 + 1.24, -4.34), V(3.965, Y0 + 1.24, -4.34), 40, 37),
     bolt2: P2(S.bolt2, V(4.26, Y0 + 1.42, -3.9), V(4.25, Y0 + 1.4, -3.92), V(3.96, Y0 + 1.24, -4.34), V(3.96, Y0 + 1.24, -4.34), 36, 33),
     voice: P2(S.voice, V(3.32, Y0 + 1.58, -4.72), V(3.35, Y0 + 1.58, -4.7), V(4.2, Y0 + 1.5, -4.5), V(4.2, Y0 + 1.5, -4.5), 44, 41),
@@ -666,7 +672,7 @@ export async function create() {
       const doorOpen = room.door.rotation.y > 0.02;
       if (inRoom || landing) drawStrip(doorOpen ? 0 : lit, atDoor(tt) ? [0.3, 0.52] : [], atDoor(tt) ? '214,226,255' : '255,214,160'); else drawStrip(0, []);
       drawKeyhole(atDoor(tt) ? 0.85 : 0, keyIn(tt), keyAng(tt));
-      edgeLine.material.opacity = atDoor(tt) ? clamp(pushAt(tt) / 0.0025) * 0.85 : 0;
+      edgeLine.material.opacity = atDoor(tt) ? clamp(pushAt(tt) / 0.0018) * 0.9 : 0;
       const atWin = ['think', 'open', 'tip1', 'shout', 'across'].includes(id);
       winKey.position.set(HERO_BAY, Y0 + 1.75, -0.75);
       if (inRoom) { winKey.intensity = 8; cold.intensity = 0.5; R.renderer.toneMappingExposure = 1.4; }
@@ -745,7 +751,7 @@ export async function create() {
         const torchR = (sh2, fwd, left, up) => ({ ...torchHand(V(3.0, Y0 + 0.3, -3.6))(sh2, fwd, left, up), pole: sh2.clone().addScaledVector(up, -0.45).addScaledVector(left, -0.12).addScaledVector(fwd, -0.3) });
         const armHang = (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(up, -0.54).addScaledVector(left, 0.17).addScaledVector(fwd, -0.04 + 0.015 * Math.sin(Math.PI * 2 * (ph + 0.5))),
           pole: sh2.clone().addScaledVector(up, -0.3).addScaledVector(fwd, -0.6).addScaledVector(left, 0.32), F: V(0, -1, 0).addScaledVector(fwd, 0.15).normalize(), N: left.clone().negate() });
-        const walkWith = (armL) => walk(man, { pos, yaw, phase: ph, stride: STR, look: V(3.0, Y0 + 0.9, -3.9), lookK: 0.5, armR: torchR, armL });
+        const walkWith = (armL) => walkFit(man, { pos, yaw, phase: ph, stride: STR, look: V(3.0, Y0 + 0.9, -3.9), lookK: 0.5, armR: torchR, armL, groundAt: () => Y0 });
         const gripSpec = (sh2, fwd, left, up) => ({ hand: edge.clone(), pole: sh2.clone().addScaledVector(up, -0.3).addScaledVector(left, 0.5).addScaledVector(fwd, -0.3), F: fIn.clone(), N: nIn.clone(), curl: -0.3, pk: -0.3, thumb: flatThumb(man, 'Left') });
         if (gw <= 0.001) show(man, () => walkWith(armHang));
         else show(man, () => {
@@ -772,7 +778,7 @@ export async function create() {
       if (id === 'stat') { R.renderer.toneMappingExposure = 1.05; if (etsi) { G.uSat.value = 0.4; G.uTint.value.set(1.05, 0.97, 0.94); } }
       if (id === 'away') {
         // she backs off from the door toward the window, over the rug (each foot on its own ground)
-        const A0 = V(2.98, Y0, -3.86), A1 = V(3.15, Y0, -1.75), e = smooth(0.0, 1.0, k) * 0.9 + 0.1 * k, pos = A0.clone().lerp(A1, e);
+        const A0 = V(2.98, Y0, -3.86), A1 = V(3.12, Y0, -2.4), e = smooth(0.0, 1.0, k) * 0.9 + 0.1 * k, pos = A0.clone().lerp(A1, e);
         const gAt = (x, z) => Y0 + (x > 2.6 && x < 4.0 && z > -3.1 && z < -2.1 ? 0.012 : 0);
         pos.y = gAt(pos.x, pos.z);
         show(ines, () => walkFit(ines, { pos, yaw: Math.atan2(A1.x - A0.x, A1.z - A0.z), phase: A0.distanceTo(pos) / (2 * 0.55), stride: 0.55, groundAt: gAt, look: V(3.25, Y0 + 1.4, -0.4), lookK: 0.5 }));
@@ -828,8 +834,8 @@ export async function create() {
       if (['found', 'before'].includes(id)) {
         // between the 4th and the 5th: he stands on the half landing, hands up; two officers below him on the flight, flashlights on him
         const F = FL(5, 'B'), face = MAN_H.clone().add(V(0, 1.62, 0));
-        show(cop1, () => { climb(cop1, { flight: F, a: 1.89, ankle: -0.05, side: -0.2, armR: flashArm(face), look: face, lookK: 0.8, lean: 0.06 }); const pn = liftOnTreads(cop1, F); if (DBG) console.log(`DBG lift cop1 ${(pn * 100).toFixed(1)} cm`); });
-        show(cop2, () => { climb(cop2, { flight: F, a: 1.35, ankle: -0.05, side: 0.15, armR: flashArm(MAN_H.clone().add(V(0, 1.2, 0))), look: face, lookK: 0.6, lean: 0.06 }); liftOnTreads(cop2, F); });
+        show(cop1, () => { climb(cop1, { flight: F, a: 1.89, ankle: 0.0, side: -0.2, armR: flashArm(face), look: face, lookK: 0.8, lean: 0.06 }); const pn = liftOnTreads(cop1, F); if (DBG) console.log(`DBG lift cop1 ${(pn * 100).toFixed(1)} cm`); });
+        show(cop2, () => { climb(cop2, { flight: F, a: 1.35, ankle: 0.0, side: 0.15, armR: flashArm(MAN_H.clone().add(V(0, 1.2, 0))), look: face, lookK: 0.6, lean: 0.06 }); liftOnTreads(cop2, F); });
         show(man, () => stand(man, { pos: MAN_H, yaw: 0, breath: tt * 0.6, armR: handsUp(-1), armL: handsUp(1), look: wp(cop1.bones.Head), lookK: 0.8 }));
         fl1.body.visible = fl2.body.visible = true; lightFit(cop1, fl1, face); lightFit(cop2, fl2, MAN_H.clone().add(V(0, 1.2, 0)));
         fl1.sp.intensity = 4.5; fl2.sp.intensity = 3.5; fl1.beam.uniforms.uI.value = fl2.beam.uniforms.uI.value = 0.1;

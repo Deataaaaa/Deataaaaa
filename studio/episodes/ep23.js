@@ -334,7 +334,7 @@ export async function create() {
     const sh = new THREE.Mesh(new THREE.CylinderGeometry(0.0031, 0.0031, 0.058, 12), steelK); sh.rotation.z = Math.PI / 2; sh.position.x = 0.0105 + 0.029; bitKey.add(sh);
     const bit = new THREE.Mesh(new THREE.BoxGeometry(0.0085, 0.0024, 0.0105), steelK); bit.position.set(0.0105 + 0.052, 0, 0.0031 + 0.0052); bitKey.add(bit);
     const slv = new THREE.Mesh(new THREE.CylinderGeometry(0.0036, 0.0036, 0.011, 14), new THREE.MeshStandardMaterial({ color: '#e9dfc4', roughness: 0.85 })); slv.rotation.z = Math.PI / 2; slv.position.x = 0.0105 + 0.012; bitKey.add(slv);
-    const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.011, 0.03), tapeM('6e gauche')); flag.material.map.rotation = 0; flag.rotation.set(-Math.PI / 2 + 0.09, 0, Math.PI / 2); flag.position.set(0.0105 + 0.012, -0.0012, -0.0036 - 0.015); bitKey.add(flag);
+    const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.011, 0.03), tapeM('6e gauche')); flag.material.map.center.set(0.5, 0.5); flag.material.map.rotation = Math.PI; flag.rotation.set(-Math.PI / 2 + 0.09, 0, Math.PI / 2); flag.position.set(0.0105 + 0.012, -0.0012, -0.0036 - 0.015); bitKey.add(flag);
     // the bow lies over the ring's wire: the key tilts down to its bit
     const lift = 2 * RT + 0.0026 + 0.0002; bitKey.position.y = lift; bitKey.rotation.z = -Math.atan2(lift - 0.0031 - 0.0002, 0.058); }
   // rest every key on the tread: its lowest point 0.2 mm above it
@@ -746,10 +746,13 @@ export async function create() {
         const yaw = u < 0.995 ? Math.atan2(tg2.x, tg2.z) : Math.atan2(tEnd.x, tEnd.z), ph = arcTo(u) / (2 * STR);
         const dkAt = (kk) => DOOR_K * (1 - smooth(0.55, 0.98, kk)), K_REL = 0.7, dk = dkAt(k);
         room.setDoor(dk); room.door.updateMatrixWorld(true);
-        const gw = smooth(0.5, 0.55, k) * (1 - smooth(K_REL, K_REL + 0.06, k));
+        // his left hand takes the door's edge as he comes in (the leaf narrows the way: a hanging hand went through it)
+        const gw = smooth(0.12, 0.3, k) * (1 - smooth(K_REL, K_REL + 0.06, k));
         const edge = room.door.localToWorld(V(-DW + 0.005, 1.08, 0.03));
         const nIn = room.door.localToWorld(V(1, 0, 0)).sub(room.door.localToWorld(V(0, 0, 0))).normalize(), fIn = room.door.localToWorld(V(0, 0, 1)).sub(room.door.localToWorld(V(0, 0, 0))).normalize();
-        const torchR = (sh2, fwd, left, up) => ({ ...torchHand(V(3.0, Y0 + 0.3, -3.6))(sh2, fwd, left, up), pole: sh2.clone().addScaledVector(up, -0.45).addScaledVector(left, -0.12).addScaledVector(fwd, -0.3) });
+        // his torch points through the doorway until he is in (aimed at the floor from the landing, it lit the wall a few cm away: a white blob)
+        const aimIn = V(4.0, Y0, -3.0).lerp(V(3.0, Y0 + 0.3, -3.6), smooth(0.25, 0.45, k));
+        const torchR = (sh2, fwd, left, up) => ({ ...torchHand(aimIn)(sh2, fwd, left, up), pole: sh2.clone().addScaledVector(up, -0.45).addScaledVector(left, -0.12).addScaledVector(fwd, -0.3) });
         const armHang = (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(up, -0.54).addScaledVector(left, 0.17 - 0.06 * smooth(0.05, 0.2, k)).addScaledVector(fwd, -0.04 + 0.015 * Math.sin(Math.PI * 2 * (ph + 0.5))),
           pole: sh2.clone().addScaledVector(up, -0.3).addScaledVector(fwd, -0.6).addScaledVector(left, 0.32), F: V(0, -1, 0).addScaledVector(fwd, 0.15).normalize(), N: left.clone().negate() });
         const walkWith = (armL) => walkFit(man, { pos, yaw, phase: ph, stride: STR, look: V(3.0, Y0 + 0.9, -3.9), lookK: 0.5, armR: torchR, armL, groundAt: () => Y0 });

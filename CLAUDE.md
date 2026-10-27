@@ -17,6 +17,11 @@ rules below, they win; every other rule still holds (realism, loud phone sound, 
   the narration; big bold word-by-word captions in the middle (spoken word white, the rest grey, key words brand red), synced to
   the voice (they replace rule 2's reading windows); narration never stops (~3 words/s); series tag `12 % · PARTIE N` top left;
   end card « 12 % · Partie N+1 · <titre> » + « Abonne-toi pour la suite » + « Fiction · conseils vérifiés … ».
+- **Data (owner's screenshots, 27 Oct 2026):** P1 IG 1,628 views, skip 32.4 %, avg 37 s, 3 follows; TikTok 362, avg 16.9 s, most
+  viewers gone at 0:01; YouTube 1.6k, 45 % viewed. P2 IG 1,573, skip 19.7 %, avg 53 s (of 132), 17 saves, 1 comment, 0 follows;
+  TikTok 647, avg 23 s, gone at 0:01; YouTube 2.1k, 52 %. The P2 hook (the threat in motion) beat P1's (the cat at the door).
+  From P3 on: the whole hook question on screen from frame 1 (words light up with the voice), the end card asks OUI ou NON in the
+  comments and says ABONNE-TOI pour voir la Partie N+1 in big type (Apple's tag box covers x 360-720, y 1258-1488: keep text above).
 - **Cast:** Inès and the man stay the same in every part (rule 16 applies to everyone else). No WTF moment (rule 19's WTF is off).
 - **Voice (owner, 22 Oct 2026: "A"):** Kyutai TTS 1.6B en_fr (CC-BY 4.0, credited on the end card) with Kyutai's own CC0 French voice
   `unmute-prod-website/developpeuse-3.wav`, natural pace. `tools/vo_kyutai.py` (venv with torch CPU + moshi, ~45 s per line here)

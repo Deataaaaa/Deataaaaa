@@ -352,17 +352,23 @@ export async function create() {
   // ---------- the end card (a Paris street sign) + Apple peeking over "Abonne-toi pour la suite" ----------
   const endEl = document.getElementById('end');
   const sign = document.createElement('div');
-  sign.style.cssText = 'position:absolute;left:50%;top:640px;transform:translateX(-50%);background:#22397a;border:8px solid #2e6b4a;outline:5px solid #e8e6df;border-radius:16px;padding:30px 60px;text-align:center;min-width:640px;font-family:Inter,sans-serif;color:#fff';
+  sign.style.cssText = 'position:absolute;left:50%;top:590px;transform:translateX(-50%);background:#22397a;border:8px solid #2e6b4a;outline:5px solid #e8e6df;border-radius:16px;padding:30px 60px;text-align:center;min-width:640px;font-family:Inter,sans-serif;color:#fff';
   sign.innerHTML = `<div style="display:inline-block;background:#ff2e2e;font-weight:800;font-size:30px;padding:6px 14px;border-radius:8px;letter-spacing:.06em">12 %</div>
     <div style="font-weight:800;font-size:46px;margin-top:18px;letter-spacing:.03em">PARTIE 4</div><div style="font-weight:800;font-size:80px;line-height:1;margin-top:6px">LE NOIR</div>`;
   const ask = document.createElement('div');
-  ask.style.cssText = 'position:absolute;left:0;right:0;top:330px;text-align:center;font:800 70px/1.08 Inter,sans-serif;color:#fff;text-transform:uppercase;text-shadow:0 0 3px #000,0 4px 0 rgba(0,0,0,.7)';
+  ask.style.cssText = 'position:absolute;left:0;right:0;top:300px;text-align:center;font:800 70px/1.08 Inter,sans-serif;color:#fff;text-transform:uppercase;text-shadow:0 0 3px #000,0 4px 0 rgba(0,0,0,.7)';
   ask.innerHTML = 'Et vous,<br>vous auriez <span style="color:#ff2e2e">ouvert</span> ?';
+  const reply = document.createElement('div');
+  reply.style.cssText = 'position:absolute;left:0;right:0;top:470px;text-align:center;font:700 42px/1.2 Inter,sans-serif;color:rgba(255,255,255,.92);text-shadow:0 0 3px #000,0 3px 0 rgba(0,0,0,.6)';
+  reply.innerHTML = 'Réponds <span style="color:#ff2e2e;font-weight:800">OUI</span> ou <span style="color:#ff2e2e;font-weight:800">NON</span> en commentaire';
+  const follow = document.createElement('div');
+  follow.style.cssText = 'position:absolute;left:0;right:0;top:900px;text-align:center;font:800 52px/1.15 Inter,sans-serif;color:#fff;text-shadow:0 0 3px #000,0 4px 0 rgba(0,0,0,.7)';
+  follow.innerHTML = '<span style="color:#ff2e2e">ABONNE-TOI</span><br><span style="font-weight:700;font-size:44px">pour voir la Partie 4</span>';
   const fine = document.createElement('div');
-  fine.style.cssText = 'position:absolute;left:60px;right:60px;top:1000px;text-align:center;font:500 29px Inter,sans-serif;color:rgba(255,255,255,.8);line-height:1.45';
+  fine.style.cssText = 'position:absolute;left:60px;right:60px;top:1060px;text-align:center;font:500 29px Inter,sans-serif;color:rgba(255,255,255,.8);line-height:1.45';
   fine.innerHTML = 'Fiction. Conseils vérifiés : gendarmerie, préfecture, Assemblée nationale (RIO), code pénal.<br>Voix : Kyutai TTS (CC BY 4.0).';
   endEl.querySelector('.t').innerHTML = ''; endEl.querySelector('.n').innerHTML = '';
-  endEl.appendChild(ask); endEl.appendChild(sign); endEl.appendChild(fine);
+  endEl.appendChild(ask); endEl.appendChild(reply); endEl.appendChild(sign); endEl.appendChild(fine); endEl.appendChild(follow);
   const tag = makeEndTag({ text: 'Abonne-toi pour la suite', ssaa: globalThis.SSAA });
 
   await Promise.all(TEX_PENDING);
@@ -701,7 +707,8 @@ export async function create() {
           : id === 'rio' ? { a: 'RIO · 7 CHIFFRES', b: 'obligatoire depuis 2014 · en civil, il se porte sur le brassard', k: smooth(S.rio.t0 + 0.1, S.rio.t0 + 0.4, t) }
           : id === 'tip' ? { a: '17 · AU MOINDRE DOUTE', b: 'même avec une carte : on n’ouvre pas, on appelle', k: smooth(S.tip.t0 + 0.1, S.tip.t0 + 0.4, t) } : null,
         notif: null,
-        capHtml: opts.cover ? '<span class="w1">La </span><span class="r1">police</span><span class="w1"> frappe à 4 h du matin…</span><br><span class="w1">vous </span><span class="r1">ouvrez ?</span>' : null,
+        capHtml: opts.cover ? '<span class="w1">La </span><span class="r1">police</span><span class="w1"> frappe à 4 h du matin…</span><br><span class="w1">vous </span><span class="r1">ouvrez ?</span>'
+          : id === 'hook' ? Ln[0].units.map((u) => { const on = t >= u.t0 - 0.12; return `<span class="${u.red ? (on ? 'r1' : 'r0') : (on ? 'w1' : 'w0')}">${u.shown}</span>${u.shown.endsWith('…') ? '<br>' : ' '}`; }).join('') : null,
         peep, black: 0 });
       if (id === 'end') G.uFade.value = 1;
       endEl.style.opacity = String(endK);

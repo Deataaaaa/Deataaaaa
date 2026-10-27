@@ -36,7 +36,7 @@ const bez = (a, b, c, u) => a.clone().multiplyScalar((1 - u) * (1 - u)).addScale
 
 export async function create() {
   const q = new URLSearchParams(location.search);
-  const DBG = q.get('dbg') === '1';
+  const DBG = q.get('dbg') === '1', INSEARCH = q.get('insearch') === '1';
   globalThis.SSAA = Number(q.get('ssaa') ?? 2); globalThis.MSAA = 0;
   POSE.lookFirst = true;                                           // heads turn before the arm IK (hands land on their targets)
   fadeShadowBorders(0.2);
@@ -737,39 +737,62 @@ export async function create() {
       }
       if (id === 'etsiIn') {
         // he walks in (short careful steps that end with both feet down, so the pose holds), then his left palm goes to the leaf's
-        // edge and draws the door to; it swings the last part on its own. One walk pose all through: no switch, no pop
-        const P0 = V(4.3, Y0, -4.85), P1 = V(4.24, Y0, -4.28), u = smooth(0.0, 0.5, k);
-        const arcTo = (uu) => { let d = 0, prev = P0; for (let i = 1; i <= 32; i++) { const pp = bez(P0, P1, IN2_P, uu * i / 32); d += pp.distanceTo(prev); prev = pp; } return d; };
-        const LEN = arcTo(1), STR = LEN / 3;                                         // phase 1.5 at the end: both feet planted
-        const pos = bez(P0, P1, IN2_P, u), tg2 = bez(P0, P1, IN2_P, Math.min(1, u + 0.01)).sub(bez(P0, P1, IN2_P, Math.max(0, u - 0.01)));
-        const tEnd = IN2_P.clone().sub(bez(P0, P1, IN2_P, 0.99));
-        const yaw = u < 0.995 ? Math.atan2(tg2.x, tg2.z) : Math.atan2(tEnd.x, tEnd.z), ph = arcTo(u) / (2 * STR);
-        const dkAt = (kk) => DOOR_K * (1 - smooth(0.55, 0.98, kk)), K_REL = 0.7, dk = dkAt(k);
-        room.setDoor(dk); room.door.updateMatrixWorld(true);
-        // his left hand takes the door's edge as he comes in (the leaf narrows the way: a hanging hand went through it)
-        const gw = smooth(0.12, 0.3, k) * (1 - smooth(K_REL, K_REL + 0.06, k));
-        const edge = room.door.localToWorld(V(-DW + 0.005, 1.08, 0.03));
-        const nIn = room.door.localToWorld(V(1, 0, 0)).sub(room.door.localToWorld(V(0, 0, 0))).normalize(), fIn = room.door.localToWorld(V(0, 0, 1)).sub(room.door.localToWorld(V(0, 0, 0))).normalize();
-        // his torch points through the doorway until he is in (aimed at the floor from the landing, it lit the wall a few cm away: a white blob)
-        const aimIn = V(4.0, Y0, -3.0).lerp(V(3.0, Y0 + 0.3, -3.6), smooth(0.25, 0.45, k));
-        const torchR = (sh2, fwd, left, up) => ({ ...torchHand(aimIn)(sh2, fwd, left, up), pole: sh2.clone().addScaledVector(up, -0.45).addScaledVector(left, -0.12).addScaledVector(fwd, -0.3) });
-        const armHang = (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(up, -0.54).addScaledVector(left, 0.17 - 0.06 * smooth(0.05, 0.2, k)).addScaledVector(fwd, -0.04 + 0.015 * Math.sin(Math.PI * 2 * (ph + 0.5))),
-          pole: sh2.clone().addScaledVector(up, -0.3).addScaledVector(fwd, -0.6).addScaledVector(left, 0.32), F: V(0, -1, 0).addScaledVector(fwd, 0.15).normalize(), N: left.clone().negate() });
-        const walkWith = (armL) => walkFit(man, { pos, yaw, phase: ph, stride: STR, look: V(3.0, Y0 + 0.9, -3.9), lookK: 0.5, armR: torchR, armL, groundAt: () => Y0 });
-        const gripSpec = (sh2, fwd, left, up) => ({ hand: edge.clone(), pole: sh2.clone().addScaledVector(up, -0.3).addScaledVector(left, 0.5).addScaledVector(fwd, -0.3), F: fIn.clone(), N: nIn.clone(), curl: -0.3, pk: -0.3, thumb: flatThumb(man, 'Left') });
-        if (gw <= 0.001) show(man, () => walkWith(armHang));
-        else show(man, () => {
-          // the fitted contact (his palm flat on the edge face), then the wrist eased there from where it hangs; once he lets go
-          // (K_REL) the contact is the one at that moment, and the door swings on away from his hand
-          const rel = k > K_REL;
-          if (rel) { room.setDoor(dkAt(K_REL)); room.door.updateMatrixWorld(true); }
-          const eF = room.door.localToWorld(V(-DW + 0.005, 1.08, 0.03)), nF = room.door.localToWorld(V(1, 0, 0)).sub(room.door.localToWorld(V(0, 0, 0))).normalize();
-          const want = flatPress(man, 'Left', eF, nF, walkWith, (sh2, fwd, left, up) => ({ ...gripSpec(sh2, fwd, left, up), hand: eF.clone(), N: nF.clone(),
-            F: room.door.localToWorld(V(0, 0, 1)).sub(room.door.localToWorld(V(0, 0, 0))).normalize() }));
-          if (rel) { room.setDoor(dk); room.door.updateMatrixWorld(true); }
-          if (gw < 0.999) { walkWith(armHang); const hang = wp(man.bones.LeftHand); walkWith((sh2, fwd, left, up) => { const h = armHang(sh2, fwd, left, up), gs = gripSpec(sh2, fwd, left, up);
-            return { hand: hang.clone().lerp(want, gw), pole: h.pole.clone().lerp(gs.pole, gw), F: h.F.clone().lerp(gs.F, gw).normalize(), N: h.N.clone().lerp(gs.N, gw).normalize(), curl: lerp(0.35, -0.3, gw), pk: lerp(0.35, -0.3, gw), thumb: lerp(0.15, flatThumb(man, 'Left'), gw) }; }); }
-        });
+        // edge and draws the door to; it swings the last part on its own. One walk pose all through: no switch, no pop.
+        // The open leaf narrows the way in (the kitchenette stops it at DOOR_K): his path bends away from it once he is past the
+        // jamb, and his left arm hangs close with the elbow back (an elbow pushed out went through the leaf)
+        const dkAt = (kk) => DOOR_K * (1 - smooth(0.55, 0.98, kk)), K_REL = 0.7;
+        const manIn = (k, P1, P2, hangA, poleA) => {
+          const P0 = V(4.3, Y0, -4.85), u = smooth(0.0, 0.5, k);
+          const arcTo = (uu) => { let d = 0, prev = P0; for (let i = 1; i <= 32; i++) { const pp = bez(P0, P1, P2, uu * i / 32); d += pp.distanceTo(prev); prev = pp; } return d; };
+          const LEN = arcTo(1), STR = LEN / 3;                                         // phase 1.5 at the end: both feet planted
+          const pos = bez(P0, P1, P2, u), tg2 = bez(P0, P1, P2, Math.min(1, u + 0.01)).sub(bez(P0, P1, P2, Math.max(0, u - 0.01)));
+          const tEnd = P2.clone().sub(bez(P0, P1, P2, 0.99));
+          const yaw = u < 0.995 ? Math.atan2(tg2.x, tg2.z) : Math.atan2(tEnd.x, tEnd.z), ph = arcTo(u) / (2 * STR);
+          const dk = dkAt(k);
+          room.setDoor(dk); room.door.updateMatrixWorld(true);
+          const gw = smooth(0.42, 0.55, k) * (1 - smooth(K_REL, K_REL + 0.06, k));
+          const edge = room.door.localToWorld(V(-DW + 0.005, 1.08, 0.03));
+          const nIn = room.door.localToWorld(V(1, 0, 0)).sub(room.door.localToWorld(V(0, 0, 0))).normalize(), fIn = room.door.localToWorld(V(0, 0, 1)).sub(room.door.localToWorld(V(0, 0, 0))).normalize();
+          // his torch points through the doorway until he is in (aimed at the floor from the landing, it lit the wall a few cm away: a white blob)
+          const aimIn = V(4.0, Y0, -3.0).lerp(V(3.0, Y0 + 0.3, -3.6), smooth(0.25, 0.45, k));
+          const torchR = (sh2, fwd, left, up) => ({ ...torchHand(aimIn)(sh2, fwd, left, up), pole: sh2.clone().addScaledVector(up, -0.45).addScaledVector(left, -0.12).addScaledVector(fwd, -0.3) });
+          const armHang = (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(up, -0.54).addScaledVector(left, hangA).addScaledVector(fwd, -0.04 + 0.015 * Math.sin(Math.PI * 2 * (ph + 0.5))),
+            pole: sh2.clone().addScaledVector(up, -0.3).addScaledVector(fwd, -0.6).addScaledVector(left, poleA), F: V(0, -1, 0).addScaledVector(fwd, 0.15).normalize(), N: left.clone().negate() });
+          const walkWith = (armL) => walkFit(man, { pos, yaw, phase: ph, stride: STR, look: V(3.0, Y0 + 0.9, -3.9), lookK: 0.5, armR: torchR, armL, groundAt: () => Y0 });
+          const gripSpec = (sh2, fwd, left, up) => ({ hand: edge.clone(), pole: sh2.clone().addScaledVector(up, -0.3).addScaledVector(left, 0.5).addScaledVector(fwd, -0.3), F: fIn.clone(), N: nIn.clone(), curl: -0.3, pk: -0.3, thumb: flatThumb(man, 'Left') });
+          if (gw <= 0.001) show(man, () => walkWith(armHang));
+          else show(man, () => {
+            // the fitted contact (his palm flat on the edge face), then the wrist eased there from where it hangs; once he lets go
+            // (K_REL) the contact is the one at that moment, and the door swings on away from his hand
+            const rel = k > K_REL;
+            if (rel) { room.setDoor(dkAt(K_REL)); room.door.updateMatrixWorld(true); }
+            const eF = room.door.localToWorld(V(-DW + 0.005, 1.08, 0.03)), nF = room.door.localToWorld(V(1, 0, 0)).sub(room.door.localToWorld(V(0, 0, 0))).normalize();
+            const want = flatPress(man, 'Left', eF, nF, walkWith, (sh2, fwd, left, up) => ({ ...gripSpec(sh2, fwd, left, up), hand: eF.clone(), N: nF.clone(),
+              F: room.door.localToWorld(V(0, 0, 1)).sub(room.door.localToWorld(V(0, 0, 0))).normalize() }));
+            if (rel) { room.setDoor(dk); room.door.updateMatrixWorld(true); }
+            if (gw < 0.999) { walkWith(armHang); const hang = wp(man.bones.LeftHand); walkWith((sh2, fwd, left, up) => { const h = armHang(sh2, fwd, left, up), gs = gripSpec(sh2, fwd, left, up);
+              return { hand: hang.clone().lerp(want, gw), pole: h.pole.clone().lerp(gs.pole, gw), F: h.F.clone().lerp(gs.F, gw).normalize(), N: h.N.clone().lerp(gs.N, gw).normalize(), curl: lerp(0.35, -0.3, gw), pk: lerp(0.35, -0.3, gw), thumb: lerp(0.15, flatThumb(man, 'Left'), gw) }; }); }
+          });
+          return dk;
+        };
+        if (INSEARCH) {
+          // ?insearch=1: try paths and arm hangs, print the worst clearance (leaf, jamb, furniture) over the shot for each
+          const res = [];
+          for (const [p1, p2] of [[[4.24, -4.28], [3.78, -3.66]], [[4.28, -4.3], [3.64, -3.62]], [[4.28, -4.3], [3.6, -3.66]], [[4.26, -4.3], [3.68, -3.62]], [[4.3, -4.32], [3.6, -3.6]], [[4.3, -4.34], [3.66, -3.58]]])
+            for (const [ha, pa] of [[0.11, 0.1]]) {
+              let worst = Infinity, wk = 0, what = '', reach = 0;
+              for (let kk = 0.08; kk <= 0.77; kk += 0.04) {
+                manIn(kk, V(p1[0], Y0, p1[1]), V(p2[0], Y0, p2[1]), ha, pa);
+                const l = leafDist(man), la = leafDist.at, f = frameMargin(man), [fn, fc] = furnClear(man), m = Math.min(l, f, fc);
+                if (m < worst) { worst = m; wk = kk; what = m === l ? 'leaf ' + la : m === f ? 'jamb' : fn; }
+                if (kk > 0.56 && kk < 0.7) reach = Math.max(reach, palmAt(man, 'Left').distanceTo(room.door.localToWorld(V(-DW + 0.005, 1.08, 0.03))));
+              }
+              res.push([worst, p1, p2, ha, pa, wk, what + ' reach ' + (reach * 100).toFixed(1) + ' cm']);
+            }
+          res.sort((a, b) => b[0] - a[0]);
+          for (const r of res.slice(0, 14)) console.log(`INSEARCH ${(r[0] * 100).toFixed(1)} cm P1 ${r[1]} P2 ${r[2]} hang ${r[3]} pole ${r[4]} worst at k ${r[5].toFixed(2)} (${r[6]})`);
+        }
+        const dk = manIn(k, V(4.24, Y0, -4.28), IN2_P, 0.11, 0.1);
         hisPhone.visible = true; phoneFit(man, 'Right', hisPhone); torch.intensity = 9; beamH.uniforms.uI.value = 0; hisGlow.intensity = 0.05;
         G.uSat.value = 0.45; G.uTint.value.set(1.05, 0.97, 0.94);
         // once the door is shut, his torch shows under it from inside

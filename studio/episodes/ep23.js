@@ -301,7 +301,8 @@ export async function create() {
   // ---------- his keyring (on a tread of the 4th-5th flight): five keys round a split ring, masking-tape tags in marker ----------
   const T3 = { y: LV4 + 0.02 + 3 * FL(5, 'B').rise, z: S_.ZC - 3.5 * S_.RUN, x: 5.24 };
   const keyring = new THREE.Group(); keyring.position.set(T3.x, T3.y, T3.z); keyring.rotation.y = 0.35; scene.add(keyring);
-  const brassK = new THREE.MeshStandardMaterial({ color: '#b48f4e', metalness: 1, roughness: 0.32 });
+  const brassK = new THREE.MeshStandardMaterial({ color: '#b48f4e', metalness: 1, roughness: 0.4 });
+  const steelK = new THREE.MeshStandardMaterial({ color: '#9a9da2', metalness: 1, roughness: 0.5 });   // nickel-plated, worn satin
   const tapeTex = (txt, w = 256, h = 120) => { const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const c = cv.getContext('2d');
     c.fillStyle = '#e9dfc4'; c.fillRect(0, 0, w, h); for (let i = 0; i < 40; i++) { c.fillStyle = `rgba(150,130,90,${0.04 + 0.04 * ((i * 37) % 7) / 7})`; c.fillRect((i * 53) % w, (i * 29) % h, 18, 3); }
     c.fillStyle = '#16161a'; c.font = `italic 700 ${Math.round(h * 0.46)}px "Comic Sans MS", "Segoe Print", cursive, serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
@@ -309,7 +310,7 @@ export async function create() {
     const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
   const tapeM = (txt) => new THREE.MeshStandardMaterial({ map: tapeTex(txt), roughness: 0.85 });
   const RR = 0.015, RT = 0.0012;                                    // the split ring: radius, wire
-  { const ring = new THREE.Mesh(new THREE.TorusGeometry(RR, RT, 8, 56), steel); ring.rotation.x = Math.PI / 2; ring.position.y = RT; keyring.add(ring); }
+  { const ring = new THREE.Mesh(new THREE.TorusGeometry(RR, RT, 8, 56), steelK); ring.rotation.x = Math.PI / 2; ring.position.y = RT; keyring.add(ring); }
   // a flat cylinder key, lying flat: bow (with its hole at local x = -0.005) and a toothed blade along +x; built in the xy plane
   const flatKeyGeo = (len, seed) => {
     const s = new THREE.Shape(), r = rng(seed); s.moveTo(0.0108, -0.0042); s.lineTo(len, -0.0042); s.lineTo(len + 0.0035, -0.0005);
@@ -325,13 +326,13 @@ export async function create() {
     const tilt = Math.atan2(2 * RT + 0.0002, len + 0.009);
     const hold = new THREE.Group(); hold.rotation.y = -ang; hold.position.set(RR * Math.cos(ang), 0, RR * Math.sin(ang));
     k.rotation.z = -tilt; k.position.y = 2 * RT + 0.0002 - 0.0021 * Math.cos(tilt) * 0 ; hold.add(k); keyring.add(hold); KEYS.push({ k, txt, hold }); return hold; };
-  addFlat(0.35, 0.046, steel, '2e droite', 3); addFlat(1.45, 0.05, brassK, '4e face', 5); addFlat(2.5, 0.043, steel, '3e cour', 7); addFlat(4.35, 0.048, brassK, null, 9);
+  addFlat(0.35, 0.046, steelK, '2e droite', 3); addFlat(1.45, 0.05, brassK, '4e face', 5); addFlat(2.5, 0.043, steelK, '3e cour', 7); addFlat(4.35, 0.048, brassK, null, 9);
   // hers: a long bit key for an old « serrure à gorges », the tape folded round its shank into a flag
   const bitKey = new THREE.Group();
   { const hold = new THREE.Group(); const ang = 5.45; hold.rotation.y = -ang; hold.position.set((RR + 0.009) * Math.cos(ang), 0, (RR + 0.009) * Math.sin(ang)); keyring.add(hold); hold.add(bitKey);
-    const bw = new THREE.Mesh(new THREE.TorusGeometry(0.0105, 0.0026, 8, 28), steel); bw.rotation.x = Math.PI / 2; bitKey.add(bw);
-    const sh = new THREE.Mesh(new THREE.CylinderGeometry(0.0031, 0.0031, 0.058, 12), steel); sh.rotation.z = Math.PI / 2; sh.position.x = 0.0105 + 0.029; bitKey.add(sh);
-    const bit = new THREE.Mesh(new THREE.BoxGeometry(0.0085, 0.0024, 0.0105), steel); bit.position.set(0.0105 + 0.052, 0, 0.0031 + 0.0052); bitKey.add(bit);
+    const bw = new THREE.Mesh(new THREE.TorusGeometry(0.0105, 0.0026, 8, 28), steelK); bw.rotation.x = Math.PI / 2; bitKey.add(bw);
+    const sh = new THREE.Mesh(new THREE.CylinderGeometry(0.0031, 0.0031, 0.058, 12), steelK); sh.rotation.z = Math.PI / 2; sh.position.x = 0.0105 + 0.029; bitKey.add(sh);
+    const bit = new THREE.Mesh(new THREE.BoxGeometry(0.0085, 0.0024, 0.0105), steelK); bit.position.set(0.0105 + 0.052, 0, 0.0031 + 0.0052); bitKey.add(bit);
     const slv = new THREE.Mesh(new THREE.CylinderGeometry(0.0036, 0.0036, 0.011, 14), new THREE.MeshStandardMaterial({ color: '#e9dfc4', roughness: 0.85 })); slv.rotation.z = Math.PI / 2; slv.position.x = 0.0105 + 0.012; bitKey.add(slv);
     const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.011, 0.03), tapeM('6e gauche')); flag.material.map.rotation = 0; flag.rotation.set(-Math.PI / 2 + 0.09, 0, Math.PI / 2); flag.position.set(0.0105 + 0.012, -0.0012, -0.0036 - 0.015); bitKey.add(flag);
     // the bow lies over the ring's wire: the key tilts down to its bit
@@ -590,7 +591,7 @@ export async function create() {
     etsiIn: P2(S.etsiIn, V(4.45, Y0 + 1.9, -5.6), V(4.43, Y0 + 1.88, -5.55), V(4.0, Y0 + 1.1, -3.7), V(4.1, Y0 + 1.1, -4.1), 48, 46),
     stat: P2(S.stat, V(HERO_BAY + 1.5, 9.0, 12.2), V(HERO_BAY + 1.45, 9.1, 11.9), V(HERO_BAY, 15.0, 0), V(HERO_BAY, 15.1, 0), 50, 47),
     holds: P2(S.holds, V(3.8, Y0 + 1.27, -3.98), V(3.81, Y0 + 1.265, -4.02), V(3.98, Y0 + 1.14, -4.36), V(3.98, Y0 + 1.14, -4.36), 46, 43),
-    away: P2(S.away, V(3.38, Y0 + 1.28, -1.45), V(3.37, Y0 + 1.27, -1.5), V(3.05, Y0 + 1.05, -3.2), V(3.08, Y0 + 1.1, -2.6), 50, 47),
+    away: P2(S.away, V(3.38, Y0 + 1.28, -1.45), V(3.37, Y0 + 1.27, -1.5), V(3.05, Y0 + 1.05, -3.2), V(3.1, Y0 + 1.3, -2.6), 50, 48),
     think: P2(S.think, V(3.45, Y0 + 1.5, -0.62), V(3.44, Y0 + 1.5, -0.64), V(3.2, Y0 + 1.53, -1.1), V(3.2, Y0 + 1.53, -1.1), 40, 37),
     open: P2(S.open, V(3.5, Y0 + 1.62, -1.8), V(3.48, Y0 + 1.61, -1.76), V(3.2, Y0 + 1.42, -0.45), V(3.2, Y0 + 1.42, -0.45), 50, 48),
     shout: P2(S.shout, V(HERO_BAY + 0.9, Y0 + 1.1, 9.5), V(HERO_BAY + 0.88, Y0 + 1.1, 9.3), V(HERO_BAY, Y0 + 1.35, -0.75), V(HERO_BAY, Y0 + 1.35, -0.75), 18, 16),
@@ -749,7 +750,7 @@ export async function create() {
         const edge = room.door.localToWorld(V(-DW + 0.005, 1.08, 0.03));
         const nIn = room.door.localToWorld(V(1, 0, 0)).sub(room.door.localToWorld(V(0, 0, 0))).normalize(), fIn = room.door.localToWorld(V(0, 0, 1)).sub(room.door.localToWorld(V(0, 0, 0))).normalize();
         const torchR = (sh2, fwd, left, up) => ({ ...torchHand(V(3.0, Y0 + 0.3, -3.6))(sh2, fwd, left, up), pole: sh2.clone().addScaledVector(up, -0.45).addScaledVector(left, -0.12).addScaledVector(fwd, -0.3) });
-        const armHang = (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(up, -0.54).addScaledVector(left, 0.17).addScaledVector(fwd, -0.04 + 0.015 * Math.sin(Math.PI * 2 * (ph + 0.5))),
+        const armHang = (sh2, fwd, left, up) => ({ hand: sh2.clone().addScaledVector(up, -0.54).addScaledVector(left, 0.17 - 0.06 * smooth(0.05, 0.2, k)).addScaledVector(fwd, -0.04 + 0.015 * Math.sin(Math.PI * 2 * (ph + 0.5))),
           pole: sh2.clone().addScaledVector(up, -0.3).addScaledVector(fwd, -0.6).addScaledVector(left, 0.32), F: V(0, -1, 0).addScaledVector(fwd, 0.15).normalize(), N: left.clone().negate() });
         const walkWith = (armL) => walkFit(man, { pos, yaw, phase: ph, stride: STR, look: V(3.0, Y0 + 0.9, -3.9), lookK: 0.5, armR: torchR, armL, groundAt: () => Y0 });
         const gripSpec = (sh2, fwd, left, up) => ({ hand: edge.clone(), pole: sh2.clone().addScaledVector(up, -0.3).addScaledVector(left, 0.5).addScaledVector(fwd, -0.3), F: fIn.clone(), N: nIn.clone(), curl: -0.3, pk: -0.3, thumb: flatThumb(man, 'Left') });
@@ -766,7 +767,7 @@ export async function create() {
           if (gw < 0.999) { walkWith(armHang); const hang = wp(man.bones.LeftHand); walkWith((sh2, fwd, left, up) => { const h = armHang(sh2, fwd, left, up), gs = gripSpec(sh2, fwd, left, up);
             return { hand: hang.clone().lerp(want, gw), pole: h.pole.clone().lerp(gs.pole, gw), F: h.F.clone().lerp(gs.F, gw).normalize(), N: h.N.clone().lerp(gs.N, gw).normalize(), curl: lerp(0.35, -0.3, gw), pk: lerp(0.35, -0.3, gw), thumb: lerp(0.15, flatThumb(man, 'Left'), gw) }; }); }
         });
-        hisPhone.visible = true; phoneFit(man, 'Right', hisPhone); torch.intensity = 9; beamH.uniforms.uI.value = 0.2; hisGlow.intensity = 0.05;
+        hisPhone.visible = true; phoneFit(man, 'Right', hisPhone); torch.intensity = 9; beamH.uniforms.uI.value = 0; hisGlow.intensity = 0.05;
         G.uSat.value = 0.45; G.uTint.value.set(1.05, 0.97, 0.94);
         // once the door is shut, his torch shows under it from inside
         if (dk < 0.004) drawStrip(0.6, [0.42, 0.6]);
@@ -778,7 +779,7 @@ export async function create() {
       if (id === 'stat') { R.renderer.toneMappingExposure = 1.05; if (etsi) { G.uSat.value = 0.4; G.uTint.value.set(1.05, 0.97, 0.94); } }
       if (id === 'away') {
         // she backs off from the door toward the window, over the rug (each foot on its own ground)
-        const A0 = V(2.98, Y0, -3.86), A1 = V(3.12, Y0, -2.4), e = smooth(0.0, 1.0, k) * 0.9 + 0.1 * k, pos = A0.clone().lerp(A1, e);
+        const A0 = V(2.98, Y0, -3.86), A1 = V(3.12, Y0, -2.65), e = smooth(0.0, 1.0, k) * 0.9 + 0.1 * k, pos = A0.clone().lerp(A1, e);
         const gAt = (x, z) => Y0 + (x > 2.6 && x < 4.0 && z > -3.1 && z < -2.1 ? 0.012 : 0);
         pos.y = gAt(pos.x, pos.z);
         show(ines, () => walkFit(ines, { pos, yaw: Math.atan2(A1.x - A0.x, A1.z - A0.z), phase: A0.distanceTo(pos) / (2 * 0.55), stride: 0.55, groundAt: gAt, look: V(3.25, Y0 + 1.4, -0.4), lookK: 0.5 }));
@@ -844,7 +845,8 @@ export async function create() {
       if (['keys', 'tag', 'keys2', 'tags'].includes(id)) {
         // the keyring on a tread, in a flashlight's beam
         keyring.visible = true;
-        fl1.sp.intensity = 2.2; fl1.g.position.set(5.55, T3.y + 1.0, T3.z - 0.95); fl1.g.lookAt(T3c); fl1.g.rotateY(Math.PI); fl1.g.updateMatrixWorld(true);
+        // (from the cameras' side: from the far side, the flat keys mirrored it straight into the lens)
+        fl1.sp.intensity = 2.2; fl1.g.position.set(T3.x + 0.35, T3.y + 1.0, T3.z + 0.6); fl1.g.lookAt(T3c); fl1.g.rotateY(Math.PI); fl1.g.updateMatrixWorld(true);
         fl1.beam.uniforms.uI.value = 0.0; R.renderer.toneMappingExposure = 1.3;
       }
       if (id === 'double' || id === 'tip2') {
@@ -904,6 +906,7 @@ export async function create() {
       endEl.style.opacity = String(endK);
       tag.update(t, S.end.t0 + 0.6, endK);
       R.bloom.threshold = Math.min(0.85, 0.95 / R.renderer.toneMappingExposure);
+      R.bloom.strength = ['keys', 'tag', 'keys2', 'tags'].includes(id) ? 0.22 : 0.42;
       if (DBG) {
         if (ines.root.visible) { const [fn, fc] = furnClear(ines); let s = `DBG ines ${id} t=${t.toFixed(2)} furniture: ${fn} ${(fc * 100).toFixed(1)} cm`;
           if (wp(ines.bones.Hips).z < -3.6) { clearZ.at = null; const c = clearZ(ines), a = clearZ.at; if (a) s += `; door wall ${(c * 100).toFixed(1)} cm at ${a[0].toFixed(2)},${a[1].toFixed(2)},${a[2].toFixed(3)} ${a[3]}`; }

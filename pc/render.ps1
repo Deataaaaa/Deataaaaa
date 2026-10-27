@@ -186,6 +186,12 @@ try {
       if ($c7 -ne 0) { Done 'WARN' ('sound check: ' + (@($script:LastOut) | Select-Object -Last 1)); $warn += 'sound' }
       else { Done 'OK' ($name + '_phone.mp4  ' + (Size (Get-Item -LiteralPath $phone).Length) + $lufs) }
       if ($j.post -and (Test-Path -LiteralPath (Join-Path $repo $j.post))) { Copy-Item -LiteralPath (Join-Path $repo $j.post) -Destination (Join-Path $repo ('videos\' + $name + '_post.txt')) -Force }   # captions + times next to the video
+      if ($j.clips -and (Test-Path -LiteralPath (Join-Path $repo $j.clips))) {   # short extracts that open on the hook: more posts from one render
+        Stage '   ' 'Clips'
+        $c9 = Run $bash @('studio/tools/clips.sh', ('videos/' + $name + '_phone.mp4'), $j.clips, 'videos')
+        $nc = @(Get-ChildItem -LiteralPath (Join-Path $repo 'videos') -Filter ($name + '_clip*.mp4') -ErrorAction SilentlyContinue).Count
+        if ($c9 -ne 0 -or $nc -eq 0) { Done 'WARN' 'clips failed: send me the log'; $warn += 'clips' } else { Done 'OK' ($nc.ToString() + ' clips in videos\') }
+      }
       $fl = @($script:LastOut | Where-Object { $_ -match 'FLICKER CHECK' }) | Select-Object -First 1
       Stage '   ' 'Flicker check'
       $secs = @(Get-Content -LiteralPath (Join-Path $repo ('videos\' + $name + '_flicker.txt')) -ErrorAction SilentlyContinue | Where-Object { $_ -match '<--' } | ForEach-Object { Log $_; ($_.Trim() -split '\s+')[0] + ' s' })

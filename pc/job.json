@@ -4,5 +4,6 @@
   "cover": "videos/12pct_p3_cover.jpg",
   "workers": 3,
   "note": "12 % Partie 3 : Le 5e (~125 s). Parts 1 and 2 are already posted.",
-  "post": "pc/posts/p3.txt"
+  "post": "pc/posts/p3.txt",
+  "clips": "pc/clips/p3.json"
 }

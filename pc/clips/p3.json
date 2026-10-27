@@ -1,0 +1,8 @@
+{
+  "hook": [0, 3.5556],
+  "clips": [
+    { "name": "faux-policier", "from": 41.495, "to": 62.047 },
+    { "name": "les-bons-reflexes", "from": 63.552, "to": 97.915 },
+    { "name": "la-grille", "from": 97.915, "to": 124.9 }
+  ]
+}

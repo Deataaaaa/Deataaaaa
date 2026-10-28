@@ -181,7 +181,7 @@ export function buildPigalle(renderer, { ssaa = 2 } = {}) {
       lamps.push(V(x, KERB + h - 0.5, z - s * 0.8));
     }
   };
-  for (const x of [-36, -18, 0, 18, 36]) addLamp(x + 2.0, ZK - 0.45, 5.2, false);
+  for (const x of [-34, -16.5, 7.5, 24, 40]) addLamp(x, ZK - 0.45, 5.2, false);   // (none by the delivery bay: she stands there)
   for (const x of [-30, -10, 10, 30]) addLamp(x, (ZR1 + ZR2) / 2, 6.5, true);
   const lampSpots = lamps.filter((p) => Math.abs(p.x) < 22).map((p, i) => { const s = new THREE.SpotLight('#ffcf98', 70, 26, 0.95, 0.65, 2); s.position.copy(p); s.target.position.set(p.x, 0, p.z); if (i === 0 || i === 1) { s.castShadow = true; s.shadow.mapSize.set(1024, 1024); s.shadow.bias = -0.0005; } scene.add(s, s.target); return s; });
   // bollards along the hero kerb (the Paris « potelets »), a bin, a scooter

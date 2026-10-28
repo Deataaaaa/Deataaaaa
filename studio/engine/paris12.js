@@ -163,7 +163,7 @@ export function makeHaussmann(o) {
     xa = bx + w / 2;
     if (i === door) { if (!o.hero) G.dark.push(box(w, 3.9, 0.1, bx, 1.95, -0.32)); }
     else if (shops) { G.dark.push(box(w, 3.3, 0.1, bx, 1.65, -0.3)); G.trim.push(box(w + 0.2, 0.5, 0.18, bx, 3.55, 0.05)); }
-    else G.dark.push(box(w, 3.3, 0.1, bx, 1.65, -0.3));
+    else if (!o.openGF) G.dark.push(box(w, 3.3, 0.1, bx, 1.65, -0.3));      // openGF: the opening stays open (shopfronts built by the caller)
   });
   addWall(xa, x1, 0, gf);
   // mansard: the steep zinc slope with dormers, then the upper roof

@@ -27,6 +27,12 @@ rules below, they win; every other rule still holds (realism, loud phone sound, 
   usual), avg 47 s, 13 saves, 4 follows; YouTube 1,982, +19 subs, 64.9 % stayed. What worked: a trusted figure who is not one (the
   fake cop through the peephole) + a real OUI/NON dilemma to "vous" (« vous ouvrez ? »); the checked tips get saved.
 - **Cast:** Inès and the man stay the same in every part (rule 16 applies to everyone else). No WTF moment (rule 19's WTF is off).
+- **Season 2 « Dehors »** (owner, 28 Oct 2026: approved; "qq d'autres, le voisin du 5e est en taule, on l'oublie"): a week after
+  season 1, Inès goes out for the first time and has to get home alone from Pigalle at 2 am with 12 % battery (12 % → 0 % over the
+  season). The season 1 man is in prison and never returns; the thread is someone new who knows her name and tracks her (a new man,
+  the same in every part of season 2). Each part = a trusted figure who is not one + a « vous ___ ? » dilemma (the P3 recipe).
+  Parts: P1 « Le VTC » (approved: a car stops, the driver says her name), then « Le traceur », « Le verre », « Le dernier bus »
+  (to pitch as we go). Format from the P3 data: ~90 s, the « ET SI » before 20 s, the hook in POV on the trusted person.
 - **Voice (owner, 22 Oct 2026: "A"):** Kyutai TTS 1.6B en_fr (CC-BY 4.0, credited on the end card) with Kyutai's own CC0 French voice
   `unmute-prod-website/developpeuse-3.wav`, natural pace. `tools/vo_kyutai.py` (venv with torch CPU + moshi, ~45 s per line here)
   then `tools/vo_align.py` (word times for the captions); commit the aligned WAV + JSON. Kokoro `ff_siwis` was rejected as robotic.

@@ -79,7 +79,8 @@ export async function create() {
   const place = (car, x, z, yaw = YAW) => { car.group.position.set(x, 0, z); car.group.rotation.set(0, yaw, 0); car.group.updateMatrixWorld(true); };
   const toW = (car, x, y, z) => car.group.localToWorld(V(x, y, z));
   // headlights as real spots (only for the car that is on screen)
-  const headSpot = (car) => { const s = new THREE.SpotLight('#eef2ff', 0, 40, 0.45, 0.5, 2); s.position.set(0, 0.72, 2.2); const tg = new THREE.Object3D(); tg.position.set(0, 0.3, 12); car.group.add(s, tg); s.target = tg; return s; };
+  const headSpot = (car) => { const s = new THREE.SpotLight('#eef2ff', 0, 40, 0.3, 0.6, 2);   // narrow: a wide cone burnt the road just ahead of the bumper white
+     s.position.set(0, 0.72, 2.2); const tg = new THREE.Object3D(); tg.position.set(0, 0.3, 12); car.group.add(s, tg); s.target = tg; return s; };
   const bHead = headSpot(black), gHead = headSpot(grey);
   // the arrival: a uniform deceleration from x0 to the stop; the departure: a gentle start
   const arrive = (t, t0, t1, x0, x1) => { const u = clamp((t - t0) / (t1 - t0)); return { x: x1 + (x0 - x1) * (1 - u) * (1 - u), v: 2 * (x0 - x1) * (1 - u) / (t1 - t0) }; };
@@ -242,10 +243,11 @@ export async function create() {
   const REAL_FZ = Number(q.get('rfz') ?? 0.035), REAL_LEAN = Number(q.get('rlean') ?? -0.42), RECLINE = Number(q.get('recl') ?? -0.36);   // drivers lie back against the backrest (20 degrees)                    // Lucas sits 3.5 cm further forward (his hips went into the backrest)
   const EYES_WIN = V(2.95, 1.24, 4.06);
   const E4 = { fd: Number(q.get('e4fd') ?? 1), li: LEVER_IN, lc: LEVER_CURL, py: Number(q.get('e4py') ?? -0.006), pm: 0.5 };
+  const MIR_AIM = Number(q.get('maim') ?? 0.06);   // e5: the point on the driver the mirror is turned to show (above his head bone)
   const E4LEAN = Number(q.get('e4ln') ?? 0.38), E4DZ = Number(q.get('e4dz') ?? -0.05), E4FO = Number(q.get('e4fo') ?? 0.35);
   const S5 = { dx: Number(q.get('s5dx') ?? 0.05), dz: Number(q.get('s5dz') ?? 0.08), yaw: Number(q.get('s5y') ?? 0.9), hb: Number(q.get('s5hb') ?? 0.75), cr: Number(q.get('s5cr') ?? 0.1) };
   const S5C = Number(q.get('s5c') ?? 0.12), S5PY = Number(q.get('s5py') ?? 0), S5PK = Number(q.get('s5pk') ?? -0.25);
-  const S5P = [Number(q.get('s5o0') ?? 0.06), Number(q.get('s5o1') ?? 0.07), Number(q.get('s5u2') ?? 0.1)];   // s5's reach: out at the start, out past the bar, up above it
+  const S5P = [Number(q.get('s5o0') ?? 0.06), Number(q.get('s5o1') ?? 0.07), Number(q.get('s5u2') ?? 0.16), Number(q.get('s5ii') ?? 0.0085), Number(q.get('s5cd') ?? 0)];   // s5's reach: out at the start, out past the bar, up above it, in toward the skin
   const TIP4_BEND = Number(q.get('tb') ?? 0.95), TIP4_CR = Number(q.get('tc') ?? 0.27), TIP4_Z = Number(q.get('tz') ?? 3.55), TIP4_X = Number(q.get('tx') ?? 2.92);                              // her eyes bent to the passenger window (hook, s4, tip4)
   const RIM_U0 = Number(q.get('ru') ?? 0.045), RIM_A0 = Number(q.get('ra') ?? 0.065), RIM_CURL = Number(q.get('rc') ?? 0.7), RIM_TH = Number(q.get('rt') ?? -0.4);
   const SWEEP = DBG ? q.get('sweep') : null;
@@ -391,7 +393,7 @@ export async function create() {
         black.group.visible = true; place(black, bx, bz, byaw); black.spin(bdist);
         const moving = ['s3', 'r3', 'e3', 'stat1', 'stat2'].includes(id);
         black.setLights({ head: id === 'tip2b' ? 0.3 : 1, tail: 1, brake: id === 's3' ? smooth(T_STOP - 1.6, T_STOP - 1.2, tt) * (1 - smooth(T_STOP + 0.3, T_STOP + 0.8, tt)) : 0, blink: id === 's3' && Math.floor(tt * 2.6) % 2 === 0 ? 1 : 0, dash: 1 });
-        bHead.intensity = id === 'hook' ? 9 : moving ? 5.5 : id === 'tip2b' ? 1.5 : 5;   // 9 burnt the kerb by the lens white
+        bHead.intensity = id === 'hook' ? 9 : moving ? 6 : id === 'tip2b' ? 1.5 : 5;
         const win = id === 'hook' ? 1 : id === 's3' ? smooth(T_WIN, T_WIN + 1.0, tt) : atKerb ? 1 : id === 'r3' ? 1 - smooth(T_LEAVE - 0.5, T_LEAVE + 0.2, tt) : 0;
         black.setWindow('RF', win);
         if (id === 's5' || id === 'etsi') black.setDoor(0.05 * smooth(T_DOOR + 0.1, T_DOOR + 0.35, tt) + 0.03 * smooth(S.etsi.t0 + 0.2, S.etsi.t1, tt));
@@ -406,7 +408,7 @@ export async function create() {
       if (['r5', 'tw1', 'tw2', 'tw3'].includes(id)) { const start = { r5: [CX + 0.4, S.r5.t0 + 0.9], tw1: [10, S.tw1.t0 - 2], tw2: [4, S.tw2.t0 - 2], tw3: [0, S.tw3.t0 - 2] }[id]; gx = depart(tt, start[1], start[0], 1.2, 6); gdist = start[0] - gx; if (id !== 'r5') gz = CZ + 1.3; }
       const greyOn = ['r4a', 'r4b', 'r5', 'tw1', 'tw2', 'tw3'].includes(id);
       if (id === 'tip3') { grey.group.visible = true; place(grey, -9, CZ); grey.spin(0); grey.setLights({ head: 0, tail: 0, dash: 0 }); }
-      if (greyOn) { grey.group.visible = true; place(grey, gx, gz); grey.spin(gdist); grey.setLights({ head: 1, tail: 1, brake: id === 'r4a' ? smooth(T_STOP2 - 1.4, T_STOP2 - 1.0, tt) : 0, dash: 1 }); gHead.intensity = id === 'r4a' ? 5.5 : 4; }
+      if (greyOn) { grey.group.visible = true; place(grey, gx, gz); grey.spin(gdist); grey.setLights({ head: 1, tail: 1, brake: id === 'r4a' ? smooth(T_STOP2 - 1.4, T_STOP2 - 1.0, tt) : 0, dash: 1 }); gHead.intensity = id === 'r4a' ? 6 : 4; }
 
       // --- the fake driver
       if (blackOn && !['stat1', 'stat2', 'tip4'].includes(id)) {
@@ -475,17 +477,19 @@ export async function create() {
             // forearm through the door skin and the fingers through the bar)
             const outD = V(-1, 0, 0).transformDirection(black.door.matrixWorld), U = V(0, 1, 0);
             pose((sh, fwd, left, up) => { const a = armDown(-1)(sh, fwd, left, up), b = spec(sh, fwd, left, up);
-              const P3 = want.clone(), P2 = P3.clone().addScaledVector(U, o.u2 ?? S5P[2]), P1 = P3.clone().addScaledVector(outD, o.o1 ?? S5P[1]).addScaledVector(U, o.u1 ?? S5P[2] + 0.01);
+              const u2 = o.u2 ?? S5P[2], ii = o.ii ?? S5P[3], P3 = want.clone(), P1 = P3.clone().addScaledVector(outD, o.o1 ?? S5P[1]).addScaledVector(U, u2 + 0.01);
+              const P2 = P3.clone().addScaledVector(U, u2).addScaledVector(outD, -ii), P2b = P3.clone().addScaledVector(U, 0.35 * u2).addScaledVector(outD, -ii);   // down close to the skin, then onto the bar
               const P0 = a.hand.clone().addScaledVector(outD, o.o0 ?? S5P[0]);
-              return { ...b, hand: new THREE.CatmullRomCurve3([P0, P1, P2, P3]).getPoint(reach), F: a.F.clone().lerp(b.F, smooth(0, 0.6, reach)).normalize() }; });
+              // the fingers stay straight on the way down (curled, their tips catch the top of the bar) and close behind it
+              return { ...b, hand: new THREE.CatmullRomCurve3([P0, P1, P2, P2b, P3]).getPoint(reach), F: a.F.clone().lerp(b.F, smooth(0, 0.6, reach)).normalize(), curl: lerp(o.cd ?? S5P[4], b.curl, smooth(0.86, 1, reach)) }; });
           } };
         const dl = DOOR_OUT;
         if (SWEEP?.includes('reach')) for (const yaw of [0.9]) for (const hb of [0.75]) for (const cr of [0.1]) for (const [dx, dz] of [[0.05, 0.08]]) for (const py of [0, -0.004]) for (const c of [0.12, 0.18, 0.22]) for (const pk of [-0.25]) { const ff = 0;
           s5Pose({ dx, dz, yaw, hb, cr, c, py, ff, pk }); ines.root.updateMatrixWorld(true); const r = hTgt(py).sub(wp(ines.bones.RightHandMiddle1).lerp(wp(ines.bones.RightHandMiddle2), 0.5));
           console.log(`SWEEP reach c=${c} pk=${pk} py=${py} res ${(r.length() * 100).toFixed(1)}cm door ${boxPen(ines, black.door, dl)}`); }
-        if (SWEEP?.includes('path')) for (const o0 of [0, 0.06, 0.12]) for (const o1 of [0.05, 0.08]) for (const u2 of [0.1, 0.12]) {
-          let wd = -1e9, wb = '', wr = 0; for (let r = 0; r <= 0.99; r += 0.05) { s5Pose({ ...S5, r, o0, o1, u2 }); ines.root.updateMatrixWorld(true); const d = boxPen(ines, black.door, dl), v = parseFloat(d); if (v > wd) { wd = v; wb = d; wr = r; } }
-          console.log(`SWEEP path o0=${o0} o1=${o1} u2=${u2} worst door ${wb} at r=${wr.toFixed(2)}`); }
+        if (SWEEP?.includes('path')) for (const o0 of [S5P[0]]) for (const o1 of [S5P[1]]) for (const u2 of [S5P[2]]) for (const ii of [S5P[3]]) for (const cd of [S5P[4]]) {
+          let wd = -1e9, wb = '', wr = 0; for (let r = 0; r <= 0.999; r += 0.01) { s5Pose({ ...S5, r, o0, o1, u2, ii, cd }); ines.root.updateMatrixWorld(true); const d = boxPen(ines, black.door, dl), v = parseFloat(d); if (v > wd) { wd = v; wb = d; wr = r; } }
+          console.log(`SWEEP path o0=${o0} o1=${o1} u2=${u2} ii=${ii} cd=${cd} worst door ${wb} at r=${wr.toFixed(3)}`); }
         show(ines, () => s5Pose(S5));
       }
       if (IN_BLACK || IN_GREY) {
@@ -555,7 +559,7 @@ export async function create() {
       if (DBG && q.get('noglass')) black.group.traverse((o) => { if (o.material && o.material.color && o.material.color.getHexString() === '080a0e') o.visible = false; });
       if (DBG && q.get('mirhide')) black.group.children.forEach((c) => { if (c !== black.mirror.parent) c.visible = false; });
       if (DBG && q.get('mirball')) { if (!globalThis.MB) { globalThis.MB = new THREE.Mesh(new THREE.SphereGeometry(0.04, 16, 12), new THREE.MeshBasicMaterial({ color: '#ff0000' })); globalThis.MB.frustumCulled = false; scene.add(globalThis.MB); } globalThis.MB.position.copy(wp(fake.bones.Head).add(V(0, 0.06, 0))); }
-      if (blackOn) { const M = toW(black, 0, MIR_Y, -0.13), eI = toW(black, -0.4, 1.17, -1.22), eD = wp(fake.bones.Head).add(V(0, 0.06, 0));
+      if (blackOn) { const M = toW(black, 0, MIR_Y, -0.13), eI = toW(black, -0.4, 1.17, -1.22), eD = wp(fake.bones.Head).add(V(0, MIR_AIM, 0));
         const n = eI.clone().sub(M).normalize().add(eD.clone().sub(M).normalize()).normalize(); black.mirror.parent.lookAt(M.clone().sub(n)); }
       // looks
       if (etsi && !['etsi'].includes(id)) { G.uSat.value = 0.4; G.uTint.value.set(1.05, 0.96, 0.94); }

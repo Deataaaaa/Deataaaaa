@@ -355,7 +355,9 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   const domeM = new THREE.MeshStandardMaterial({ color: '#cfc9bb', emissive: '#ffe1b5', emissiveIntensity: 0, roughness: 0.45 });
   const domeY = topPt(-0.62, 0).y - 0.038;
   const domeLens = add(new RoundedBoxGeometry(0.16, 0.012, 0.07, 2, 0.005), domeM); domeLens.position.set(0, domeY, -0.62); domeLens.castShadow = false;
-  const domeLight = new THREE.PointLight('#ffd9a8', 0, 2.4, 2); domeLight.position.set(0, domeY - 0.04, -0.62); g.add(domeLight);
+  // a spot facing down from the lens (a point light 4 cm under it burnt the headliner around it white, seen through the windows)
+  const domeLight = new THREE.SpotLight('#ffd9a8', 0, 2.4, 1.25, 0.7, 2); domeLight.position.set(0, domeY - 0.012, -0.62); g.add(domeLight);
+  const domeTg = new THREE.Object3D(); domeTg.position.set(0, domeY - 1, -0.62); g.add(domeTg); domeLight.target = domeTg;
   // interior glow (dash, screens) and a contact shadow
   const dashLight = new THREE.PointLight('#a8c8ff', 0, 1.6, 2); dashLight.position.set(0.33, 1.08, -0.02); g.add(dashLight);   // the screens' glow on his face (3 cm from the dash it burnt a white square into it)
   const cs = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 5.2), new THREE.MeshBasicMaterial({ map: shadowTex(), transparent: true, depthWrite: false, opacity: 0.8 }));
@@ -375,7 +377,7 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   const setDoor = (a) => { door.rotation.y = a; door.updateMatrixWorld(true); };
   const setLocks = (k) => { for (const p of pins) p.position.y = 0.985 - 0.022 * k; };
   const setHandleIn = (k) => { hPiv.rotation.y = -0.38 * k; hPiv.updateMatrixWorld(true); };
-  const setDome = (k) => { domeM.emissiveIntensity = 2.2 * k; domeLight.intensity = 0.5 * k; };   // 1.3 burnt a white spot into the front headrest 0.4 m below
+  const setDome = (k) => { domeM.emissiveIntensity = 1.6 * k; domeLight.intensity = 0.7 * k; };
   const setLights = ({ head = 0, tail = 0, brake = 0, blink = 0, dash = 0 } = {}) => {
     headM.emissiveIntensity = 5 * head; tailM.emissiveIntensity = 1.6 * tail + 4 * brake; blinkM.emissiveIntensity = 5 * blink;
     screenM.emissiveIntensity = 0.55 * dash; center.material.emissiveIntensity = 0.5 * dash; dashLight.intensity = 0.02 * dash;

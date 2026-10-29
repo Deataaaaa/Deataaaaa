@@ -121,6 +121,8 @@ export function sit(av, o) {
   const lean = (o.lean ?? 0) + (o.breath ? Math.sin(o.breath * Math.PI * 2) * 0.012 : 0);
   rotW(B.Spine, left, lean * 0.45); rotW(B.Spine1, left, lean * 0.3); rotW(B.Spine2, left, lean * 0.25);
   if (o.twist) { rotW(B.Spine1, up, o.twist * 0.5); rotW(B.Spine2, up, o.twist * 0.5); }
+  // o.headUp (0..1): the neck and head take back that share of the lean (a driver lying back still looks ahead)
+  if (o.headUp && o.lean) { rotW(B.Neck, left, -o.lean * 0.4 * o.headUp); rotW(B.Head, left, -o.lean * 0.6 * o.headUp); }
   // legs
   const legs = o.legs || 'up';
   for (const [side, s] of [['Left', 1], ['Right', -1]]) {
@@ -135,7 +137,7 @@ export function sit(av, o) {
       toe = foot.clone().addScaledVector(left, -s * 0.12).addScaledVector(fwd, 0.04); toe.y = foot.y - 0.02;
     } else if (legs === 'chair') {   // sitting on a seat: feet on the floor (o.floor) in front, shins near vertical
       const fl = o.floor ?? ground;
-      foot = P.clone().addScaledVector(fwd, 0.5).addScaledVector(left, s * 0.13); foot.y = fl + 0.085;
+      foot = P.clone().addScaledVector(fwd, o.footFwd ?? 0.5).addScaledVector(left, s * 0.13); foot.y = fl + 0.085;
       pole = P.clone().addScaledVector(fwd, 1.2).addScaledVector(up, 0.4).addScaledVector(left, s * 0.15);
       toe = foot.clone().addScaledVector(fwd, 0.14); toe.y = fl + 0.02;
     } else {   // out: stretched, one knee slightly bent
@@ -194,6 +196,8 @@ export function stand(av, o) {
   const ground = o.pos.y, gAt = o.groundAt || (() => ground);
   // o.hipBend (rad): the pelvis tips forward and the legs come back to the feet (leaning over a sill bends at the hips)
   if (o.hipBend) rotW(B.Hips, left, o.hipBend);
+  // o.headUp (0..1): the neck and head lift back by that share of the bend, so a bent body can still look ahead (lookAt only adds a world pitch)
+  if (o.hipBend && o.headUp) { rotW(B.Neck, left, -o.hipBend * 0.4 * o.headUp); rotW(B.Head, left, -o.hipBend * 0.6 * o.headUp); }
   if (o.lean) { rotW(B.Spine, left, o.lean * 0.5); rotW(B.Spine1, left, o.lean * 0.5); }
   if (o.twist) { rotW(B.Spine1, up, o.twist * 0.5); rotW(B.Spine2, up, o.twist * 0.5); }
   if (o.breath != null) { const b = Math.sin(o.breath * Math.PI * 2); rotW(B.Spine1, left, b * 0.012); rotW(B.Spine2, left, b * 0.009); }   // breathing

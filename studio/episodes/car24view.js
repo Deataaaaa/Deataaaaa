@@ -33,6 +33,8 @@ export async function create() {
     ground.material.color.set('#5a5d62'); scene.add(new THREE.HemisphereLight('#ffffff', '#444444', 1.2)); const d = new THREE.DirectionalLight('#ffffff', 1.5); d.position.set(-5, 8, 4); d.castShadow = true; scene.add(d); }
   const car = makeCar24({ paint: q.get('paint') || '#0c0d10', vtc: q.get('vtc') === '1', plate: q.get('plate') || 'HV-917-RB', mirrorReflect: true });
   scene.add(car.group);
+  // ?ep=1: the car placed as in ep24 (moved and turned), to test anything that depends on its transform (the mirror)
+  if (q.get('ep') === '1') { car.group.position.set(2.9, 0, 5.165); car.group.rotation.y = -Math.PI / 2; car.group.updateMatrixWorld(true); }
   car.setWindow('RF', Number(q.get('win') ?? 0)); car.setDoor(Number(q.get("door") ?? 0)); car.setLights({ head: Number(q.get('head') ?? 1), tail: 1, dash: Number(q.get('dash') ?? 1) });
   await Promise.all(TEX_PENDING);
   // ?hide=w,h hides the plane of that size (look-dev of the dash screens)
@@ -51,7 +53,8 @@ export async function create() {
   // view 7: the rear-view mirror seen from the rear-right passenger's eyes, turned to meet a red ball at the driver's eyes
   const ball = new THREE.Mesh(new THREE.SphereGeometry(0.05, 24, 16), new THREE.MeshStandardMaterial({ color: '#ff2020', emissive: '#ff2020', emissiveIntensity: 0.6 }));
   ball.position.set(0.37, 1.25, -0.05); car.group.add(ball);
-  { const M = car.group.localToWorld(V(0, 1.315, -0.13)), eI = V(-0.4, 1.17, -1.22), eD = V(0.37, 1.25, -0.05);
+  ball.parent.updateMatrixWorld(true);
+  { const M = car.group.localToWorld(V(0, 1.315, -0.13)), eI = car.group.localToWorld(V(-0.4, 1.17, -1.22)), eD = car.group.localToWorld(V(0.37, 1.25, -0.05));
     const n = eI.clone().sub(M).normalize().add(eD.clone().sub(M).normalize()).normalize(); car.mirror.parent.lookAt(M.clone().sub(n)); }
   return {
     duration: views.length, fps: 30, captions: [],
@@ -59,7 +62,7 @@ export async function create() {
       const i = Math.min(views.length - 1, Math.floor(t)), v = views[i];
       if (i === 5) car.setDoor(0.9);
       if (i === 3) car.setWindow('RF', Number(q.get('win3') ?? 1));
-      cam.position.copy(v[0]); cam.up.set(i === 6 ? 1 : 0, i === 6 ? 0 : 1, 0); cam.lookAt(v[1]); cam.fov = v[2]; cam.updateProjectionMatrix();
+      cam.position.copy(i === 7 ? car.group.localToWorld(v[0].clone()) : v[0]); cam.up.set(i === 6 ? 1 : 0, i === 6 ? 0 : 1, 0); cam.lookAt(i === 7 ? car.group.localToWorld(v[1].clone()) : v[1]); cam.fov = v[2]; cam.updateProjectionMatrix();
       R.composer.render();
     },
   };

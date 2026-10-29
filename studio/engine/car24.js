@@ -67,11 +67,12 @@ function skinPt(o, v, out = V(0, 0, 0)) {
   return out.copy(o.p).addScaledVector(o.n, dn).setY(y);
 }
 // greenhouse: the rail (top edge of the side glass) and the window-sill line, as functions of z
+const ROOF = 1.445;                       // the roof rail's height (1.405 put seated heads through the headliner)
 function rail(z) {
   const { COWL, WS, RW, DECK, XB } = C, yb = topY(C.B - C.RE, z) + 0.005;
-  if (z > WS) { const t = (COWL - z) / (COWL - WS), e = 1 - (1 - t) * (1 - t) * 0.15; return { x: lerp(XB - 0.015, 0.665, Math.pow(t, 0.9)), y: lerp(yb, 1.405, t * e) }; }
-  if (z > RW) { const t = (WS - z) / (WS - RW); return { x: 0.665, y: 1.405 + 0.012 * Math.sin(Math.PI * t) }; }
-  const t = (RW - z) / (RW - DECK); return { x: lerp(0.665, XB - 0.04, t), y: lerp(1.405, yb + 0.01, Math.pow(t, 1.15)) };
+  if (z > WS) { const t = (COWL - z) / (COWL - WS), e = 1 - (1 - t) * (1 - t) * 0.15; return { x: lerp(XB - 0.015, 0.665, Math.pow(t, 0.9)), y: lerp(yb, ROOF, t * e) }; }
+  if (z > RW) { const t = (WS - z) / (WS - RW); return { x: 0.665, y: ROOF + 0.012 * Math.sin(Math.PI * t) }; }
+  const t = (RW - z) / (RW - DECK); return { x: lerp(0.665, XB - 0.04, t), y: lerp(ROOF, yb + 0.01, Math.pow(t, 1.15)) };
 }
 const sill = (z) => ({ x: C.XB, y: topY(C.B - C.RE, z) + 0.005 });
 // a point on the greenhouse side face (side ±1, v 0 at the sill .. 1 at the rail)
@@ -93,6 +94,7 @@ function grid(nu, nv, f, flip = false) {
 }
 
 // ---------- textures ----------
+export const MIR_Y = 1.385;   // the rear-view mirror's centre height in the car's frame
 export function plateTex(txt, dep = '75') {
   const cv = document.createElement('canvas'); cv.width = 1040; cv.height = 220; const c = cv.getContext('2d');
   c.fillStyle = '#f4f4f0'; c.fillRect(0, 0, 1040, 220);
@@ -161,14 +163,14 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   const doorIn = add(new RoundedBoxGeometry(0.05, 0.62, 0.66, 3, 0.02), cabM, door); doorIn.position.set(0.105, 0.66, -0.365);
   const arm = add(new RoundedBoxGeometry(0.09, 0.05, 0.36, 3, 0.02), cabL, door); arm.position.set(0.16, 0.66, -0.39);
   // the inner handle: a lever 3 cm off the panel on a bezel, pivoting about its front end (setHandleIn pulls its rear end in)
-  const hPiv = new THREE.Group(); hPiv.position.set(0.185, 0.84, -0.275); door.add(hPiv);
-  const handleIn = add(new RoundedBoxGeometry(0.025, 0.035, 0.14, 2, 0.008), chromeM, hPiv); handleIn.position.set(0, 0, -0.07);
-  for (const dz of [-0.008, -0.132]) add(new RoundedBoxGeometry(0.045, 0.02, 0.012, 2, 0.004), cabL, door).position.set(0.152, 0.84, -0.275 + dz);   // the lever's two brackets
+  const hPiv = new THREE.Group(); hPiv.position.set(0.185, 0.80, -0.275); door.add(hPiv);
+  const handleIn = add(new RoundedBoxGeometry(0.025, 0.035, 0.14, 2, 0.008), new THREE.MeshStandardMaterial({ color: '#b9bcc2', metalness: 1, roughness: 0.45, envMapIntensity: 0.35 }), hPiv);   // satin: chrome blew out in the close-up handleIn.position.set(0, 0, -0.07);
+  add(new RoundedBoxGeometry(0.045, 0.02, 0.012, 2, 0.004), cabL, door).position.set(0.152, 0.80, -0.283);   // the pivot bracket (the lever's rear end is free)
   const pinR = add(new THREE.CylinderGeometry(0.006, 0.006, 0.05, 10), chromeM, door); pinR.position.set(0.12, 0.985, -0.62);
-  // outer handles: a pull bar on two posts, 2.6 cm off a dark recess (fingers go behind it: a flush bar left them nowhere but the skin)
+  // outer handles: a pull bar on two posts, 3.2 cm off a dark recess (fingers go behind it: a flush bar left them nowhere but the skin)
   const handleOut = (parent, x, z, sd) => { const r = add(new RoundedBoxGeometry(0.012, 0.035, 0.15, 2, 0.006), blackM, parent); r.position.set(x, 0.885, z);
-    const b = add(new RoundedBoxGeometry(0.016, 0.026, 0.13, 2, 0.007), paintM, parent); b.position.set(x + sd * 0.040, 0.885, z);
-    for (const dz of [-0.055, 0.055]) add(new RoundedBoxGeometry(0.026, 0.016, 0.012, 2, 0.004), paintM, parent).position.set(x + sd * 0.019, 0.885, z + dz); return b; };
+    const b = add(new RoundedBoxGeometry(0.016, 0.026, 0.13, 2, 0.007), paintM, parent); b.position.set(x + sd * 0.046, 0.885, z);
+    for (const dz of [-0.055, 0.055]) add(new RoundedBoxGeometry(0.032, 0.016, 0.012, 2, 0.004), paintM, parent).position.set(x + sd * 0.022, 0.885, z + dz); return b; };
   handleOut(door, -0.012, -0.66, -1);
   for (const [sd, z] of [[-1, 0.12], [1, 0.12], [1, -0.92]]) { const x = sd * (C.B + 0.012); handleOut(g, x, z, sd); }
 
@@ -275,19 +277,19 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   const boxes = [];
   const box = (w, h, d, x, y, z, rx = 0, nm = 'seat') => { const m = add(new RoundedBoxGeometry(w, h, d, 4, Math.min(0.045, h / 2.2, d / 2.2)), seatM); m.position.set(x, y, z); m.rotation.x = rx; boxes.push({ nm, m, w, h, d }); return m; };
   for (const sx of [0.37, -0.37]) {
-    box(0.5, 0.13, 0.5, sx, 0.47, -0.08, 0, 'cushion');
-    box(0.5, 0.66, 0.13, sx, 0.84, -0.36, -0.36, 'backrest');
-    box(0.26, 0.2, 0.1, sx, 1.24, -0.5, -0.2, 'headrest');
+    box(0.5, 0.13, 0.5, sx, 0.40, -0.08, 0, 'cushion');
+    box(0.5, 0.66, 0.13, sx, 0.77, -0.36, -0.36, 'backrest');
+    box(0.26, 0.2, 0.1, sx, 1.17, -0.5, -0.2, 'headrest');
   }
-  box(1.36, 0.14, 0.52, 0, 0.48, -0.98, 0, 'bench');
-  box(1.36, 0.6, 0.14, 0, 0.84, -1.3, -0.42, 'bench back');
-  for (const sx of [-0.45, 0.45]) box(0.24, 0.16, 0.09, sx, 1.12, -1.4, -0.42, 'headrest');
+  box(1.36, 0.14, 0.52, 0, 0.41, -0.98, 0, 'bench');
+  box(1.36, 0.6, 0.14, 0, 0.77, -1.3, -0.42, 'bench back');
+  for (const sx of [-0.45, 0.45]) box(0.24, 0.16, 0.09, sx, 1.05, -1.4, -0.42, 'headrest');
   // rear-view mirror (a real mirror when asked: a small Reflector)
-  const mir = new THREE.Group(); mir.position.set(0, 1.315, -0.13); g.add(mir);
-  add(new RoundedBoxGeometry(0.27, 0.08, 0.035, 3, 0.012), blackM, mir);
-  const stem = add(new THREE.CylinderGeometry(0.008, 0.008, 0.08, 8), blackM, mir); stem.position.set(0, 0.05, 0.03); stem.rotation.x = 0.5;
+  const mir = new THREE.Group(); mir.position.set(0, MIR_Y, -0.13); g.add(mir);   // up against the headliner (lower, it hid the driver's eyes, then his forehead, from the passenger window)
+  add(new RoundedBoxGeometry(0.27, 0.08, 0.025, 3, 0.01), blackM, mir).position.z = 0.004;   // the housing's face 1 cm behind the glass (closer, it showed in the mirror)
+  const stem = add(new THREE.CylinderGeometry(0.008, 0.008, 0.05, 8), blackM, mir); stem.position.set(0, 0.04, 0.02); stem.rotation.x = 0.5;
   let mirror = null;
-  if (mirrorReflect) { mirror = new Reflector(new THREE.PlaneGeometry(0.245, 0.06), { textureWidth: 768, textureHeight: 192, color: 0x8a8a8a, clipBias: 0.003 }); mirror.position.z = -0.019; mirror.rotation.y = Math.PI; mir.add(mirror); }
+  if (mirrorReflect) { mirror = new Reflector(new THREE.PlaneGeometry(0.245, 0.06), { textureWidth: 768, textureHeight: 192, color: 0x8a8a8a, clipBias: 0.003, multisample: 0 }); mirror.position.z = -0.019; mirror.rotation.y = Math.PI; mir.add(mirror); }
   else { const mm = add(new THREE.PlaneGeometry(0.245, 0.06), new THREE.MeshStandardMaterial({ color: '#7a7f86', metalness: 1, roughness: 0.05 }), mir); mm.position.z = -0.019; mm.rotation.y = Math.PI; }
   // side mirrors
   for (const sd of [-1, 1]) {
@@ -341,7 +343,7 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   place(add(new RoundedBoxGeometry(0.92, 0.2, 0.03, 2, 0.02), new THREE.MeshStandardMaterial({ color: '#060606', roughness: 0.6 })), onSkin('F', 0.5, 0.5), -0.004);
   const plTex = plateTex(plate);
   const plM = new THREE.MeshStandardMaterial({ map: plTex, roughness: 0.4 });
-  place(add(new THREE.PlaneGeometry(0.52, 0.11), plM), onSkin('F', 0.5, 0.40), 0.012);
+  const plateF = add(new THREE.PlaneGeometry(0.52, 0.11), plM); place(plateF, onSkin('F', 0.5, 0.40), 0.026);   // 1.2 cm off the skin, the bumper's curve hid the top of the letters
   place(add(new THREE.PlaneGeometry(0.52, 0.11), plM), onSkin('B', 0.5, 0.64), 0.008);
   // the VTC stickers (front: lower corner on the driver's side; rear: lower corner on the other side)
   if (vtc) {
@@ -351,7 +353,7 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   }
   // the dome light (on while a door is open): a lens in the headliner and a warm point light
   const domeM = new THREE.MeshStandardMaterial({ color: '#cfc9bb', emissive: '#ffe1b5', emissiveIntensity: 0, roughness: 0.45 });
-  const domeY = topY(0, -0.62) - 0.035;
+  const domeY = topPt(-0.62, 0).y - 0.038;
   const domeLens = add(new RoundedBoxGeometry(0.16, 0.012, 0.07, 2, 0.005), domeM); domeLens.position.set(0, domeY, -0.62); domeLens.castShadow = false;
   const domeLight = new THREE.PointLight('#ffd9a8', 0, 2.4, 2); domeLight.position.set(0, domeY - 0.04, -0.62); g.add(domeLight);
   // interior glow (dash, screens) and a contact shadow
@@ -373,19 +375,19 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   const setDoor = (a) => { door.rotation.y = a; door.updateMatrixWorld(true); };
   const setLocks = (k) => { for (const p of pins) p.position.y = 0.985 - 0.022 * k; };
   const setHandleIn = (k) => { hPiv.rotation.y = -0.38 * k; hPiv.updateMatrixWorld(true); };
-  const setDome = (k) => { domeM.emissiveIntensity = 2.2 * k; domeLight.intensity = 1.3 * k; };
+  const setDome = (k) => { domeM.emissiveIntensity = 2.2 * k; domeLight.intensity = 0.5 * k; };   // 1.3 burnt a white spot into the front headrest 0.4 m below
   const setLights = ({ head = 0, tail = 0, brake = 0, blink = 0, dash = 0 } = {}) => {
     headM.emissiveIntensity = 5 * head; tailM.emissiveIntensity = 1.6 * tail + 4 * brake; blinkM.emissiveIntensity = 5 * blink;
     screenM.emissiveIntensity = 0.55 * dash; center.material.emissiveIntensity = 0.5 * dash; dashLight.intensity = 0.02 * dash;
   };
   const spin = (dist) => { for (const w of wheels) w.rotation.x = dist / C.RT; };
   // H-points and grip points for posing people (car frame)
-  const seats = { driver: V(0.37, 0.53, -0.12), front: V(-0.37, 0.53, -0.12), rearR: V(-0.42, 0.55, -0.98), rearL: V(0.42, 0.55, -0.98) };
-  const grips = { wheelL: () => wheel.localToWorld(V(0.17, 0.05, 0)), wheelR: () => wheel.localToWorld(V(-0.17, 0.05, 0)), handleRR: () => door.localToWorld(V(-0.031, 0.885, -0.66)),        // the gap behind the outer bar
+  const seats = { driver: V(0.37, 0.46, -0.12), front: V(-0.37, 0.46, -0.12), rearR: V(-0.42, 0.48, -0.98), rearL: V(0.42, 0.48, -0.98) };
+  const grips = { wheelL: () => wheel.localToWorld(V(0.17, 0.05, 0)), wheelR: () => wheel.localToWorld(V(-0.17, 0.05, 0)), handleRR: () => door.localToWorld(V(-0.034, 0.885, -0.66)),        // the gap behind the outer bar
    
     handleInRR: () => handleIn.getWorldPosition(V(0, 0, 0)), pinRR: () => pinR.getWorldPosition(V(0, 0, 0)) };
   setLights({ tail: 1, head: 1, dash: 1 });
-  return { group: g, paint: paintM, door, windows, setWindow, setDoor, setLocks, setHandleIn, setDome, setLights, spin, seats, grips, boxes, mirror, wheel, plate: plTex, handleIn, domeLight };
+  return { group: g, paint: paintM, door, windows, setWindow, setDoor, setLocks, setHandleIn, setDome, setLights, spin, seats, grips, boxes, mirror, wheel, plate: plTex, plateF, handleIn, domeLight };
 }
 
 function shadowTex() {

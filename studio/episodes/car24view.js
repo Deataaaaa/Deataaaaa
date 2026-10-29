@@ -49,6 +49,10 @@ export async function create() {
     [V(-2.6, 1.5, -2.2), V(-0.6, 0.8, -0.6), 50],
     [V(0.01, 9, 0), V(0, 0, 0), 32],
     [V(-0.4, 1.17, -1.22), V(0, 1.315, -0.13), 20],
+    [V(-0.36, 1.12, -0.2), V(0.37, 0.92, 0.38), 58],      // 8 the driver's side of the dash from the passenger seat
+    [V(0.0, 1.2, -0.95), V(0.0, 0.92, 0.5), 62],          // 9 the dash from the middle of the rear bench
+    [V(-1.18, 1.21, -0.04), V(0.37, 1.02, 0.08), 42],     // 10 from the kerb through the open passenger window (the hook)
+    [V(0.37, 1.24, -0.32), V(0.37, 0.9, 0.42), 52],       // 11 the wheel and the cluster from the driver's eyes
   ];
   // view 7: the rear-view mirror seen from the rear-right passenger's eyes, turned to meet a red ball at the driver's eyes
   const ball = new THREE.Mesh(new THREE.SphereGeometry(0.05, 24, 16), new THREE.MeshStandardMaterial({ color: '#ff2020', emissive: '#ff2020', emissiveIntensity: 0.6 }));
@@ -62,6 +66,7 @@ export async function create() {
       const i = Math.min(views.length - 1, Math.floor(t)), v = views[i];
       if (i === 5) car.setDoor(0.9);
       if (i === 3) car.setWindow('RF', Number(q.get('win3') ?? 1));
+      if (i === 10) car.setWindow('RF', 1);
       cam.position.copy(i === 7 ? car.group.localToWorld(v[0].clone()) : v[0]); cam.up.set(i === 6 ? 1 : 0, i === 6 ? 0 : 1, 0); cam.lookAt(i === 7 ? car.group.localToWorld(v[1].clone()) : v[1]); cam.fov = v[2]; cam.updateProjectionMatrix();
       R.composer.render();
     },

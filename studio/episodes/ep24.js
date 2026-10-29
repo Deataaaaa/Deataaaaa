@@ -16,7 +16,7 @@ import { makeCat } from '../engine/cat.js';
 import { makePhone } from '../engine/props16.js';
 import { makeEndTag } from '../engine/endtag.js';
 import { buildPigalle, PG } from '../engine/pigalle24.js';
-import { makeCar24, CAR, topPt, topY, vtcTex, MIR_Y } from '../engine/car24.js';
+import { makeCar24, CAR, topPt, topY, vtcTex, MIR_Y, MIR_Z } from '../engine/car24.js';
 import { renderShot } from '../engine/ads19.js';
 import { Overlay12 } from '../engine/s12.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -243,7 +243,7 @@ export async function create() {
   const REAL_FZ = Number(q.get('rfz') ?? 0.035), REAL_LEAN = Number(q.get('rlean') ?? -0.42), RECLINE = Number(q.get('recl') ?? -0.36);   // drivers lie back against the backrest (20 degrees)                    // Lucas sits 3.5 cm further forward (his hips went into the backrest)
   const EYES_WIN = V(2.95, 1.24, 4.06);
   const E4 = { fd: Number(q.get('e4fd') ?? 1), li: LEVER_IN, lc: LEVER_CURL, py: Number(q.get('e4py') ?? -0.006), pm: 0.5 };
-  const MIR_AIM = Number(q.get('maim') ?? 0.06);   // e5: the point on the driver the mirror is turned to show (above his head bone)
+  const MIR_AIM = Number(q.get('maim') ?? 0.12);   // e5: the point on the driver the mirror is turned to show (above his head bone)
   const E4LEAN = Number(q.get('e4ln') ?? 0.38), E4DZ = Number(q.get('e4dz') ?? -0.05), E4FO = Number(q.get('e4fo') ?? 0.35);
   const S5 = { dx: Number(q.get('s5dx') ?? 0.05), dz: Number(q.get('s5dz') ?? 0.08), yaw: Number(q.get('s5y') ?? 0.9), hb: Number(q.get('s5hb') ?? 0.75), cr: Number(q.get('s5cr') ?? 0.1) };
   const S5C = Number(q.get('s5c') ?? 0.12), S5PY = Number(q.get('s5py') ?? 0), S5PK = Number(q.get('s5pk') ?? -0.25);
@@ -271,6 +271,13 @@ export async function create() {
       for (const bx of boxes) { const d = Math.min(bx.h.x - Math.abs(p.x - bx.c.x), bx.h.y - Math.abs(p.y - bx.c.y), bx.h.z - Math.abs(p.z - bx.c.z)); if (d > best[0]) best = [d, bx.nm, (b || boneOf(mesh, i)).name]; } });
     return `${(best[0] * 1000).toFixed(1)}mm ${best[1]} ${best[2]}`; };
   // the steering wheel's rim (a torus, radius 0.185, tube 0.017, in the wheel's frame): deepest hand skin into the tube, and the nearest
+  // the dash face (car.dashZ): skin in front of the cabin's face, > 0 mm = into the dash; and the rim against the whole body but the hands
+  const dashPen = (av, car) => { const inv = new THREE.Matrix4().copy(car.group.matrixWorld).invert(), p = V(0, 0, 0); let best = [-1e9, ''];
+    skinPts(av, 2, (v, mesh, i) => { p.copy(v).applyMatrix4(inv); if (Math.abs(p.x) > 0.79 || p.y < 0.46 || p.y > 0.99 || p.z < 0.25) return; const d = p.z - car.dashZ(p.x, p.y); if (d > best[0]) best = [d, boneOf(mesh, i).name]; });
+    return `${(best[0] * 1000).toFixed(1)}mm ${best[1]}`; };
+  const rimBody = (av, car) => { const inv = new THREE.Matrix4().copy(car.wheel.matrixWorld).invert(), st = new Set([...handSet(av, 'Left'), ...handSet(av, 'Right')]), p = V(0, 0, 0); let pen = -1e9, nm = '';
+    skinPts(av, 2, (v, mesh, i) => { const b = boneOf(mesh, i); if (st.has(b)) return; p.copy(v).applyMatrix4(inv); const q2 = Math.hypot(p.x, p.y) - 0.185, d = 0.017 - Math.hypot(q2, p.z); if (d > pen) { pen = d; nm = b.name; } });
+    return `${(pen * 1000).toFixed(1)}mm ${nm}`; };
   const rimPen = (av, car, sd) => { const inv = new THREE.Matrix4().copy(car.wheel.matrixWorld).invert(), st = handSet(av, sd), p = V(0, 0, 0); let pen = -1e9, nm = '';
     skinPts(av, 1, (v, mesh, i) => { const b = boneOf(mesh, i); if (!st.has(b)) return; p.copy(v).applyMatrix4(inv); const q2 = Math.hypot(p.x, p.y) - 0.185, d = 0.017 - Math.hypot(q2, p.z); if (d > pen) { pen = d; nm = b.name; } });
     return `${(pen * 1000).toFixed(1)}mm ${nm}`; };
@@ -301,8 +308,8 @@ export async function create() {
     const out = [`DBG ${id} t=${t.toFixed(2)}`];
     const inB = ['e1', 'e2', 'e3', 'e4', 'e5'].includes(id), inG = ['r5', 'tw1', 'tw2', 'tw3'].includes(id);
     if (q.get('heads')) { if (fake.root.visible) out.push(`fake ${headTop(fake, black)}`); if (real.root.visible) out.push(`real ${headTop(real, grey)}`); if (ines.root.visible && (inB || inG)) out.push(`ines ${headTop(ines, inB ? black : grey)}`); }
-    if (fake.root.visible) out.push(`fake rimL ${rimPen(fake, black, 'Left')} rimR ${rimPen(fake, black, 'Right')} seat ${seatPen(fake, black)} roof ${roofPen(fake, black)} console ${boxPen(fake, black.group, [{ c: V(0, 0.45, -0.02), h: V(0.1, 0.15, 0.375), nm: 'console' }], handSet(fake, 'Right'))}`);
-    if (real.root.visible) out.push(`real rimL ${rimPen(real, grey, 'Left')} rimR ${rimPen(real, grey, 'Right')} seat ${seatPen(real, grey)} roof ${roofPen(real, grey)}`);
+    if (fake.root.visible) out.push(`fake rimL ${rimPen(fake, black, 'Left')} rimR ${rimPen(fake, black, 'Right')} rimBody ${rimBody(fake, black)} dash ${dashPen(fake, black)} seat ${seatPen(fake, black)} roof ${roofPen(fake, black)} console ${boxPen(fake, black.group, [{ c: V(0, 0.45, -0.02), h: V(0.1, 0.15, 0.375), nm: 'console' }], handSet(fake, 'Right'))}`);
+    if (real.root.visible) out.push(`real rimL ${rimPen(real, grey, 'Left')} rimR ${rimPen(real, grey, 'Right')} rimBody ${rimBody(real, grey)} dash ${dashPen(real, grey)} seat ${seatPen(real, grey)} roof ${roofPen(real, grey)}`);
     if (ines.root.visible) {
       if (phone.visible) { const th = phone.worldToLocal(wp(ines.bones.RightHandThumb3).lerp(wp(ines.bones.RightHandThumb2), -0.8)), pk = phone.worldToLocal(wp(ines.bones.RightHandPinky3));
         out.push(`phone ${boxPen(ines, phone, phoneBox, handSet(ines, 'Right'))} thumbtip (${(th.x * 100).toFixed(1)}, ${(th.y * 100).toFixed(1)}, ${(th.z * 100).toFixed(1)}) cm pinky3 (${(pk.x * 100).toFixed(1)}, ${(pk.y * 100).toFixed(1)}, ${(pk.z * 100).toFixed(1)})`); }
@@ -342,7 +349,6 @@ export async function create() {
     r2: P2(S.r2, V(-1.6, 1.42, 1.75), V(-1.5, 1.41, 1.8), V(2.9, 1.05, 3.6), V(2.9, 1.05, 3.6), 44, 42),
     r3: P2(S.r3, V(-0.9, 1.45, 11.0), V(-0.95, 1.45, 10.95), V(2.45, 1.2, 2.65), V(2.45, 1.2, 2.65), 30, 29),
     r4a: P2(S.r4a, V(-2.2, 1.2, 3.05), V(-2.15, 1.19, 3.08), V(6.0, 0.85, 4.95), V(5.6, 0.85, 4.9), 42, 41),
-    r4b: P2(S.r4b, V(1.55, 1.38, 6.75), V(1.58, 1.375, 6.71), V(2.75, 1.13, 5.72), V(2.75, 1.13, 5.72), 34, 31),
     end: P2(S.end, V(1.05, 1.55, 1.75), V(1.0, 1.54, 1.78), V(1.6, 1.0, 5.2), V(1.6, 1.0, 5.2), 46),
   };
   // cameras that ride a car (local keys, eased by the shot's k)
@@ -417,11 +423,11 @@ export async function create() {
         show(fake, () => seatPose(fake, black, 'driver', lean
           ? { lean: RECLINE, headUp: 0.3, look: id === 'tip4' || id === 's4' ? EYES_WIN : toW(black, -1.6, 1.42, -0.02), lookK: 1, ...GRIP_L, curlR: 0.3, handL: wheelHand(black, 1), handR: (P, fwd, left, up) => ({ hand: toW(black, 0.02, 0.67, -0.05), pole: P.clone().addScaledVector(left, -0.6).addScaledVector(up, 0.2), F: fwd.clone(), N: V(0, -1, 0) }) }
           : back ? { fz: 0.03, lean: RECLINE, twist: -0.25, look: V(3.93, 1.52, 4.17), lookK: 0.85, ...GRIP_L, curlR: 0.3, handL: wheelHand(black, 1), handR: (P, fwd, left, up) => ({ hand: toW(black, 0.02, 0.67, -0.05), pole: P.clone().addScaledVector(left, -0.6).addScaledVector(up, 0.2), F: fwd.clone(), N: V(0, -1, 0) }) }
-          : { look: id === 'e5' ? toW(black, 0, MIR_Y, -0.13) : id === 's3' && tt > T_STOP - 0.8 ? toW(black, -1.6, 1.45, 0.1) : toW(black, 0.3, 1.1, 6), lookK: 0.9, lean: RECLINE, headUp: 0.3, ...GRIP, handL: wheelHand(black, 1), handR: wheelHand(black, -1) }));
+          : { look: id === 'e5' ? toW(black, 0, MIR_Y, MIR_Z) : id === 's3' && tt > T_STOP - 0.8 ? toW(black, -1.6, 1.45, 0.1) : toW(black, 0.3, 1.1, 6), lookK: 0.9, lean: RECLINE, headUp: 0.3, ...GRIP, handL: wheelHand(black, 1), handR: wheelHand(black, -1) }));
         if (lean) morph(fake, { mouthsmile: id === 'hook' ? 0.35 : 0.25 });
       }
       if (SWEEP?.includes('rim') && fake.root.visible) { for (const u of [0.045, 0.052]) for (const a of [0.055, 0.065]) for (const th of [-1.0, -1.5]) for (const c of [0.4, 0.5]) {
-          seatPose(fake, black, 'driver', { look: toW(black, 0.3, 1.1, 6), lookK: 0.9, curlL: c, curlR: c, thumbL: th, thumbR: th, handL: wheelHand(black, 1, { u, a }), handR: wheelHand(black, -1, { u, a }) }); fake.root.updateMatrixWorld(true);
+          seatPose(fake, black, 'driver', { look: toW(black, 0.3, 1.1, 6), lookK: 0.9, lean: RECLINE, headUp: 0.3, curlL: c, curlR: c, thumbL: th, thumbR: th, handL: wheelHand(black, 1, { u, a }), handR: wheelHand(black, -1, { u, a }) }); fake.root.updateMatrixWorld(true);
           console.log(`SWEEP rim u=${u} a=${a} th=${th} c=${c} L ${rimPen(fake, black, 'Left')} R ${rimPen(fake, black, 'Right')}`); }
         show(fake, () => seatPose(fake, black, 'driver', { look: toW(black, 0.3, 1.1, 6), lookK: 0.9, lean: RECLINE, headUp: 0.3, ...GRIP, handL: wheelHand(black, 1), handR: wheelHand(black, -1) })); }
       if (SWEEP?.includes('roof') && fake.root.visible) { for (const nm of ['lean', 'back']) for (const ln of [0, 0.04]) for (const tw of [-0.15, -0.25]) for (const fz of [0, 0.03]) {
@@ -441,7 +447,8 @@ export async function create() {
           seatPose(real, grey, 'driver', { fz, lean: ln, look: toW(grey, 0.3, 1.1, 6), lookK: 0.9, ...GRIP, handL: wheelHand(grey, 1), handR: wheelHand(grey, -1) }); real.root.updateMatrixWorld(true);
           console.log(`SWEEP roof real fz ${fz} lean ${ln} roof ${roofPen(real, grey)} seat ${seatPen(real, grey)} rimL ${rimPen(real, grey, 'Left')}`); } }
       // --- the real driver
-      if (greyOn) show(real, () => seatPose(real, grey, 'driver', { fz: REAL_FZ, lean: REAL_LEAN, headUp: 0.25, look: toW(grey, 0.3, 1.1, 6), lookK: 0.9, ...GRIP, handL: wheelHand(grey, 1), handR: wheelHand(grey, -1) }));
+      if (id === 'r4b') grey.setWindow('RF', smooth(S.r4b.t0 - 0.6, S.r4b.t0 + 0.2, tt));   // Lucas lowers the window to her, as the fake one did
+      if (greyOn) show(real, () => seatPose(real, grey, 'driver', { fz: REAL_FZ, lean: REAL_LEAN, headUp: id === 'r4b' ? 0 : 0.25, look: id === 'r4b' ? V(gx + 0.05, 0.92, 4.02) : toW(grey, 0.3, 1.1, 6), lookK: 0.9, ...GRIP, handL: wheelHand(grey, 1), handR: wheelHand(grey, -1) }));
       // --- Inès
       const IN_BLACK = ['e1', 'e2', 'e3', 'e4', 'e5'].includes(id), IN_GREY = ['r5', 'tw1', 'tw2', 'tw3'].includes(id);
       if (id === 's1') {
@@ -494,7 +501,7 @@ export async function create() {
       }
       if (IN_BLACK || IN_GREY) {
         const car = IN_BLACK ? black : grey;
-        const lookAt2 = id === 'e3' ? toW(car, 0.1, 1.1, 4) : id === 'e5' ? toW(car, 0, MIR_Y, -0.13) : id === 'e4' ? car.grips.handleInRR() : id === 'tw1' ? toW(car, -3, 1.2, -1.5) : phone.position.clone();
+        const lookAt2 = id === 'e3' ? toW(car, 0.1, 1.1, 4) : id === 'e5' ? toW(car, 0, MIR_Y, MIR_Z) : id === 'e4' ? car.grips.handleInRR() : id === 'tw1' ? toW(car, -3, 1.2, -1.5) : phone.position.clone();
         const phoneIn = ['e2', 'r5', 'tw2', 'tw3'].includes(id);
         if (id !== 'e5') show(ines, () => {
           const base = { look: lookAt2, lookK: 0.9, handL: lapL, curlL: 0.35, footFwd: 0.4, ...(phoneIn ? { curlR: 0.08, pkR: PK, thumbR: THUMB } : id === 'e4' ? { curlR: LEVER_CURL } : {}) };
@@ -511,9 +518,9 @@ export async function create() {
           } else seatPose(ines, car, 'rearR', { ...base, handR: phoneIn ? phoneLap : (P, fwd, left, up) => ({ hand: P.clone().addScaledVector(fwd, 0.26).addScaledVector(up, 0.13).addScaledVector(left, -0.1), pole: P.clone().addScaledVector(up, 0.25).addScaledVector(left, -0.6).addScaledVector(fwd, -0.3), F: fwd.clone().addScaledVector(left, 0.4).normalize(), N: V(0, -1, 0) }) });
         });
         if (phoneIn) { phone.visible = true; phoneFit(ines, 'Right', phone); }
-        cabin.intensity = 0.5; cabin.position.copy(toW(car, -0.1, 1.05, -0.4));
+        cabin.intensity = 0.12; cabin.position.copy(toW(car, 0, 1.32, -0.55));   // under the roof, as far from everyone (0.5 by the console burnt the driver's white sleeve)
         // street light sweeping across the cabin as the car drives
-        const ph = ((car === black ? bdist : gdist) / 9) % 1; passing.intensity = 5 * Math.pow(Math.sin(Math.PI * ph), 6); passing.position.copy(toW(car, -2.5, 3.2, lerp(3, -4, ph)));
+        const ph = ((car === black ? bdist : gdist) / 9) % 1; passing.intensity = 3 * Math.pow(Math.sin(Math.PI * ph), 6); passing.position.copy(toW(car, -2.5, 3.2, lerp(3, -4, ph)));
       }
       if (id === 'r2') {
         const A0 = I_P.clone().add(V(0.05, 0, 0.12)), A1 = V(2.45, K, 2.65), u = smooth(0.15, 0.95, k), pos = A0.clone().lerp(A1, u);
@@ -539,6 +546,10 @@ export async function create() {
 
       // --- cameras
       if (CAM[id]) CAM[id].apply(cam, tt);
+      if (id === 'r4b') {
+        // « Bonne photo » : her eyes at the grey car's open window, Lucas's face (the hook's framing, a friendly face this time)
+        const e = smooth(0, 1, k); cam.position.set(gx + lerp(0.04, 0.06, e), lerp(1.215, 1.2, e), lerp(3.98, 4.06, e)); cam.lookAt(toW(grey, 0.37, 1.25, -0.17)); cam.fov = lerp(44, 41, e); cam.updateProjectionMatrix();
+      }
       if (id === 'hook' || id === 's4') {
         // her eyes, bent to the window: his face in the frame of the open window (a slow push-in)
         const e = smooth(0, 1, id === 'hook' ? k : 0.4 + 0.6 * k); cam.position.set(lerp(2.94, 2.96, e), lerp(1.215, 1.2, e), lerp(3.98, 4.06, e)); cam.lookAt(toW(black, 0.37, 1.27, -0.17)); cam.fov = lerp(46, 43, e); cam.updateProjectionMatrix();
@@ -551,7 +562,7 @@ export async function create() {
       if (id === 'e2' || id === 'r5' || id === 'tw2' || id === 'tw3') phoneCam(id === 'tw3' || id === 'tw2' ? 0.31 : 0.28, 34);
       if (id === 'e3') carCam(black, k, V(-0.12, 1.16, -1.18), V(-0.1, 1.155, -1.15), V(0.05, 1.05, 4), V(0.08, 1.05, 4), 56, 54);
       if (id === 'e4') carCam(black, k, V(-0.36, 1.0, -0.42), V(-0.37, 0.995, -0.43), V(-0.72, 0.84, -0.62), V(-0.72, 0.84, -0.62), 40, 37);
-      if (id === 'e5') carCam(black, k, V(-0.4, 1.17, -1.22), V(-0.39, 1.17, -1.2), V(0, MIR_Y, -0.13), V(0, MIR_Y, -0.13), 17, 15);
+      if (id === 'e5') carCam(black, k, V(-0.4, 1.17, -1.22), V(-0.39, 1.17, -1.2), V(0, MIR_Y, MIR_Z), V(0, MIR_Y, MIR_Z), 12.5, 11);   // the mirror 1.5 m ahead
       if (id === 'tw1') { carCam(grey, k, V(0.02, 1.13, -0.4), V(0.0, 1.13, -0.42), V(-0.42, 1.17, -0.96), V(-0.42, 1.17, -0.96), 36, 33); const hd = wp(ines.bones.Head).add(V(0, 0.07, 0)); cam.lookAt(hd); }
       if (DBG && q.get('dbgcam')) { const c = q.get('dbgcam').split(',').map(Number); cam.position.set(c[0], c[1], c[2]); cam.lookAt(c[3], c[4], c[5]); cam.fov = c[6]; }   // look-dev of contacts
       cam.near = IN_BLACK || IN_GREY || id === 's4' || id === 'tip4' || id === 's5' || phone.visible || (DBG && q.get('dbgcam')) ? 0.012 : 0.05; if (id === 'e5') cam.near = Number(q.get('e5near') ?? 0.1); cam.far = id === 'e5' ? Number(q.get('e5far') ?? 900) : 900; cam.updateProjectionMatrix(); cam.updateMatrixWorld();
@@ -559,7 +570,7 @@ export async function create() {
       if (DBG && q.get('noglass')) black.group.traverse((o) => { if (o.material && o.material.color && o.material.color.getHexString() === '080a0e') o.visible = false; });
       if (DBG && q.get('mirhide')) black.group.children.forEach((c) => { if (c !== black.mirror.parent) c.visible = false; });
       if (DBG && q.get('mirball')) { if (!globalThis.MB) { globalThis.MB = new THREE.Mesh(new THREE.SphereGeometry(0.04, 16, 12), new THREE.MeshBasicMaterial({ color: '#ff0000' })); globalThis.MB.frustumCulled = false; scene.add(globalThis.MB); } globalThis.MB.position.copy(wp(fake.bones.Head).add(V(0, 0.06, 0))); }
-      if (blackOn) { const M = toW(black, 0, MIR_Y, -0.13), eI = toW(black, -0.4, 1.17, -1.22), eD = wp(fake.bones.Head).add(V(0, MIR_AIM, 0));
+      if (blackOn) { const M = toW(black, 0, MIR_Y, MIR_Z), eI = toW(black, -0.4, 1.17, -1.22), eD = wp(fake.bones.Head).add(V(0, MIR_AIM, 0));
         const n = eI.clone().sub(M).normalize().add(eD.clone().sub(M).normalize()).normalize(); black.mirror.parent.lookAt(M.clone().sub(n)); }
       // looks
       if (etsi && !['etsi'].includes(id)) { G.uSat.value = 0.4; G.uTint.value.set(1.05, 0.96, 0.94); }
@@ -570,7 +581,7 @@ export async function create() {
       if (id === 'tip2b') { fill.intensity = 6; fill.position.copy(toW(black, 0.0, 1.2, 3.2)); }
       if (id === 'tip3') { fill.intensity = 1.2; fill.position.copy(toW(grey, STK.x + 0.9, STK.y + 0.9, STK.z + 0.6)); }
       if (id === 'e5') { cabin.intensity = Number(q.get('e5l') ?? 0.18); cabin.position.copy(toW(black, 0.35, 1.0, 0.28)); }
-      if (id === 'r4b') { cabin.intensity = 0.45; cabin.position.copy(toW(grey, 0.3, 1.12, 0.25)); }
+      if (id === 'r4b') { cabin.intensity = 0.3; cabin.position.copy(toW(grey, 0.05, 1.2, 0.12)); }   // over the console (by the rim, it burnt the wheel)
       if (id === 'e5' && k > 0.88) G.uFade.value = smooth(0.88, 1.0, k);
       if (S.rewind.t0 <= t && t < S.rewind.t1) { G.uScan.value = 1.0; G.uSat.value = 0.4; G.uAberr.value = 0.012; }
       // overlay

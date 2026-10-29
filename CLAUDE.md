@@ -541,4 +541,12 @@ own series (pitch first, rule 10). Rules that clash with it (3, 5, 11, 16, 17, 2
   toward the door (ep24 e4: `fo` 0.35) or the back of the hand sinks into the panel: check the rest pose and the pulled pose.
 - A dome light 0.4 m above a headrest burns it white (1.3 → 0.5), a flat plate on a curved bumper needs ~2.6 cm of standoff (the skin hid the top of
   the letters at 1.2 cm), and an extra 0.4 m off the axis of a 44-degree camera at 0.7 m pokes into the frame edge: hide extras a shot does not need.
-- From the passenger window the rear-view mirror sits between the driver's eyes and the top of his head: mirror at 1.385 (`MIR_Y`), her POV at 1.2.
+- From the passenger window the rear-view mirror sits between the driver's eyes and the top of his head: her POV at 1.2 (now moot: the mirror is ahead of him).
+- Owner, 29 Oct 2026 (S2 P1): « pas de vide au bout de 10 m », « le volant très bas », a dashboard that does not look real, « plein de petits détails ».
+  A street must run on to the fog both ways: `pigalle24.js` `extendBoulevard` (Haussmann blocks with cheap shopfronts from shared textures, then
+  painted far fronts, instanced lamps, parked cars and bollards, plane trees on the lamps' grid); and the haze takes the city glow's colour (a
+  near-black fog turns the end of every street into a void however much is built there).
+- Car cabins: check the proportions against the occupants, not only the body. ep24's windshield header sat over the driver's head (the mirror 4 cm
+  in front of his eyes); now `COWL` 0.98, `WS` 0.16 (header 0.33 m ahead of his eyes), mirror at `MIR_Z` 0.24. A steering wheel's top leans
+  toward the windshield (its face toward the chest, the column forward and down into the dash): ep24's was tilted the other way and read as a wheel
+  in his lap. `dashPen` (knees against `car.dashZ`) and `rimBody` (the rim against everything but the hands) join the contact checks.

@@ -121,6 +121,7 @@ export function vtcTex(plate) {
 // ---------- the car ----------
 export function makeCar24({ paint = '#0c0d10', metal = 0.55, plate = 'HV-917-RB', vtc = false, mirrorReflect = false, seed = 1 } = {}) {
   const g = new THREE.Group();
+  const SQ = new URLSearchParams(globalThis.location ? location.search : '');   // look-dev switches
   const paintM = new THREE.MeshPhysicalMaterial({ color: paint, metalness: metal, roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.035, envMapIntensity: 1.25 });
   // panel gaps on the skin (drawn, except the curb-side rear door which is a real separate panel)
   paintM.onBeforeCompile = (sh) => {
@@ -138,7 +139,9 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   if (q.z > 1.02 && q.z < 2.15 && q.y > 0.7) s = max(s, seamL(abs(q.x) - 0.74) * step(0.93, 1.0));  // hood shut lines
   diffuseColor.rgb *= 1.0 - 0.85 * s; }`);
   };
-  const glassM = new THREE.MeshPhysicalMaterial({ color: '#080a0e', metalness: 0.15, roughness: 0.03, transparent: true, opacity: 0.62, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 2.6, side: THREE.DoubleSide, depthWrite: false });
+  // the bars' point lights mirrored in the pane as one tiny dot that bloomed into a blob (a point light stands for a whole lit shopfront):
+  // a weak punctual specular, no clearcoat, and the environment's reflections kept by its intensity
+  const glassM = new THREE.MeshPhysicalMaterial({ color: '#080a0e', metalness: 0.15, roughness: 0.05, transparent: true, opacity: 0.62, clearcoat: 0, specularIntensity: 0.25, envMapIntensity: 6, side: THREE.DoubleSide, depthWrite: false });
   const blackM = new THREE.MeshPhysicalMaterial({ color: '#08090a', roughness: 0.22, clearcoat: 0.8, clearcoatRoughness: 0.1, side: THREE.DoubleSide });
   const trimM = new THREE.MeshStandardMaterial({ color: '#111214', roughness: 0.75 });
   const chromeM = new THREE.MeshStandardMaterial({ color: '#c9ccd1', metalness: 1, roughness: 0.3, envMapIntensity: 0.55 });
@@ -223,7 +226,7 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   // the curb-side rear door's window and frame, in the door's frame
   const toDoor = (m) => { m.geometry.translate(C.B, 0, -C.DOOR_R[1]); door.add(m); };
   toDoor(sideRange(-1, C.RWZ[1], C.RWZ[0], 0, 0.06, blackM)); toDoor(sideRange(-1, C.RWZ[1], C.RWZ[0], 0.92, 1, blackM));
-  { const m = sideRange(-1, C.RWZ[1], C.RWZ[0], 0.05, 0.925, glassM); m.renderOrder = 2; m.castShadow = false; toDoor(m); }
+  { const m = sideRange(-1, C.RWZ[1], C.RWZ[0], 0.05, 0.925, glassM); m.renderOrder = 2; m.castShadow = SQ.get('glsh') === '1'; toDoor(m); }
 
   // headliner (under the roof and the pillars' tops) and inner pillars
   const fabric = new THREE.MeshStandardMaterial({ color: '#3a3936', roughness: 0.95, side: THREE.DoubleSide });
@@ -314,7 +317,7 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   const pleat = (() => { const cv = document.createElement('canvas'); cv.width = cv.height = 256; const c = cv.getContext('2d'); c.fillStyle = '#808080'; c.fillRect(0, 0, 256, 256);
     for (let y = 0; y < 256; y += 32) { const gr = c.createLinearGradient(0, y, 0, y + 32); gr.addColorStop(0, '#3a3a3a'); gr.addColorStop(0.12, '#9a9a9a'); gr.addColorStop(0.5, '#8a8a8a'); gr.addColorStop(0.88, '#9a9a9a'); gr.addColorStop(1, '#3a3a3a'); c.fillStyle = gr; c.fillRect(0, y, 256, 32); }
     const t = new THREE.CanvasTexture(cv); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; })();
-  const seatM = new THREE.MeshPhysicalMaterial({ color: '#1e1f22', roughness: 0.55, sheen: 0.35, sheenRoughness: 0.6, sheenColor: '#5a5a5a', bumpMap: pleat, bumpScale: 1.5 });
+  const seatM = new THREE.MeshPhysicalMaterial({ color: '#1e1f22', roughness: Number(SQ.get('seatr') ?? 0.55), sheen: Number(SQ.get('seats') ?? 0.35), sheenRoughness: 0.6, sheenColor: '#5a5a5a', bumpMap: pleat, bumpScale: 1.5 });
   const sideM = new THREE.MeshPhysicalMaterial({ color: '#1b1c1f', roughness: 0.5, sheen: 0.3, sheenRoughness: 0.6, sheenColor: '#555' });
   const boxes = [];
   const box = (w, h, d, x, y, z, rx = 0, nm = 'seat', mat = seatM, parent = g) => { const m = add(new RoundedBoxGeometry(w, h, d, 4, Math.min(0.045, h / 2.2, d / 2.2)), mat, parent); m.position.set(x, y, z); m.rotation.x = rx; boxes.push({ nm, m, w, h, d }); return m; };
@@ -403,7 +406,7 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   const domeY = topPt(-0.62, 0).y - 0.038;
   const domeLens = add(new RoundedBoxGeometry(0.16, 0.012, 0.07, 2, 0.005), domeM); domeLens.position.set(0, domeY, -0.62); domeLens.castShadow = false;
   // a spot facing down from the lens (a point light 4 cm under it burnt the headliner around it white, seen through the windows)
-  const domeLight = new THREE.SpotLight('#ffd9a8', 0, 2.4, 1.25, 0.7, 2); domeLight.position.set(0, domeY - 0.012, -0.62); g.add(domeLight);
+  const domeLight = new THREE.SpotLight('#ffd9a8', 0, 2.4, 0.95, 0.8, 2); domeLight.position.set(0, domeY - 0.012, -0.62); g.add(domeLight);
   const domeTg = new THREE.Object3D(); domeTg.position.set(0, domeY - 1, -0.62); g.add(domeTg); domeLight.target = domeTg;
   // interior glow (dash, screens) and a contact shadow
   const dashLight = new THREE.PointLight('#a8c8ff', 0, 1.6, 2); dashLight.position.set(0.33, 1.08, -0.02); g.add(dashLight);   // the screens' glow on his face (3 cm from the dash it burnt a white square into it)
@@ -424,7 +427,7 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   const setDoor = (a) => { door.rotation.y = a; door.updateMatrixWorld(true); };
   const setLocks = (k) => { for (const p of pins) p.position.y = 0.985 - 0.022 * k; };
   const setHandleIn = (k) => { hPiv.rotation.y = -0.38 * k; hPiv.updateMatrixWorld(true); };
-  const setDome = (k) => { domeM.emissiveIntensity = 0.6 * k; domeLight.intensity = 0.7 * k; };
+  const setDome = (k) => { domeM.emissiveIntensity = 0.35 * k; domeLight.intensity = 0.16 * k; };   // a soft lamp: brighter, it burnt the front headrests' backs (0.47 m off) white
   const setLights = ({ head = 0, tail = 0, brake = 0, blink = 0, dash = 0 } = {}) => {
     headM.emissiveIntensity = 5 * head; tailM.emissiveIntensity = 1.6 * tail + 4 * brake; blinkM.emissiveIntensity = 5 * blink;
     screenM.emissiveIntensity = 0.55 * dash; center.material.emissiveIntensity = 0.5 * dash; dashLight.intensity = 0.02 * dash;

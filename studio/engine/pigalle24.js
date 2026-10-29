@@ -381,7 +381,7 @@ export function buildPigalle(renderer, { ssaa = 2 } = {}) {
   const moon = new THREE.DirectionalLight('#9fb4e0', 0.25); moon.position.set(-30, 60, 40); scene.add(moon);
   // environment for reflections: night sky + the boulevard's colours
   const pm = new THREE.PMREMGenerator(renderer), env = new THREE.Scene(); env.add(makeNightSky().mesh || makeNightSky());
-  for (const [x, y, z, c, k] of [[-10, 3, -2, '#ff4fa3', 6], [6, 3, -2, '#b04dff', 5], [-4, 3, -2, '#5aa8ff', 5], [0, 6, 4, '#ffcf98', 8], [12, 3, 34, '#ffb46a', 5], [-20, 3, 34, '#ff3b30', 4], [20, 3, -2, '#4dff88', 3]]) {
+  for (const [x, y, z, c, k] of [[-10, 3, -2, '#ff4fa3', 6], [6, 3, -2, '#b04dff', 5], [-4, 3, -2, '#5aa8ff', 5], [0, 6, 4, '#ffcf98', 5], [12, 3, 34, '#ffb46a', 5], [-20, 3, 34, '#ff3b30', 4], [20, 3, -2, '#4dff88', 3]]) {
     const m = new THREE.Mesh(new THREE.SphereGeometry(1.2, 12, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(k) })); m.position.set(x, y, z); env.add(m); }
   scene.environment = pm.fromScene(env, 0.03).texture; scene.environmentIntensity = 0.55;
   return { scene, sky, refl, ground, buildings: B, shops, shopLights, lampSpots, lamps, hemi, moon, heroBays };

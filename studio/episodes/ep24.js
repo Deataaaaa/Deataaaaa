@@ -142,17 +142,19 @@ export async function create() {
   let lastScreen = '';
   const drawScreen = (mode, o = {}) => {
     phone.screen.material.emissiveIntensity = mode === 'off' ? 0 : mode === 'lock' ? 0.8 : 0.42;
+    phone.screen.material.envMapIntensity = mode === 'off' ? 0.15 : 0.35;   // the glass's anti-glare: at 1 the dead screen showed the neon as big green and purple washes
     const key = JSON.stringify([mode, o]); if (key === lastScreen) return; lastScreen = key;
     const w = pcv.width, h = pcv.height, ctx = pc; ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (mode === 'off') { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h); phone.tex.needsUpdate = true; return; }
     if (mode === 'lock') {
-      ctx.drawImage(appleCv, 0, 0, w, h); const gr = ctx.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, 'rgba(0,0,0,0.35)'); gr.addColorStop(0.5, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.45)'); ctx.fillStyle = gr; ctx.fillRect(0, 0, w, h);
-      statusBar(ctx, w, '', o.pct ?? 9); ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.font = '300 150px Inter, Arial, sans-serif'; ctx.fillText(o.clock || '02:31', w / 2, 260);
-      ctx.font = '500 30px Inter, Arial, sans-serif'; ctx.fillText('dimanche 1 novembre', w / 2, 150);
-      if (o.notif) { const a = o.notif; ctx.globalAlpha = a; ctx.fillStyle = 'rgba(40,40,46,0.9)'; ctx.beginPath(); ctx.roundRect(24, 330, w - 48, 190, 30); ctx.fill();
-        ctx.fillStyle = '#ffcc00'; ctx.beginPath(); ctx.roundRect(48, 360, 64, 64, 16); ctx.fill(); ctx.fillStyle = '#1c1c1e'; ctx.beginPath(); ctx.arc(80, 392, 16, 0, 7); ctx.fill(); ctx.fillStyle = '#ffcc00'; ctx.beginPath(); ctx.arc(80, 392, 7, 0, 7); ctx.fill();
-        ctx.textAlign = 'left'; ctx.fillStyle = '#fff'; ctx.font = '700 30px Inter, Arial, sans-serif'; ctx.fillText('Traceur inconnu détecté', 130, 384); ctx.font = '500 26px Inter, Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillText('maintenant', 130, 420);
-        ctx.fillStyle = '#eee'; ctx.font = '500 28px Inter, Arial, sans-serif'; ctx.fillText('Un traceur inconnu se déplace', 48, 468); ctx.fillText('avec vous depuis 1 h 07.', 48, 504); ctx.globalAlpha = 1; }
+      // Apple sits low in the wallpaper: the clock above his head, clear of her thumb (top right), the alert over his paws
+      ctx.fillStyle = '#cdbda4'; ctx.fillRect(0, 0, w, h); ctx.drawImage(appleCv, 0, h * 0.3, w, h); const gr = ctx.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, 'rgba(0,0,0,0.35)'); gr.addColorStop(0.5, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.45)'); ctx.fillStyle = gr; ctx.fillRect(0, 0, w, h);
+      statusBar(ctx, w, '', o.pct ?? 9); ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.font = '300 140px Inter, Arial, sans-serif'; ctx.fillText(o.clock || '02:31', w / 2, 430);
+      ctx.font = '500 30px Inter, Arial, sans-serif'; ctx.fillText('dimanche 1 novembre', w / 2, 290);
+      if (o.notif) { const a = o.notif; ctx.globalAlpha = a; ctx.fillStyle = 'rgba(40,40,46,0.9)'; ctx.beginPath(); ctx.roundRect(24, 800, w - 48, 190, 30); ctx.fill();
+        ctx.fillStyle = '#ffcc00'; ctx.beginPath(); ctx.roundRect(48, 830, 64, 64, 16); ctx.fill(); ctx.fillStyle = '#1c1c1e'; ctx.beginPath(); ctx.arc(80, 862, 16, 0, 7); ctx.fill(); ctx.fillStyle = '#ffcc00'; ctx.beginPath(); ctx.arc(80, 862, 7, 0, 7); ctx.fill();
+        ctx.textAlign = 'left'; ctx.fillStyle = '#fff'; ctx.font = '700 30px Inter, Arial, sans-serif'; ctx.fillText('Traceur inconnu détecté', 130, 854); ctx.font = '500 26px Inter, Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillText('maintenant', 130, 890);
+        ctx.fillStyle = '#eee'; ctx.font = '500 28px Inter, Arial, sans-serif'; ctx.fillText('Un traceur inconnu se déplace', 48, 938); ctx.fillText('avec vous depuis 1 h 07.', 48, 974); ctx.globalAlpha = 1; }
       phone.tex.needsUpdate = true; return;
     }
     // the ride app
@@ -332,6 +334,15 @@ export async function create() {
     if (black.mirror && (id === 'e5' || id === 'e3')) { black.mirror.updateWorldMatrix(true, false); const Mw = black.mirror.getWorldPosition(V(0, 0, 0)), nw = V(0, 0, 1).transformDirection(black.mirror.matrixWorld), toE = cam.position.clone().sub(Mw).normalize(), toD = wp(fake.bones.Head).add(V(0, 0.06, 0)).sub(Mw).normalize();
       out.push(`mirror n·toEye ${nw.dot(toE).toFixed(3)} n·toDriver ${nw.dot(toD).toFixed(3)} reflected·toDriver ${toE.clone().reflect(nw).negate().dot(toD).toFixed(4)} visible ${black.mirror.visible} layer ${black.mirror.layers.mask}`); }
     if (black.mirror) { const m = black.mirror.getWorldPosition(V(0, 0, 0)).project(cam); out.push(`mirror ndc (${m.x.toFixed(2)}, ${m.y.toFixed(2)}, ${m.z.toFixed(3)})`); }
+    if (q.get('plist')) { const P = toW(black, -0.39, 1.13, -0.54), arr = []; scene.traverse((o) => { if (!o.isPointLight || o.intensity <= 0) return; let vis = true; o.traverseAncestors((a) => { if (!a.visible) vis = false; }); const wpL = o.getWorldPosition(V(0, 0, 0)); arr.push(`I${o.intensity.toFixed(2)} d${wpL.distanceTo(P).toFixed(2)} dist${o.distance} vis${vis && o.visible} parent ${o.parent && o.parent.type}`); });
+      out.push('points ' + arr.sort((x, y) => parseFloat(x.split(' d')[1]) - parseFloat(y.split(' d')[1])).slice(0, 8).join(' ; ')); }
+    if (q.get('lights')) { const P = toW(black, -0.39, 1.13, -0.54), arr = []; scene.traverse((o) => { if (!o.isLight || !o.visible || o.intensity <= 0 || o.isHemisphereLight || o.isDirectionalLight) return;
+        const wpL = o.getWorldPosition(V(0, 0, 0)), d = wpL.distanceTo(P); let k = 1; if (o.isSpotLight) { const dir = o.target.getWorldPosition(V(0, 0, 0)).sub(wpL).normalize(), cosA = P.clone().sub(wpL).normalize().dot(dir); k = cosA > Math.cos(o.angle) ? 1 : 0; }
+        if (o.distance > 0 && d > o.distance) k = 0; arr.push([o.intensity * k / (d * d), o.type, o.intensity.toFixed(2), d.toFixed(2), o.castShadow ? 'sh' : '']); });
+      arr.sort((a, b) => b[0] - a[0]); out.push('lights at headrest ' + arr.slice(0, 6).map((a) => `${a[1]} I${a[2]} d${a[3]} ${a[4]} -> ${a[0].toFixed(3)}`).join(' ; ')); }
+    if (q.get('pick')) { const [px, py] = q.get('pick').split(',').map(Number), rc = new THREE.Raycaster(); rc.setFromCamera(new THREE.Vector2(px * 2 - 1, 1 - py * 2), cam);
+      const hits = rc.intersectObjects(scene.children, true).filter((h) => h.object.visible && h.object.material).slice(0, 6);
+      for (const hit of hits) { const lp = black.group.worldToLocal(hit.point.clone()), m = hit.object.material; const gp = hit.object.geometry.parameters || {}; out.push(`pick ${hit.object.type} ${JSON.stringify(gp).slice(0, 60)} ${m.type} #${m.color ? m.color.getHexString() : '-'} em ${m.emissive ? m.emissive.getHexString() + ' x' + m.emissiveIntensity : '-'} at car-local (${lp.x.toFixed(2)}, ${lp.y.toFixed(2)}, ${lp.z.toFixed(2)}) dist ${hit.distance.toFixed(2)}`); } }
     console.log(out.join(' | '));
   };
 
@@ -564,6 +575,9 @@ export async function create() {
       if (id === 'e4') carCam(black, k, V(-0.36, 1.0, -0.42), V(-0.37, 0.995, -0.43), V(-0.72, 0.84, -0.62), V(-0.72, 0.84, -0.62), 40, 37);
       if (id === 'e5') carCam(black, k, V(-0.4, 1.17, -1.22), V(-0.39, 1.17, -1.2), V(0, MIR_Y, MIR_Z), V(0, MIR_Y, MIR_Z), 12.5, 11);   // the mirror 1.5 m ahead
       if (id === 'tw1') { carCam(grey, k, V(0.02, 1.13, -0.4), V(0.0, 1.13, -0.42), V(-0.42, 1.17, -0.96), V(-0.42, 1.17, -0.96), 36, 33); const hd = wp(ines.bones.Head).add(V(0, 0.07, 0)); cam.lookAt(hd); }
+      if (DBG && q.get('lightsoff')) scene.traverse((o) => { if (o.isLight && !o.isHemisphereLight) o.intensity = 0; });   // what glows by itself
+      if (DBG && q.get('keep')) { const kp = q.get('keep'); scene.traverse((o) => { if (o.isLight && !o.isHemisphereLight && !(o.type === kp || (kp === 'dome' && o === black.domeLight) || (kp === 'big' && o.intensity > 50))) o.intensity = 0; }); }
+      if (DBG && q.get('emoff')) scene.traverse((o) => { if (o.material && o.material.emissiveIntensity !== undefined && o.material.emissive && o.material.emissive.getHex() !== 0) o.visible = false; });
       if (DBG && q.get('dbgcam')) { const c = q.get('dbgcam').split(',').map(Number); cam.position.set(c[0], c[1], c[2]); cam.lookAt(c[3], c[4], c[5]); cam.fov = c[6]; }   // look-dev of contacts
       cam.near = IN_BLACK || IN_GREY || id === 's4' || id === 'tip4' || id === 's5' || phone.visible || (DBG && q.get('dbgcam')) ? 0.012 : 0.05; if (id === 'e5') cam.near = Number(q.get('e5near') ?? 0.1); cam.far = id === 'e5' ? Number(q.get('e5far') ?? 900) : 900; cam.updateProjectionMatrix(); cam.updateMatrixWorld();
       // the rear-view mirror turned so that her eyes meet his (e5)
@@ -579,7 +593,7 @@ export async function create() {
       if (id === 's4' || id === 'tip4' || id === 'hook') { cabin.intensity = 0.7; cabin.position.copy(toW(black, -0.1, 1.05, 0.15)); fill.intensity = 0.35; fill.position.copy(cam.position).add(V(0.2, 0.25, 0)); }
       if (id === 'tip4') { fill.intensity = 0.5; fill.position.copy(toW(black, -0.5, 1.3, 0.0)); }
       if (id === 'tip2b') { fill.intensity = 6; fill.position.copy(toW(black, 0.0, 1.2, 3.2)); }
-      if (id === 'tip3') { fill.intensity = 1.2; fill.position.copy(toW(grey, STK.x + 0.9, STK.y + 0.9, STK.z + 0.6)); }
+      if (id === 'tip3') { fill.intensity = 3.2; fill.position.copy(toW(grey, STK.x + 0.9, STK.y + 0.9, STK.z + 0.6)); }   // the glass, the hood's edge and the dash behind it read
       if (id === 'e5') { cabin.intensity = Number(q.get('e5l') ?? 0.18); cabin.position.copy(toW(black, 0.35, 1.0, 0.28)); }
       if (id === 'r4b') { cabin.intensity = 0.3; cabin.position.copy(toW(grey, 0.05, 1.2, 0.12)); }   // over the console (by the rim, it burnt the wheel)
       if (id === 'e5' && k > 0.88) G.uFade.value = smooth(0.88, 1.0, k);

@@ -138,7 +138,7 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   const glassM = new THREE.MeshPhysicalMaterial({ color: '#080a0e', metalness: 0.15, roughness: 0.03, transparent: true, opacity: 0.62, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 2.6, side: THREE.DoubleSide, depthWrite: false });
   const blackM = new THREE.MeshPhysicalMaterial({ color: '#08090a', roughness: 0.22, clearcoat: 0.8, clearcoatRoughness: 0.1, side: THREE.DoubleSide });
   const trimM = new THREE.MeshStandardMaterial({ color: '#111214', roughness: 0.75 });
-  const chromeM = new THREE.MeshStandardMaterial({ color: '#c9ccd1', metalness: 1, roughness: 0.18 });
+  const chromeM = new THREE.MeshStandardMaterial({ color: '#c9ccd1', metalness: 1, roughness: 0.3, envMapIntensity: 0.55 });
   const add = (geo, mat, parent = g) => { const m = new THREE.Mesh(geo, mat); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m; };
 
   // skin tube: right side split round the curb-side rear door, the front and rear wraps, the left side in one piece
@@ -160,11 +160,15 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   const cabL = new THREE.MeshStandardMaterial({ color: '#2a2b2e', roughness: 0.55 });
   const doorIn = add(new RoundedBoxGeometry(0.05, 0.62, 0.66, 3, 0.02), cabM, door); doorIn.position.set(0.105, 0.66, -0.365);
   const arm = add(new RoundedBoxGeometry(0.09, 0.05, 0.36, 3, 0.02), cabL, door); arm.position.set(0.16, 0.66, -0.39);
-  const handleIn = add(new RoundedBoxGeometry(0.025, 0.035, 0.11, 2, 0.008), chromeM, door); handleIn.position.set(0.14, 0.82, -0.14);
+  // the inner handle: a lever 3 cm off the panel on a bezel, pivoting about its front end (setHandleIn pulls its rear end in)
+  const hPiv = new THREE.Group(); hPiv.position.set(0.185, 0.84, -0.275); door.add(hPiv);
+  const handleIn = add(new RoundedBoxGeometry(0.025, 0.035, 0.14, 2, 0.008), chromeM, hPiv); handleIn.position.set(0, 0, -0.07);
+  for (const dz of [-0.008, -0.132]) add(new RoundedBoxGeometry(0.045, 0.02, 0.012, 2, 0.004), cabL, door).position.set(0.152, 0.84, -0.275 + dz);   // the lever's two brackets
   const pinR = add(new THREE.CylinderGeometry(0.006, 0.006, 0.05, 10), chromeM, door); pinR.position.set(0.12, 0.985, -0.62);
-  // outer handles: flush bars with a dark recess
+  // outer handles: a pull bar on two posts, 2.6 cm off a dark recess (fingers go behind it: a flush bar left them nowhere but the skin)
   const handleOut = (parent, x, z, sd) => { const r = add(new RoundedBoxGeometry(0.012, 0.035, 0.15, 2, 0.006), blackM, parent); r.position.set(x, 0.885, z);
-    const b = add(new RoundedBoxGeometry(0.018, 0.026, 0.13, 2, 0.008), paintM, parent); b.position.set(x + sd * 0.006, 0.885, z); return b; };
+    const b = add(new RoundedBoxGeometry(0.016, 0.026, 0.13, 2, 0.007), paintM, parent); b.position.set(x + sd * 0.040, 0.885, z);
+    for (const dz of [-0.055, 0.055]) add(new RoundedBoxGeometry(0.026, 0.016, 0.012, 2, 0.004), paintM, parent).position.set(x + sd * 0.019, 0.885, z + dz); return b; };
   handleOut(door, -0.012, -0.66, -1);
   for (const [sd, z] of [[-1, 0.12], [1, 0.12], [1, -0.92]]) { const x = sd * (C.B + 0.012); handleOut(g, x, z, sd); }
 
@@ -242,9 +246,21 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
   dg.rotateY(-Math.PI / 2); dg.translate(0.81, 0, 0);                                  // profile in (z, y); extruded along -x from x = 0.81
   const dashM = new THREE.MeshStandardMaterial({ color: '#16171a', roughness: 0.7 });
   add(dg, dashM);
-  const screenM = new THREE.MeshStandardMaterial({ color: '#000', emissive: '#9cc6ff', emissiveIntensity: 0.55, roughness: 0.3 });
+  // the dash screens in night mode (a plain light-blue emissive panel blew out to a white square): a dark cluster, a dark map
+  const scrTex = (w, h, draw) => { const cv = document.createElement('canvas'); cv.width = w; cv.height = h; draw(cv.getContext('2d'), w, h); const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t; };
+  const clusterTex = scrTex(512, 170, (c, w, h) => { c.fillStyle = '#05070a'; c.fillRect(0, 0, w, h); c.lineWidth = 10;
+    for (const cx of [110, 402]) { c.strokeStyle = '#1b2633'; c.beginPath(); c.arc(cx, 112, 72, Math.PI * 0.8, Math.PI * 2.2); c.stroke(); }
+    c.strokeStyle = '#3f7fe0'; c.beginPath(); c.arc(110, 112, 72, Math.PI * 0.8, Math.PI * 1.25); c.stroke();
+    c.textAlign = 'center'; c.fillStyle = '#c9d3e2'; c.font = '600 52px Arial, sans-serif'; c.fillText('32', 110, 128); c.fillText('D', 256, 112);
+    c.fillStyle = '#6f7d90'; c.font = '22px Arial, sans-serif'; c.fillText('km/h', 110, 160); c.fillText('02:17', 256, 150); });
+  const navTex = scrTex(480, 300, (c, w, h) => { c.fillStyle = '#090c11'; c.fillRect(0, 0, w, h); c.lineCap = 'round'; c.strokeStyle = '#1c222b';
+    for (const [x0, y0, x1, y1, lw] of [[-20, 60, 500, 130, 14], [-20, 230, 500, 170, 9], [90, -20, 150, 320, 9], [330, -20, 280, 320, 14], [-20, 300, 260, -20, 6], [200, 320, 500, 40, 6]]) { c.lineWidth = lw; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); }
+    c.strokeStyle = '#2e74e8'; c.lineWidth = 9; c.beginPath(); c.moveTo(240, 262); c.lineTo(232, 150); c.lineTo(120, 98); c.lineTo(30, 44); c.stroke();
+    c.fillStyle = '#e8ecf2'; c.beginPath(); c.moveTo(240, 226); c.lineTo(226, 258); c.lineTo(254, 258); c.closePath(); c.fill();
+    c.fillStyle = '#10141a'; c.fillRect(0, 0, w, 40); c.fillStyle = '#8fa0b6'; c.font = '20px Arial, sans-serif'; c.fillText('1,2 km', 14, 27); });
+  const screenM = new THREE.MeshStandardMaterial({ color: '#000', emissive: '#ffffff', emissiveMap: clusterTex, emissiveIntensity: 0.55, roughness: 0.8 });
   const cluster = add(new THREE.PlaneGeometry(0.30, 0.10), screenM); cluster.position.set(0.37, 0.905, 0.36); cluster.rotation.set(-0.35, Math.PI, 0);
-  const center = add(new THREE.PlaneGeometry(0.24, 0.15), screenM.clone()); center.position.set(0.0, 0.84, 0.335); center.rotation.set(-0.25, Math.PI, 0);
+  const center = add(new THREE.PlaneGeometry(0.24, 0.15), new THREE.MeshStandardMaterial({ color: '#000', emissive: '#ffffff', emissiveMap: navTex, emissiveIntensity: 0.5, roughness: 0.8 })); center.position.set(0.0, 0.84, 0.335); center.rotation.set(-0.25, Math.PI, 0);
   // steering wheel (driver side), column
   const wheel = new THREE.Group(); wheel.position.set(0.37, 0.86, 0.17); wheel.rotation.x = -0.42; g.add(wheel);
   const leather = new THREE.MeshStandardMaterial({ color: '#141414', roughness: 0.55 });
@@ -333,8 +349,13 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
     const sf = add(new THREE.PlaneGeometry(0.075, 0.075), vm); const pF = topPt(C.COWL - 0.07, 0.78); sf.position.copy(pF).add(V(0, -0.002, 0)); sf.lookAt(pF.clone().add(V(0, 0.9, 0.45)));
     const sr = add(new THREE.PlaneGeometry(0.075, 0.075), vm); const pR = topPt(C.DECK + 0.07, -0.78); sr.position.copy(pR).add(V(0, -0.002, 0)); sr.lookAt(pR.clone().add(V(0, 0.9, -0.5)));
   }
+  // the dome light (on while a door is open): a lens in the headliner and a warm point light
+  const domeM = new THREE.MeshStandardMaterial({ color: '#cfc9bb', emissive: '#ffe1b5', emissiveIntensity: 0, roughness: 0.45 });
+  const domeY = topY(0, -0.62) - 0.035;
+  const domeLens = add(new RoundedBoxGeometry(0.16, 0.012, 0.07, 2, 0.005), domeM); domeLens.position.set(0, domeY, -0.62); domeLens.castShadow = false;
+  const domeLight = new THREE.PointLight('#ffd9a8', 0, 2.4, 2); domeLight.position.set(0, domeY - 0.04, -0.62); g.add(domeLight);
   // interior glow (dash, screens) and a contact shadow
-  const dashLight = new THREE.PointLight('#a8c8ff', 0, 1.6, 2); dashLight.position.set(0.15, 0.98, 0.28); g.add(dashLight);
+  const dashLight = new THREE.PointLight('#a8c8ff', 0, 1.6, 2); dashLight.position.set(0.33, 1.08, -0.02); g.add(dashLight);   // the screens' glow on his face (3 cm from the dash it burnt a white square into it)
   const cs = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 5.2), new THREE.MeshBasicMaterial({ map: shadowTex(), transparent: true, depthWrite: false, opacity: 0.8 }));
   cs.rotation.x = -Math.PI / 2; cs.position.y = 0.012; cs.renderOrder = 1; g.add(cs);
 
@@ -349,19 +370,22 @@ float seamL(float d) { float w = fwidth(d) + 1e-5; return 1.0 - smoothstep(0.001
     const v = (y - sill(zr).y) / (rail(zr).y - sill(zr).y), x = sidePt(w.sd, (zr + zf) / 2, Math.max(0, v)).x - w.sd * 0.004;
     w.edge.visible = k > 0.02 && k < 0.98; w.edge.position.set(x, y, (zr + zf) / 2); w.edge.scale.z = Math.max(0.01, zf - zr);
   };
-  const setDoor = (a) => { door.rotation.y = a; };
+  const setDoor = (a) => { door.rotation.y = a; door.updateMatrixWorld(true); };
   const setLocks = (k) => { for (const p of pins) p.position.y = 0.985 - 0.022 * k; };
+  const setHandleIn = (k) => { hPiv.rotation.y = -0.38 * k; hPiv.updateMatrixWorld(true); };
+  const setDome = (k) => { domeM.emissiveIntensity = 2.2 * k; domeLight.intensity = 1.3 * k; };
   const setLights = ({ head = 0, tail = 0, brake = 0, blink = 0, dash = 0 } = {}) => {
     headM.emissiveIntensity = 5 * head; tailM.emissiveIntensity = 1.6 * tail + 4 * brake; blinkM.emissiveIntensity = 5 * blink;
-    screenM.emissiveIntensity = 0.55 * dash; center.material.emissiveIntensity = 0.5 * dash; dashLight.intensity = 0.25 * dash;
+    screenM.emissiveIntensity = 0.55 * dash; center.material.emissiveIntensity = 0.5 * dash; dashLight.intensity = 0.02 * dash;
   };
   const spin = (dist) => { for (const w of wheels) w.rotation.x = dist / C.RT; };
   // H-points and grip points for posing people (car frame)
   const seats = { driver: V(0.37, 0.53, -0.12), front: V(-0.37, 0.53, -0.12), rearR: V(-0.42, 0.55, -0.98), rearL: V(0.42, 0.55, -0.98) };
-  const grips = { wheelL: () => wheel.localToWorld(V(-0.17, 0.05, 0)), wheelR: () => wheel.localToWorld(V(0.17, 0.05, 0)), handleRR: () => door.localToWorld(V(0.012, 0.885, -0.62)),
+  const grips = { wheelL: () => wheel.localToWorld(V(0.17, 0.05, 0)), wheelR: () => wheel.localToWorld(V(-0.17, 0.05, 0)), handleRR: () => door.localToWorld(V(-0.031, 0.885, -0.66)),        // the gap behind the outer bar
+   
     handleInRR: () => handleIn.getWorldPosition(V(0, 0, 0)), pinRR: () => pinR.getWorldPosition(V(0, 0, 0)) };
   setLights({ tail: 1, head: 1, dash: 1 });
-  return { group: g, paint: paintM, door, windows, setWindow, setDoor, setLocks, setLights, spin, seats, grips, boxes, mirror, wheel, plate: plTex };
+  return { group: g, paint: paintM, door, windows, setWindow, setDoor, setLocks, setHandleIn, setDome, setLights, spin, seats, grips, boxes, mirror, wheel, plate: plTex, handleIn, domeLight };
 }
 
 function shadowTex() {

@@ -199,10 +199,11 @@ export function stand(av, o) {
   if (o.breath != null) { const b = Math.sin(o.breath * Math.PI * 2); rotW(B.Spine1, left, b * 0.012); rotW(B.Spine2, left, b * 0.009); }   // breathing
   const P = wp(B.Hips);
   for (const [side, s] of [['Left', 1], ['Right', -1]]) {
-    const foot = P.clone().addScaledVector(left, s * 0.12).addScaledVector(fwd, (o.stride ?? 0) * s * 0.18); foot.y = gAt(foot.x, foot.z) + 0.08;
+    // o.crouch (m): the feet come up toward the hips, so the knees bend and the body drops by that much (bending to a car window)
+    const foot = P.clone().addScaledVector(left, s * 0.12).addScaledVector(fwd, (o.stride ?? 0) * s * 0.18); foot.y = gAt(foot.x, foot.z) + 0.08 + (o.crouch ?? 0);
     const pole = P.clone().addScaledVector(fwd, 1.0).addScaledVector(up, -0.4);
     twoBoneIK(av, side + 'UpLeg', side + 'Leg', side + 'Foot', foot, pole);
-    if (B[side + 'ToeBase']) { const toe = foot.clone().addScaledVector(fwd, 0.15); toe.y = gAt(toe.x, toe.z) + 0.02; aimBone(B[side + 'Foot'], wp(B[side + 'ToeBase']), toe); }
+    if (B[side + 'ToeBase']) { const toe = foot.clone().addScaledVector(fwd, 0.15); toe.y = gAt(toe.x, toe.z) + 0.02 + (o.crouch ?? 0); aimBone(B[side + 'Foot'], wp(B[side + 'ToeBase']), toe); }
   }
   if (POSE.lookFirst && o.look) lookAt(av, o.look, o.lookK ?? 1);
   for (const [side, s] of [['Left', 1], ['Right', -1]]) {

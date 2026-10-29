@@ -42,3 +42,5 @@ Fire_Male_01
 Police_Male_03
 Police_Male_06
 Male_Adult_14
+Business_Male_06
+Male_Adult_09

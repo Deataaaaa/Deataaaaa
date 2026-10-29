@@ -91,11 +91,10 @@ def central_lock():
         c = norm(thud(rng, f, 0.08)); k_ = 0.8 * click(1300) + 0.4 * click(700); c[: len(k_)] += k_; n0 = int(d * SR); y[n0:n0 + len(c)] += c[: len(y) - n0]
     return norm(lp(y, 6000))
 def handle_dead():
-    """the inner handle pulled twice: plastic clacks, nothing behind them"""
-    y = np.zeros(int(0.9 * SR))
-    for d in [0.0, 0.45]:
-        c = click(950) + 0.5 * click(600); n0 = int(d * SR); y[n0:n0 + len(c)] += c
-        r = click(1400) * 0.5; n1 = n0 + int(0.12 * SR); y[n1:n1 + len(r)] += r
+    """one pull of the inner handle: the lever hits its stop (a plastic clack), nothing unlatches, it snaps back"""
+    y = np.zeros(int(0.8 * SR))
+    c = click(950) + 0.5 * click(600); y[:len(c)] += c
+    r = click(1400) * 0.5; n1 = int(0.43 * SR); y[n1:n1 + len(r)] += r
     return norm(y)
 def indicator(t0, t1, gain=0.05):
     tb = t0; k = 0
@@ -168,7 +167,8 @@ m.add(T_GO, fade(hiss(seg(T_GO, S['stat1']), 600, 4000), 2.0, 0.3), gain=0.02, r
 addp(T_LOCK, central_lock(), gain=0.55, rev=0.12)
 m.add(T_LOCK, boom(rng, 2.4, 50, 24, 1.4, 0.4, 0.9), gain=0.4, rev=0.5)
 indicator(S['e3'] + 0.2, S['e4'], gain=0.04)
-m.add(at('e4', 0.2), handle_dead(), gain=0.2, rev=0.1)
+# she pulls the inner handle twice (on « tire » and « Rien »): the lever hits its stop, nothing unlatches (ep24.js T_PULL)
+for tp in (Lw(10, 'tire') + 0.05, Lw(10, 'Rien')): m.add(tp + 0.12, handle_dead(), gain=0.2, rev=0.1)
 heart(S['e1'], S['e5'], 126, 150, 0.22)
 heart(S['e5'], S['stat1'] - 0.3, 150, 164, 0.26)
 m.add(S['e5'], riser(rng, seg(S['e5'], S['stat1']) - 0.2, 120, 3000, 2.5), gain=0.09, rev=0.4)

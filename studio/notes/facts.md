@@ -459,3 +459,46 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
   each side; the bolt she pushed in Part 3 is drawn as a thumb-turn bolt with no key outside, so a copied door key cannot open it.
 - Fiction (not claims): the times (4:47 → 5:10, the 22:41 flashback), her dead phone, the man, his copied key and keyring, his
   being the studio's previous tenant, the neighbours, the arrest between the 4th and the 5th, the label « Inès MARTIN ».
+
+## EP24 (« 12 % » saison 2 · Partie 1 · Le VTC): a black car stops for Inès at 2:14 am in Pigalle. Fiction; the advice and the case are real
+- "Avril 2024, à Paris. Deux jeunes femmes montent dans une voiture qu'elles prennent pour leur VTC. Leur commande n'était jamais
+  passée. Le conducteur file vers La Défense. L'une d'elles saute de la voiture, dans le tunnel." / cards "AVRIL 2024 · PARIS" and
+  "LA COMMANDE N'ÉTAIT JAMAIS PASSÉE · le conducteur, sans carte VTC, a été condamné en 2025": defense-92.fr, « Le faux chauffeur
+  VTC écope de prison pour enlèvement, séquestration et agression sexuelle sur une cliente » (21 July 2025): Sunday 21 April 2024
+  around 6 am, near the place de l'Étoile after a nightclub, two young women got into a Toyota they took for the Uber they thought
+  they had booked; the booking had never gone through; the driver had started driving illegally for a platform a few days before,
+  with someone else's car and account and no VTC card; avenue de la Grande-Armée, avenue Charles-de-Gaulle, toward the La Défense
+  tunnel, where Lina jumped from the moving car (« J'ai préféré sauter que le suivre », 15 days ITT). Tribunal judiciaire de Paris,
+  14e chambre correctionnelle, July 2025: 42 months, 18 suspended (enlèvement, séquestration, agression sexuelle). Earlier report:
+  defense-92.fr, « Paniquée par son chauffeur VTC, une jeune femme se jette du véhicule en plein tunnel de La Défense ». (Lyon
+  2016, a fake VTC outside a club, 16 years in 2020: lyoncapitale.fr; background only, not on screen.)
+- "Un VTC ne peut pas vous prendre sans réservation. Dans la rue, seul un taxi s'arrête pour vous." / card "SANS RÉSERVATION, CE
+  N'EST PAS UN VTC · dans la rue, seul un taxi peut vous prendre": service-public.fr F31027 (« Voiture de transport avec chauffeur
+  (VTC) »): « Une VTC ne peut prendre en charge un client que si son conducteur peut justifier d'une réservation préalable du
+  client », it cannot « être hélée par un client dans la rue », « La prise en charge immédiate sur la voie publique est réservée aux
+  taxis »; code des transports art. L. 3120-2 (no waiting for or picking up clients without a prior booking: the « maraude » ban).
+- "Vérifiez la plaque, le modèle et la photo du chauffeur. Tout doit correspondre à l'appli." / card "PLAQUE · MODÈLE · PHOTO ·
+  tout doit correspondre à l'appli": Uber France, « Conseils de sécurité » (uber.com/fr/fr/ride/safety/tips), tip 2 « Vérifiez les
+  détails de la course »: « comparez la plaque d'immatriculation, la marque et le modèle de la voiture ainsi que la photo du
+  chauffeur ». The app in the video is fictional (no brand).
+- "Cherchez la vignette rouge VTC, en bas du pare-brise." / card "LA VIGNETTE VTC · rouge, en bas du pare-brise côté chauffeur":
+  service-public.fr F31027: every VTC « doit obligatoirement afficher une signalétique » (a red sticker with two white boxes: the
+  operator's register number and the car's plate), the front one « dans l'angle du pare-brise avant en bas à gauche de la place du
+  chauffeur », the rear one « dans l'angle du pare-brise arrière en bas à droite »; code des transports art. R. 3122-8 and the
+  arrêté du 6 avril 2017 (the sticker's model). The black car has none; the grey car has both (`vtcTex` in car24.js).
+- "Un prénom ne prouve rien. Demandez plutôt : « Vous êtes là pour qui ? »": Uber France, same page, tip 3 « Demandez au chauffeur
+  de confirmer votre nom »: « Qui venez-vous prendre en charge ? » (the driver sees the rider's first name in the app); the
+  #WhatsMyName campaign (University of South Carolina and Uber, 2019, after Samantha Josephson got into a car she took for her
+  Uber: sc.edu, uber.com/newsroom/campus-safety-initiative, "Who are you here to pick up?"). Our line: a first name said by the
+  driver can be overheard or guessed, so it never replaces the plate, the model and the photo; make him say it, don't confirm it.
+- "Elle monte derrière et partage son trajet": Uber France, same page, tip 4 « Si possible, voyagez toujours à l'arrière, surtout
+  si vous n'avez pas de co-passager » and tip 6 « appuyez sur Partager le statut du trajet dans l'application ».
+- "Sécurité enfant": the child lock on a rear door stops it opening from the inside (a standard car feature, set by the driver
+  here: fiction).
+- "« Un traceur inconnu se déplace avec vous. »" / lock-screen banner "Traceur inconnu détecté · Il se déplace avec vous depuis
+  1 h 07": phones warn when an unknown Bluetooth tracker away from its owner seems to travel with you (Android's unknown tracker
+  alerts via Google Play services, Paramètres › Sécurité et urgence › Alertes de tracker inconnu; iPhone's AirTag alerts; the joint
+  Apple/Google "Detecting Unwanted Location Trackers" specification, May 2024: tomsguide.fr, it-connect.fr, korben.info). The
+  banner is generic (no brand's wording or icon).
+- Fiction (not claims): Inès, the times (2:14 → 2:31), the black car (HV-917-RB) and its driver, the grey car (GK-482-TL) and its
+  driver Lucas, the app, the bars' names, the battery (12 % → 9 %), the tracker and whoever planted it.

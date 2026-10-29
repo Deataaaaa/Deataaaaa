@@ -33,8 +33,11 @@ export async function create() {
     ground.material.color.set('#5a5d62'); scene.add(new THREE.HemisphereLight('#ffffff', '#444444', 1.2)); const d = new THREE.DirectionalLight('#ffffff', 1.5); d.position.set(-5, 8, 4); d.castShadow = true; scene.add(d); }
   const car = makeCar24({ paint: q.get('paint') || '#0c0d10', vtc: q.get('vtc') === '1', plate: q.get('plate') || 'HV-917-RB', mirrorReflect: true });
   scene.add(car.group);
-  car.setWindow('RF', Number(q.get('win') ?? 0)); car.setDoor(Number(q.get("door") ?? 0)); car.setLights({ head: 1, tail: 1, dash: 1 });
+  car.setWindow('RF', Number(q.get('win') ?? 0)); car.setDoor(Number(q.get("door") ?? 0)); car.setLights({ head: Number(q.get('head') ?? 1), tail: 1, dash: Number(q.get('dash') ?? 1) });
   await Promise.all(TEX_PENDING);
+  // ?hide=w,h hides the plane of that size (look-dev of the dash screens)
+  if (q.get('hide')) { const [hw, hh] = q.get('hide').split(',').map(Number); car.group.traverse((o) => { const p = o.geometry && o.geometry.parameters; if (p && Math.abs(p.width - hw) < 1e-6 && Math.abs(p.height - hh) < 1e-6) o.visible = false; }); }
+  if (q.get('dumptex')) car.group.traverse((o) => { if (o.material && o.material.emissiveMap && o.geometry.parameters && o.geometry.parameters.width === 0.24) console.log('CENTRE map', o.material.emissiveMap.image.width, o.material.emissiveMap.image.toDataURL().slice(0, 80), o.material.emissive.getHexString(), o.material.emissiveIntensity); });
   const views = [
     [V(-3.6, 1.35, 4.6), V(0, 0.7, 0.4), 40],
     [V(-6.2, 1.0, 0), V(0, 0.7, 0), 50],
@@ -43,7 +46,13 @@ export async function create() {
     [V(-0.42, 1.12, -1.05), V(0.1, 1.0, 1.2), 70],
     [V(-2.6, 1.5, -2.2), V(-0.6, 0.8, -0.6), 50],
     [V(0.01, 9, 0), V(0, 0, 0), 32],
+    [V(-0.4, 1.17, -1.22), V(0, 1.315, -0.13), 20],
   ];
+  // view 7: the rear-view mirror seen from the rear-right passenger's eyes, turned to meet a red ball at the driver's eyes
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.05, 24, 16), new THREE.MeshStandardMaterial({ color: '#ff2020', emissive: '#ff2020', emissiveIntensity: 0.6 }));
+  ball.position.set(0.37, 1.25, -0.05); car.group.add(ball);
+  { const M = car.group.localToWorld(V(0, 1.315, -0.13)), eI = V(-0.4, 1.17, -1.22), eD = V(0.37, 1.25, -0.05);
+    const n = eI.clone().sub(M).normalize().add(eD.clone().sub(M).normalize()).normalize(); car.mirror.parent.lookAt(M.clone().sub(n)); }
   return {
     duration: views.length, fps: 30, captions: [],
     frame(t) {

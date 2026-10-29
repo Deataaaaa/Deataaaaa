@@ -1,22 +1,13 @@
 {
   "queue": [
     {
-      "ep": "ep22",
-      "name": "12pct_p3_le5e",
-      "cover": "videos/12pct_p3_cover.jpg",
+      "ep": "ep24",
+      "name": "12pct_s2p1_levtc",
+      "cover": "videos/12pct_s2p1_cover.jpg",
       "workers": 3,
-      "note": "12 % Partie 3 : Le 5e (~125 s). Parts 1 and 2 are already posted.",
-      "post": "pc/posts/p3.txt",
-      "clips": "pc/clips/p3.json"
-    },
-    {
-      "ep": "ep23",
-      "name": "12pct_p4_lenoir",
-      "cover": "videos/12pct_p4_cover.jpg",
-      "workers": 3,
-      "note": "12 % Partie 4 : Le noir (~125 s), the season 1 finale.",
-      "post": "pc/posts/p4.txt",
-      "clips": "pc/clips/p4.json"
+      "note": "12 % Saison 2 · Partie 1 : Le VTC (~97 s). Season 1 (parts 1-4) is posted.",
+      "post": "pc/posts/s2p1.txt",
+      "clips": "pc/clips/s2p1.json"
     }
   ]
 }

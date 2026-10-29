@@ -7,7 +7,7 @@ const CSS = `
   #s12 { position: absolute; inset: 0; pointer-events: none; font-family: 'Inter', sans-serif; color: #fff; }
   #s12 .kara { position: absolute; left: 0; right: 0; top: 57%; margin: 0 auto; width: 920px; text-align: center; font-weight: 800; font-size: 74px;
     line-height: 1.06; letter-spacing: -0.005em; text-transform: uppercase; text-wrap: balance;
-    text-shadow: 0 0 3px #000, 0 0 2px #000, 0 4px 0 rgba(0,0,0,.7), 0 0 26px rgba(0,0,0,.8); -webkit-text-stroke: 2px rgba(0,0,0,.6); }
+    text-shadow: 0 0 3px #000, 0 0 2px #000, 0 4px 0 rgba(0,0,0,.7), 0 0 26px rgba(0,0,0,.8); -webkit-text-stroke: 4px rgba(0,0,0,.6); paint-order: stroke fill; }
   #s12 .kara span { opacity: 1; transition: none; }
   /* unspoken words: opaque grey with a hard dark outline, so they read over a bright floor or a lit wall too */
   #s12 .kara .w0 { color: #b4b4b8; }
@@ -37,7 +37,7 @@ const CSS = `
   #s12 .rew .ico { position: absolute; left: 70px; top: 300px; font-weight: 800; font-size: 44px; letter-spacing: .06em; color: #fff; text-shadow: 0 0 12px rgba(0,0,0,.8); }
   #s12 .rew .lines { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 2px, rgba(0,0,0,0) 2px 6px); }
   #s12 .rew .band { position: absolute; left: 0; right: 0; height: 90px; background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.16), rgba(255,255,255,0)); }
-  #s12 .news { position: absolute; left: 60px; right: 60px; top: 24%; background: rgba(10,10,12,.82); border-left: 10px solid #ff2e2e; padding: 26px 34px; }
+  #s12 .news { position: absolute; left: 60px; right: 60px; top: 24%; background: rgba(10,10,12,.82); border-left: 10px solid #ff2e2e; padding: 26px 34px; display: flow-root; }
   #s12 .news .a { font-weight: 800; font-size: 40px; letter-spacing: .03em; } #s12 .news .b { font-weight: 500; font-size: 30px; color: #d6d6da; margin-top: 8px; }
   #s12 .notif { position: absolute; left: 50px; right: 50px; top: 300px; display: flex; gap: 22px; align-items: center; padding: 26px 30px; border-radius: 34px;
     background: rgba(28,28,32,.88); backdrop-filter: blur(10px); box-shadow: 0 12px 40px rgba(0,0,0,.45); }

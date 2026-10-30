@@ -1,34 +1,136 @@
 {
  "note": "« 12 % » Saison 2 · Partie 1 · Le VTC. [spoken|shown], *red*. Voice A (Kyutai developpeuse).",
  "lines": [
-  { "gap": 0.1, "t": "Le chauffeur connaît votre *prénom*… vous *montez* ?" },
-  { "gap": 0.35, "t": "[Deux heures quatorze|2 h 14], Pigalle. Inès rentre seule." },
-  { "gap": 0.3, "t": "[Douze pour cent|12 %] de batterie. Elle commande un [VTC|VTC]." },
-  { "gap": 0.3, "t": "Une voiture noire s'arrête. La vitre descend." },
-  { "gap": 0.25, "t": "« C'est pour *Inès* ? »" },
-  { "gap": 0.3, "t": "Il connaît son prénom. Elle ouvre la portière…" },
-  { "gap": 0.35, "t": "Et si elle *montait* ?" },
-  { "gap": 0.3, "t": "Clac. Les portes se *verrouillent*." },
-  { "gap": 0.3, "t": "Sur l'appli, sa vraie voiture est encore à [quatre|4] minutes." },
-  { "gap": 0.3, "t": "La voiture tourne. Dans le mauvais sens." },
-  { "gap": 0.3, "t": "Elle tire la poignée. Rien. *Sécurité enfant*." },
-  { "gap": 0.3, "t": "Dans le rétro, il ne sourit plus." },
-  { "gap": 0.45, "t": "Avril [deux mille vingt-quatre|2024], à Paris. Deux jeunes femmes montent dans une voiture qu'elles prennent pour leur [VTC|VTC]." },
-  { "gap": 0.3, "t": "Leur commande n'était *jamais passée*. Le conducteur file vers La Défense." },
-  { "gap": 0.3, "t": "L'une d'elles *saute* de la voiture, dans le tunnel." },
-  { "gap": 0.45, "t": "Retour en arrière." },
-  { "gap": 0.3, "t": "Inès ne monte pas. Elle regarde la voiture." },
-  { "gap": 0.3, "t": "Un [VTC|VTC] ne peut pas vous prendre *sans réservation*. Dans la rue, seul un taxi s'arrête pour vous." },
-  { "gap": 0.3, "t": "Vérifiez la *plaque*, le *modèle* et la *photo* du chauffeur. Tout doit correspondre à l'appli." },
-  { "gap": 0.3, "t": "Cherchez la *vignette* rouge [VTC|VTC], en bas du pare-brise." },
-  { "gap": 0.3, "t": "Et un prénom ne prouve *rien*. Demandez plutôt : « Vous êtes là pour qui ? »" },
-  { "gap": 0.3, "t": "La plaque ne correspond pas. Pas de vignette. Inès recule." },
-  { "gap": 0.3, "t": "La voiture noire repart. Lentement." },
-  { "gap": 0.35, "t": "[Quatre|4] minutes plus tard, la berline grise. Bonne plaque, bonne photo." },
-  { "gap": 0.3, "t": "Elle monte derrière et *partage* son trajet." },
-  { "gap": 0.45, "t": "Mais lui… comment connaissait-il son *prénom* ?" },
-  { "gap": 0.3, "t": "Son téléphone vibre. [Neuf pour cent|9 %]." },
-  { "gap": 0.3, "t": "« Un *traceur* inconnu se déplace avec vous. »" },
-  { "gap": 0.6, "t": "Et vous… vous *montez* ?" }
+  {
+   "gap": 0.1,
+   "t": "Le chauffeur connaît votre *prénom*… vous *montez* ?"
+  },
+  {
+   "gap": 0.35,
+   "t": "[Deux heures quatorze|2 h 14], Pigalle. Inès rentre seule.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "[Douze pour cent|12 %] de batterie. Elle commande un [VTC|VTC]."
+  },
+  {
+   "gap": 0.3,
+   "t": "Une voiture noire s'arrête. La vitre descend."
+  },
+  {
+   "gap": 0.25,
+   "t": "« C'est pour *Inès* ? »",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Il connaît son prénom. Elle ouvre la portière…"
+  },
+  {
+   "gap": 0.35,
+   "t": "Et si elle *montait* ?",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Clac. Les portes se *verrouillent*.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Sur l'appli, sa vraie voiture est encore à [quatre|4] minutes."
+  },
+  {
+   "gap": 0.3,
+   "t": "La voiture tourne. Dans le mauvais sens."
+  },
+  {
+   "gap": 0.3,
+   "t": "Elle tire la poignée. Rien. *Sécurité enfant*.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Dans le rétro, il ne sourit plus."
+  },
+  {
+   "gap": 0.45,
+   "t": "Avril [deux mille vingt-quatre|2024], à Paris. Deux jeunes femmes montent dans une voiture qu'elles prennent pour leur [VTC|VTC].",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Leur commande n'était *jamais passée*. Le conducteur file vers La Défense."
+  },
+  {
+   "gap": 0.3,
+   "t": "L'une d'elles *saute* de la voiture, dans le tunnel."
+  },
+  {
+   "gap": 0.45,
+   "t": "Retour en arrière.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Inès ne monte pas. Elle regarde la voiture.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Un [VTC|VTC] ne peut pas vous prendre *sans réservation*. Dans la rue, seul un taxi s'arrête pour vous."
+  },
+  {
+   "gap": 0.3,
+   "t": "Vérifiez la *plaque*, le *modèle* et la *photo* du chauffeur. Tout doit correspondre à l'appli.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Cherchez la *vignette* rouge [VTC|VTC], en bas du pare-brise."
+  },
+  {
+   "gap": 0.3,
+   "t": "Et un prénom ne prouve *rien*. Demandez plutôt : « Vous êtes là pour qui ? »",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "La plaque ne correspond pas. Pas de vignette. Inès recule.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "La voiture noire repart. Lentement."
+  },
+  {
+   "gap": 0.35,
+   "t": "[Quatre|4] minutes plus tard, la berline grise. Bonne plaque, bonne photo.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Elle monte derrière et *partage* son trajet."
+  },
+  {
+   "gap": 0.45,
+   "t": "Mais lui… comment connaissait-il son *prénom* ?",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Son téléphone vibre. [Neuf pour cent|9 %].",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "« Un *traceur* inconnu se déplace avec vous. »"
+  },
+  {
+   "gap": 0.6,
+   "t": "Et vous… vous *montez* ?",
+   "brk": 1
+  }
  ]
 }

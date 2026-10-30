@@ -122,6 +122,8 @@ export function makeGlass(kind = 'tumbler') {
     g.add(new THREE.Mesh(new THREE.LatheGeometry(prof, 28), gm));
     const d = new THREE.Mesh(new THREE.LatheGeometry([[0, 0.1], [0.026, 0.118], [0.037, 0.15], [0, 0.15]].map(([x, y]) => new THREE.Vector2(x, y)), 24), drink); g.add(d);
     g.box = { c: new THREE.Vector3(0, 0.1, 0), h: new THREE.Vector3(0.043, 0.103, 0.043), nm: 'glass' };
+    // finer, for a hand on the stem: the foot, the stem, the bowl
+    g.boxes = [{ c: new THREE.Vector3(0, 0.005, 0), h: new THREE.Vector3(0.036, 0.005, 0.036), nm: 'glass foot' }, { c: new THREE.Vector3(0, 0.05, 0), h: new THREE.Vector3(0.0045, 0.04, 0.0045), nm: 'glass stem' }, { c: new THREE.Vector3(0, 0.148, 0), h: new THREE.Vector3(0.043, 0.058, 0.043), nm: 'glass bowl' }];
   } else {
     const prof = [[0, 0], [0.036, 0], [0.039, 0.005], [0.041, 0.1], [0.0395, 0.1]].map(([x, y]) => new THREE.Vector2(x, y));
     g.add(new THREE.Mesh(new THREE.LatheGeometry(prof, 28), gm));

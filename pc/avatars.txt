@@ -44,3 +44,6 @@ Police_Male_06
 Male_Adult_14
 Business_Male_06
 Male_Adult_09
+Business_Female_02
+Female_Adult_13
+Male_Adult_15

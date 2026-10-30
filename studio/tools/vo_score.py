@@ -3,6 +3,7 @@
 # Whisper writes numbers as digits (« 2h14 », « 12% »): they are spelled out before comparing, and words that sound the same
 # (seule/seul, monte/montent) count as the same word. A French question without inversion (« vous montez ? ») must rise at
 # its end: it passes when Whisper hears a « ? » on its last word or when that word ends 2.5+ semitones over the line (YIN).
+# Questions with a question word (comment, qui…) and « Et si… ? » fall naturally and are not tested.
 import re, unicodedata
 import numpy as np
 from num2words import num2words
@@ -47,6 +48,15 @@ def yin(x, sr, fmin=110, fmax=480, hop=0.01, win=0.03, th=0.18):
         f.append(sr / k if k else 0)
     return np.array(f)
 
+WH = re.compile(r"\b(qui|que|qu'|quoi|comment|où|ou|pourquoi|quand|combien|quel|quelle|quels|quelles|lequel|laquelle)\b", re.I)
+def rising(t):
+    """A question that must rise: a yes/no question without a question word (« vous montez ? »); « comment… ? », « pour qui ? »
+    and « Et si… ? » fall naturally in French."""
+    t = t.rstrip(' »"')
+    if not t.endswith('?'): return False
+    last = re.split(r'[.!…:]\s', t)[-1]
+    return not WH.search(last) and not re.match(r"\s*«?\s*et si\b", last, re.I)
+
 def score(x, sr, line_texts, model):
     """x: one block's audio; line_texts: the spoken text of each line in it. Returns a dict: bad (words heard differently),
     n (script words), flat (questions that do not rise), half (questions only one test passes), cost, diffs, rises, heard, words (Whisper's words with times)."""
@@ -68,7 +78,7 @@ def score(x, sr, line_texts, model):
     diffs = [f"{' '.join(A[a0:a1]) or '∅'} → {' '.join(h[0] for h in hw[b0:b1]) or '∅'}" for op, a0, a1, b0, b1 in ops if op != 'equal']
     f = yin(x, sr); flat = half = 0; rises = []
     for li, t in enumerate(line_texts):
-        if not t.rstrip(' »"').endswith('?'): continue
+        if not rising(t): continue
         h = pos.get(ends[li])
         if h is None: flat += 1; rises.append((li, None, False)); continue
         first = pos.get(ends[li - 1] + 1 if li else 0, h)

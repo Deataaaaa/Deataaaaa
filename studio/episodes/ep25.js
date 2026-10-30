@@ -19,7 +19,7 @@ import { makeCat } from '../engine/cat.js';
 import { makePhone } from '../engine/props16.js';
 import { makeEndTag } from '../engine/endtag.js';
 import { buildPigalle, PG } from '../engine/pigalle24.js';
-import { makeCar24, CAR } from '../engine/car24.js';
+import { makeCar24, CAR, MIR_Y, MIR_Z } from '../engine/car24.js';
 import { renderShot } from '../engine/ads19.js';
 import { Overlay12 } from '../engine/s12.js';
 import { buildWorld12 } from '../engine/world12.js';
@@ -75,7 +75,8 @@ export async function create() {
   const SCN = { pg: PGW.scene, home: WD.scene, stn: STN.scene, bar: BR.scene };
 
   // ---------- the grey car (it changes scene with the shot) ----------
-  const grey = makeCar24({ paint: '#6a6f75', metal: 0.75, plate: 'GK-482-TL', vtc: true, mirrorReflect: false });
+  const grey = makeCar24({ paint: '#6a6f75', metal: 0.75, plate: 'GK-482-TL', vtc: true, mirrorReflect: true });
+  grey.mirror.layers.set(2); cam.layers.enable(2);                   // the rear-view mirror (the hook): out of the ground reflection's view
   const place = (car, x, z, yaw = YAW) => { car.group.position.set(x, 0, z); car.group.rotation.set(0, yaw, 0); car.group.updateMatrixWorld(true); };
   const toW = (car, x, y, z) => car.group.localToWorld(V(x, y, z));
   const gHead = new THREE.SpotLight('#eef2ff', 0, 40, 0.3, 0.6, 2); gHead.position.set(0, 0.72, 2.2); { const tg = new THREE.Object3D(); tg.position.set(0, 0.3, 12); grey.group.add(gHead, tg); gHead.target = tg; }
@@ -101,7 +102,7 @@ export async function create() {
   // ---------- props ----------
   const phone = makePhone(), phone2 = makePhone();
   const pcv = phone.tex.image, pc = pcv.getContext('2d'), p2v = phone2.tex.image, p2 = p2v.getContext('2d');
-  const coatSeat = makeCoat('flat'), coatDrape = makeCoat('drape', { w0: 0.3, w1: 0.34, front: 0.36, back: 0.42 }), coatArm = makeCoat('drape', { r: 0.045, w0: 0.28, w1: 0.32, front: 0.4, back: 0.44 });
+  const coatSeat = makeCoat('flat'), coatDrape = makeCoat('drape', { w0: 0.3, w1: 0.34, front: 0.06, back: 0.46 }), coatArm = makeCoat('drape', { r: 0.075, w0: 0.28, w1: 0.32, front: 0.4, back: 0.44 });
   const tracker = makeTracker();
   const glassHer = makeGlass('tumbler'), glassHis = makeGlass('wine');
   const apple = makeCat();
@@ -197,13 +198,13 @@ export async function create() {
   // ---------- the phone in a hand (ep21's fit), and other contact helpers from ep24 ----------
   const tA = V(0, 0, 0), tB = V(0, 0, 0), mB = new THREE.Matrix4(), PHZ = 0.0195;
   const avgJ = (B, side, j) => tB.copy(wp(B[side + 'HandIndex' + j])).add(wp(B[side + 'HandMiddle' + j])).add(wp(B[side + 'HandRing' + j])).multiplyScalar(1 / 3).clone();
-  function phoneFit(av, side, ph) {
+  function phoneFit(av, side, ph, zoff = PHZ) {
     const B = av.bones, k1 = avgJ(B, side, 1), k3 = avgJ(B, side, 3), i1 = wp(B[side + 'HandIndex1']), p1 = wp(B[side + 'HandPinky1']);
     const X = k1.clone().sub(k3).normalize();
     const Z = X.clone().cross(tA.copy(i1).sub(p1)).normalize(); if (side === 'Left') Z.negate();
     const Yv = Z.clone().cross(X).normalize();
     mB.makeBasis(side === 'Left' ? X.clone().negate() : X, side === 'Left' ? Yv.clone().negate() : Yv, Z); ph.quaternion.setFromRotationMatrix(mB);
-    ph.position.copy(k1).lerp(k3, 0.55).addScaledVector(Z, PHZ).addScaledVector(Yv, side === 'Left' ? -0.004 : 0.004); ph.updateMatrixWorld(true);
+    ph.position.copy(k1).lerp(k3, 0.55).addScaledVector(Z, zoff).addScaledVector(Yv, side === 'Left' ? -0.004 : 0.004); ph.updateMatrixWorld(true);
   }
   const BL = []; { const r = rng(25); for (let b = 1.2; b < 120; b += 3.0 + 2.6 * r()) BL.push(b); }
   const blinkK = (t) => { let k = 0; for (const b0 of BL) { const x = (t - b0) / 0.16; if (x > 0 && x < 1) k = Math.max(k, Math.sin(Math.PI * x)); } return k; };
@@ -216,6 +217,7 @@ export async function create() {
     return want;
   };
   const THUMB = Number(q.get('thumb') ?? -0.15), PK = Number(q.get('pk') ?? -0.45);
+  const TRK_PAD = Number(q.get('tpad') ?? 0.018), TRK_CURL = Number(q.get('tcurl') ?? 0.06);   // tip4: the left finger pads on the tracker's back
   const armDown = (s) => (sh, fwd, left, up) => ({ hand: sh.clone().addScaledVector(up, -0.56).addScaledVector(left, s * 0.1).addScaledVector(fwd, 0.04),
     pole: sh.clone().addScaledVector(up, -0.3).addScaledVector(fwd, -0.5).addScaledVector(left, s * 0.25), F: V(0, -1, 0).addScaledVector(fwd, 0.1).normalize(), N: left.clone().multiplyScalar(-s), curl: 0.3 });
   const phoneLap = (P, fwd, left, up) => ({ hand: P.clone().addScaledVector(fwd, 0.3).addScaledVector(up, 0.24).addScaledVector(left, -0.04),
@@ -251,6 +253,12 @@ export async function create() {
   const rimPen = (av, car, sd) => { const inv = new THREE.Matrix4().copy(car.wheel.matrixWorld).invert(), st = handSet(av, sd), p = V(0, 0, 0); let pen = -1e9, nm = '';
     skinPts(av, 1, (v, mesh, i) => { const b = boneOf(mesh, i); if (!st.has(b)) return; p.copy(v).applyMatrix4(inv); const q2 = Math.hypot(p.x, p.y) - 0.185, d = 0.017 - Math.hypot(q2, p.z); if (d > pen) { pen = d; nm = b.name; } });
     return `${(pen * 1000).toFixed(1)}mm ${nm}`; };
+  // the nearest skin to a cloth prop's vertices (a coat's two skins, ~1.5 cm apart in the grid): under ~8 mm reads as touching
+  const clothGap = (av, coat) => { coat.updateMatrixWorld(true); const pts = [], v = V(0, 0, 0), cell = 0.03, grid = new Map(), key = (x, y, z) => `${Math.floor(x / cell)},${Math.floor(y / cell)},${Math.floor(z / cell)}`;
+    coat.traverse((o) => { if (!o.isMesh || !o.geometry.attributes.position) return; const P = o.geometry.attributes.position; for (let i = 0; i < P.count; i++) { v.fromBufferAttribute(P, i).applyMatrix4(o.matrixWorld); const kk = key(v.x, v.y, v.z); if (!grid.has(kk)) grid.set(kk, []); grid.get(kk).push(v.clone()); } });
+    let best = 1e9, bn = ''; skinPts(av, 1, (w, mesh, i) => { const cx = Math.floor(w.x / cell), cy = Math.floor(w.y / cell), cz = Math.floor(w.z / cell);
+      for (let a = -1; a <= 1; a++) for (let b2 = -1; b2 <= 1; b2++) for (let c = -1; c <= 1; c++) { const l = grid.get(`${cx + a},${cy + b2},${cz + c}`); if (!l) continue; for (const p of l) { const d = p.distanceTo(w); if (d < best) { best = d; bn = boneOf(mesh, i).name; } } } });
+    return best > 1 ? 'clear' : `${(best * 1000).toFixed(1)}mm ${bn}${best < 0.008 ? ' TOUCH' : ''}`; };
   const phoneBox = [{ c: V(0, 0, 0), h: V(0.0358, 0.0734, 0.0039), nm: 'phone' }, { c: V(0, 0, 0.0055), h: V(0.0336, 0.071, 0.0016), nm: 'screen+1.5mm' }];
   const dbgShot = (id, t) => {
     const out = [`DBG ${id} t=${t.toFixed(2)}`];
@@ -262,8 +270,12 @@ export async function create() {
       if (phone2.visible && av === man) out.push(`phone2 ${boxPen(man, phone2, phoneBox, handSet(man, 'Right'))}`);
       if (coatSeat.visible && coatSeat.parent) out.push(`${nm} coatSeat ${boxPen(av, coatSeat, coatSeat.boxes)}`);
       if (coatDrape.visible && coatDrape.parent) out.push(`${nm} coatDrape ${boxPen(av, coatDrape, coatDrape.boxes)}`);
+      if (coatArm.visible && coatArm.parent) { out.push(`${nm} coatArm halves ${boxPen(av, coatArm, coatArm.boxes.filter((b) => b.nm !== 'coat fold'))} cloth ${clothGap(av, coatArm)}`);
+        if (av === man) { const inv = new THREE.Matrix4().copy(coatArm.matrixWorld).invert(), p = V(0, 0, 0); let rmax = 0; const st = new Set(); man.bones.LeftForeArm.traverse((o) => st.add(o));
+          skinPts(man, 1, (v, mesh, i) => { if (boneOf(mesh, i) !== man.bones.LeftForeArm) return; p.copy(v).applyMatrix4(inv); if (Math.abs(p.x) < 0.15 && p.y > -0.06) rmax = Math.max(rmax, Math.hypot(p.y, p.z)); });
+          out.push(`forearm radius ${(rmax * 1000).toFixed(1)}mm vs fold inner ${((coatArm.userData.top.y - 0.007) * 1000).toFixed(1)}mm`); } }
       if (tracker.visible && tracker.parent) out.push(`${nm} tracker ${boxPen(av, tracker, [tracker.box])}`);
-      for (const g of [glassHer, glassHis]) if (g.visible && g.parent) out.push(`${nm} glass ${boxPen(av, g, [g.box])}`);
+      for (const g of [glassHer, glassHis]) if (g.visible && g.parent) out.push(`${nm} glass ${boxPen(av, g, g.boxes || [g.box])}`);
     }
     console.log(out.join(' | '));
   };
@@ -301,6 +313,8 @@ export async function create() {
   const MAN_STREET = V(2.6, STREET.KERB, STREET.W - STREET.PAVE + 0.9);    // across the street from her building, under the lantern
   const BOLT = () => V(ROOM.DX1 - (ROOM.DX1 - ROOM.DX0) + 0.08, ROOM.Y0 + 1.24, ROOM.Z0 + 0.065);
   const STOOL = BR.stools[2], STOOL_L = BR.stools[1];
+  const herWin = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.2), new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffc27a').multiplyScalar(3.0) }));
+  herWin.position.set(HERO_BAY, ROOM.SILL + 0.62, -0.62); herWin.visible = false; WD.scene.add(herWin);   // her room's lamp, seen through the dormer (e4)
   const T_RING = Lw(14, 'Faire') + 0.15;
   const T_BEEP = L(15) + 0.05;
 
@@ -321,13 +335,13 @@ export async function create() {
       R.renderer.toneMappingExposure = 1.0; G.uSat.value = 1.0; G.uTint.value.set(1, 1, 1); G.uScan.value = 0; G.uAberr.value = 0; G.uFade.value = 0; G.uVignette.value = 0.75;
       grey.setWindow('RF', 0); grey.setDoor(0); grey.setLocks(0); grey.setDome(0);
       morph(ines, {}); tracker.blink(0); coatSeat.flap(0);
-      WD.streetSpot.intensity = 14; WD.roomFill.intensity = 0.6;
+      WD.streetSpot.intensity = 14; WD.roomFill.intensity = 0.6; herWin.visible = id === 'e4';
       STN.flag.update(t);
 
       // --- the grey car
       const IN_CAR = ['hook', 's1b', 's2', 's3', 'etsi', 'r1', 'tip2', 'tip3', 'tip4a', 'tip4b', 'tip5'].includes(id);
       let gx = 0, gz = LANE, gdist = 0;
-      if (set === 'pg') { gx = 30 - 7.5 * (tt - S.hook.t0); gz = LANE; gdist = 30 - gx; }                          // driving down the boulevard at 27 km/h
+      if (set === 'pg') { gx = 30 - 6.0 * (tt - S.hook.t0); gz = LANE; gdist = 30 - gx; }                          // driving down the boulevard at ~22 km/h (the street through the side windows stays readable)
       if (id === 'e1a') { gx = HOME_X + 1.6; gz = KZ; }
       if (set === 'stn') { gz = KZ; gx = ST.DOOR + 0.6; if (id === 'tip1') { const a = arrive(tt, S.tip1.t0 - 0.3, S.tip1.t0 + 2.6, ST.DOOR + 16, ST.DOOR + 0.6); gx = a.x; gdist = ST.DOOR + 16 - gx; } }
       const greyOn = IN_CAR || ['s1a', 'e1a', 'tip1', 'tip6', 'stat1'].includes(id);
@@ -336,36 +350,47 @@ export async function create() {
         const parked = set === 'stn' && id !== 'tip1';
         grey.setLights({ head: parked ? 0.3 : 1, tail: 1, brake: id === 'tip1' && k > 0.55 ? 1 : 0, dash: 1 }); gHead.intensity = parked ? 1 : 5;
         // Lucas drives
-        show(lucas, () => seatPose(lucas, grey, 'driver', { fz: REAL_FZ, lean: REAL_LEAN, headUp: 0.25, look: ['hook', 's2'].includes(id) ? wp(ines.bones.Head) : id === 'r1' ? wp(ines.bones.Head) : toW(grey, 0.3, 1.1, 6),
-          lookK: ['hook', 's2', 'r1'].includes(id) ? 0.75 : 0.9, ...GRIP, handL: wheelHand(grey, 1), handR: wheelHand(grey, -1) }));
-        if (['hook', 's2'].includes(id)) morph(lucas, { mouthsmile: 0.4 });
+        show(lucas, () => seatPose(lucas, grey, 'driver', { fz: REAL_FZ, lean: REAL_LEAN, headUp: 0.25, twist: 0, look: id === 'hook' ? toW(grey, 0, MIR_Y, MIR_Z) : id === 'r1' ? toW(grey, -0.42, 1.17, -0.92) : toW(grey, 0.3, 1.1, 6),
+          lookK: ['hook', 'r1'].includes(id) ? 1.0 : 0.9, ...GRIP, handL: wheelHand(grey, 1), handR: wheelHand(grey, -1) }));
+        if (id === 'hook') morph(lucas, { mouthsmile: 0.4 });
+        if (id === 's2') { const t0 = Lw(2, 'Ça'), sp = tt > t0 ? Math.max(0, Math.sin((tt - t0) * 13)) * (1 - smooth(Ln[2].t1, Ln[2].t1 + 0.1, tt)) : 0; morph(lucas, { mouthsmile: 0.35, jawopen: 0.22 * sp }); }
         // the coat on the bench beside her
-        coatSeat.visible = true; coatSeat.position.copy(toW(grey, COAT_SEAT.x, COAT_SEAT.y, COAT_SEAT.z)); coatSeat.rotation.set(0, grey.group.rotation.y + 0.08, 0);
+        coatSeat.visible = true; coatSeat.position.copy(toW(grey, COAT_SEAT.x, COAT_SEAT.y, COAT_SEAT.z)); coatSeat.rotation.set(0, grey.group.rotation.y + Math.PI / 2 + 0.06, 0);   // the flap's free edge toward her
       }
       // --- Inès in the back (rear right): the phone in her right hand
       if (IN_CAR) {
-        const look = id === 's2' ? wp(lucas.bones.Head) : id === 'r1' ? toW(grey, 0.3, 1.2, 0.2) : id === 'tip3' ? coatSeat.position.clone() : phone.position.clone();
+        const look = id === 'hook' ? toW(grey, 0, MIR_Y, MIR_Z) : id === 's2' ? wp(lucas.bones.Head) : id === 'r1' ? toW(grey, 0.3, 1.2, 0.2) : id === 'tip3' ? coatSeat.position.clone() : ['tip4a', 'tip4b', 'tip5'].includes(id) ? toW(grey, -0.4, 0.92, -0.6) : toW(grey, -0.42, 0.72, -0.64);
         const phoneIn = !['tip3', 'r1'].includes(id);
-        show(ines, () => seatPose(ines, grey, 'rearR', { look, lookK: 0.9, handL: lapL, curlL: 0.35, footFwd: 0.4, lean: id === 'r1' ? 0.25 : 0, ...(phoneIn ? { curlR: 0.08, pkR: PK, thumbR: THUMB } : {}),
-          handR: phoneIn ? (['tip4a', 'tip4b', 'tip5'].includes(id) ? phoneUp : phoneLap) : (P, fwd, left, up) => ({ hand: P.clone().addScaledVector(fwd, 0.26).addScaledVector(up, 0.13).addScaledVector(left, -0.1), pole: P.clone().addScaledVector(up, 0.25).addScaledVector(left, -0.6).addScaledVector(fwd, -0.3), F: fwd.clone().addScaledVector(left, 0.4).normalize(), N: V(0, -1, 0) }) }));
+        const TIP4 = ['tip4a', 'tip4b', 'tip5'].includes(id);
+        const opts = { look, lookK: 0.9, handL: lapL, curlL: 0.35, footFwd: 0.4, lean: id === 'r1' ? 0.25 : 0, ...(phoneIn ? { curlR: 0.08, pkR: PK, thumbR: THUMB } : {}),
+          handR: phoneIn ? (TIP4 || id === 'hook' ? phoneUp : phoneLap) : (P, fwd, left, up) => ({ hand: P.clone().addScaledVector(fwd, 0.26).addScaledVector(up, 0.13).addScaledVector(left, -0.1), pole: P.clone().addScaledVector(up, 0.25).addScaledVector(left, -0.6).addScaledVector(fwd, -0.3), F: fwd.clone().addScaledVector(left, 0.4).normalize(), N: V(0, -1, 0) }) };
+        show(ines, () => {
+          seatPose(ines, grey, 'rearR', opts);
+          if (TIP4) {
+            // the tracker flat on the phone's back, her left fingers pressing it there (tip4a: brought in over the first part of the shot)
+            phoneFit(ines, 'Right', phone);
+            const n = V(0, 0, 1).applyQuaternion(phone.quaternion), upP = V(0, 1, 0).applyQuaternion(phone.quaternion);
+            const away = id === 'tip4a' ? 0.06 * (1 - smooth(0.1, 0.7, k)) : 0;
+            const tc = phone.position.clone().addScaledVector(n, -(0.0039 + 0.0039 + 0.0006 + away)).addScaledVector(upP, 0.052);
+            tracker.position.copy(tc); tracker.quaternion.copy(phone.quaternion).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0.3))); tracker.updateMatrixWorld(true);
+            const tgt = tc.clone().addScaledVector(n, -(0.0039 + TRK_PAD));
+            const spec = (sh, fwd, left, up) => ({ hand: tgt.clone().addScaledVector(n, -0.03).addScaledVector(upP, -0.06), pole: sh.clone().addScaledVector(up, -0.35).addScaledVector(left, 0.5).addScaledVector(fwd, -0.2), F: upP.clone(), N: n.clone() });
+            pressPose(ines, 'Left', tgt, (arm) => seatPose(ines, grey, 'rearR', { ...opts, curlL: TRK_CURL, thumbL: -0.3, handL: (P, fwd, left, up) => arm(wp(ines.bones.LeftArm), fwd, left, up) }), spec,
+              () => wp(ines.bones.LeftHandMiddle2).lerp(wp(ines.bones.LeftHandIndex2), 0.5));
+          }
+        });
         if (phoneIn) { phone.visible = true; phoneFit(ines, 'Right', phone); }
+        if (TIP4) { tracker.visible = true; tracker.blink(0.5 + 0.5 * Math.sin(tt * 12)); }
         CABIN[set].intensity = 0.12; CABIN[set].position.copy(toW(grey, 0, 1.32, -0.55));
         if (set === 'pg') { const ph = (gdist / 9) % 1; PASS.pg.intensity = 3 * Math.pow(Math.sin(Math.PI * ph), 6); PASS.pg.position.copy(toW(grey, -2.5, 3.2, lerp(3, -4, ph))); }
       }
       // tip3: the beep from the coat; she lifts the top layer: the tracker in the lining, its light blinking
       if (id === 'tip3' || id === 'tip4a') {
-        const lift = id === 'tip3' ? smooth(0.35, 0.8, k) : 1; coatSeat.flap(0.85 * lift);
+        const lift = id === 'tip3' ? smooth(0.08, 0.42, k) : 1; coatSeat.flap(0.85 * lift);
         tracker.visible = true; const pk = coatSeat.pocket.c;
         if (id === 'tip3') { tracker.position.copy(coatSeat.localToWorld(V(pk.x, pk.y + 0.004, pk.z + 0.012))); tracker.quaternion.copy(coatSeat.quaternion).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0.4))); }
         tracker.blink(0.5 + 0.5 * Math.sin(tt * 12));
       }
-      // tip4: the tracker held against the phone's back (by her left hand)
-      if (['tip4a', 'tip4b', 'tip5'].includes(id)) {
-        tracker.visible = true; tracker.blink(0.5 + 0.5 * Math.sin(tt * 12));
-        const back = phone.localToWorld(V(0.004, 0.035, -0.0078 - 0.0039)); tracker.position.copy(back); tracker.quaternion.copy(phone.quaternion).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI, 0, 0.3)));
-        if (id === 'tip4a') { const a = smooth(0.1, 0.7, k); tracker.position.addScaledVector(V(0, 0, -1).applyQuaternion(phone.quaternion), 0.06 * (1 - a)); }
-      }
-
       // --- home (ET SI): the street, the stairs, her room, under her window
       if (id === 'e1a') {
         const A0 = V(gx + 0.98, STREET.KERB, KZ - 1.35), A1 = V(HOME_X + 0.2, STREET.KERB, 0.45), u = smooth(0.0, 1.0, k), pos = A0.clone().lerp(A1, u);
@@ -375,24 +400,24 @@ export async function create() {
         // inside her door: she pushes the bolt (room12's bolt turns)
         WD.room.setBolt(smooth(0.25, 0.6, k)); WD.room.setDoor(0);
         const bt = BOLT();
-        show(ines, () => { const pose = (arm) => stand(ines, { pos: V(bt.x + 0.12, ROOM.Y0, bt.z + 0.55), yaw: Math.PI + 0.15, breath: t * 0.4, look: bt, lookK: 0.8, armR: arm, armL: armDown(1) });
+        show(ines, () => { const pose = (arm) => stand(ines, { pos: V(bt.x - 0.2, ROOM.Y0, bt.z + 0.36), yaw: Math.PI - 0.1, breath: t * 0.4, look: bt, lookK: 0.8, armR: arm, armL: armDown(1) });
           const spec = (sh, fwd, left, up) => ({ hand: bt.clone().add(V(0.02, 0, 0.06)), pole: sh.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.5), F: V(0, 1, 0), N: V(0, 0, -1), curl: 0.55 });
           pressPose(ines, 'Right', bt.clone().add(V(0, 0, 0.012)), pose, spec, () => wp(ines.bones.RightHandIndex3).lerp(wp(ines.bones.RightHandThumb3), 0.5)); });
         WD.roomFill.intensity = 0.25; FILL.home.intensity = 0.16; FILL.home.position.copy(bt).add(V(0.4, 0.3, 1.0));
       }
       if (id === 'e2') {
         // the man in the dark street, his phone: her dot moves, stops on her building
-        show(man, () => stand(man, { pos: V(MAN_STREET.x + 3, STREET.KERB, MAN_STREET.z), yaw: Math.PI - 0.4, breath: t * 0.35, look: phone2.position.clone().lengthSq() > 0 ? phone2.position.clone() : V(0, 1.2, 0), lookK: 0.9,
-          armR: (sh, fwd, left, up) => ({ hand: sh.clone().addScaledVector(fwd, 0.3).addScaledVector(up, -0.32).addScaledVector(left, 0.1), pole: sh.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.45).addScaledVector(fwd, -0.15), F: up.clone().addScaledVector(fwd, 0.25).addScaledVector(left, 0.25).normalize(), N: up.clone().multiplyScalar(0.4).addScaledVector(fwd, -1).normalize(), curl: 0.08, pk: PK, thumb: THUMB }), armL: armDown(1) }));
-        phone2.visible = true; phoneFit(man, 'Right', phone2);
+        show(man, () => stand(man, { pos: V(MAN_STREET.x + 3, STREET.KERB, MAN_STREET.z), yaw: Math.PI - 0.4, breath: t * 0.35, look: V(MAN_STREET.x + 3 + 0.35 * Math.sin(Math.PI - 0.4), 1.15, MAN_STREET.z + 0.35 * Math.cos(Math.PI - 0.4)), lookK: 0.9,
+          armR: (sh, fwd, left, up) => ({ hand: sh.clone().addScaledVector(fwd, 0.3).addScaledVector(up, -0.32).addScaledVector(left, 0.1), pole: sh.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.45).addScaledVector(fwd, -0.15), F: up.clone().addScaledVector(fwd, 0.25).addScaledVector(left, 0.25).normalize(), N: up.clone().multiplyScalar(0.4).addScaledVector(fwd, -1).normalize(), curl: 0.08, pk: PK, thumb: -1.0 }), armL: armDown(1) }));
+        phone2.visible = true; phoneFit(man, 'Right', phone2, 0.027);
         const u = smooth(0.0, 0.62, k); drawMap2(u, k > 0.62 ? (tt - (S.e2.t0 + 0.62 * (S.e2.t1 - S.e2.t0))) : 0);
         FILL.home.intensity = 0.3; FILL.home.position.copy(phone2.position).add(V(0, 0.25, 0.35));
       }
       if (id === 'e3') {
         // her phone on the bed lights up; Apple asleep against her pillow
         WD.roomFill.intensity = 0.15;
-        phone.visible = true; phone.position.set(2.1, ROOM.Y0 + 0.36, -3.0); phone.rotation.set(-Math.PI / 2, 0, 0.3); phone.updateMatrixWorld(true);
-        apple.root.visible = true; apple.root.position.set(1.85, ROOM.Y0 + 0.34, -3.75); apple.root.rotation.y = 0.9; apple.update(tt, { look: phone.position.clone(), slowBlinkAt: [S.e3.t0 + 1.4] });
+        phone.visible = true; phone.position.set(2.15, ROOM.Y0 + 0.594 + 0.004, -3.0); phone.rotation.set(-Math.PI / 2, 0, 0.3); phone.updateMatrixWorld(true);
+        apple.root.visible = true; apple.root.position.set(1.8, ROOM.Y0 + 0.5, -3.72); apple.root.rotation.y = 0.9; apple.update(tt, { look: phone.position.clone(), slowBlinkAt: [S.e3.t0 + 1.4] });
         FILL.home.intensity = 0.05 + 0.25 * smooth(0.15, 0.3, k); FILL.home.position.copy(phone.position).add(V(0, 0.3, 0));
       }
       if (id === 'e4') {
@@ -410,10 +435,10 @@ export async function create() {
       const D = ST.DESK, DH = ST.DESK_H;
       if (['r2', 'tw1', 'tw5'].includes(id)) {
         // the office: the agent at her screen, Inès across the desk, the tracker on the desk between them
-        show(agent, () => sit(agent, { pos: V(D.x + 0.72, 0.47, D.z), yaw: -Math.PI / 2, legs: 'chair', floor: 0, seat: 0.11, look: id === 'tw1' ? wp(ines.bones.Head) : STN.monitorScreen.getWorldPosition(V(0, 0, 0)), lookK: 0.9,
+        show(agent, () => sit(agent, { pos: V(D.x + 0.72, 0.47, D.z), yaw: -Math.PI / 2, legs: 'chair', floor: 0, seat: 0.11, look: id === 'tw1' ? V(D.x - 0.72, 1.15, D.z + 0.05) : STN.monitorScreen.getWorldPosition(V(0, 0, 0)), lookK: 0.9,
           handR: (P, fwd, left, up) => ({ hand: STN.keyboard.position.clone().add(V(0.02, 0.03, -0.08)), pole: P.clone().addScaledVector(up, 0.2).addScaledVector(left, -0.6), F: fwd.clone(), N: V(0, -1, 0), curl: 0.3 }),
           handL: (P, fwd, left, up) => ({ hand: STN.keyboard.position.clone().add(V(0.02, 0.03, 0.08)), pole: P.clone().addScaledVector(up, 0.2).addScaledVector(left, 0.6), F: fwd.clone(), N: V(0, -1, 0), curl: 0.3 }) }));
-        show(ines, () => sit(ines, { pos: V(D.x - 0.7, 0.47, D.z + 0.05), yaw: Math.PI / 2, legs: 'chair', floor: 0, seat: 0.11, look: id === 'tw5' ? phone.position.clone() : wp(agent.bones.Head), lookK: 0.85, handL: lapL, curlL: 0.35,
+        show(ines, () => sit(ines, { pos: V(D.x - 0.7, 0.47, D.z + 0.05), yaw: Math.PI / 2, legs: 'chair', floor: 0, seat: 0.11, look: id === 'tw5' ? V(D.x - 0.42, 0.82, D.z + 0.05) : wp(agent.bones.Head), lookK: 0.85, handL: lapL, curlL: 0.35,
           handR: id === 'tw5' ? phoneLap : lapL, ...(id === 'tw5' ? { curlR: 0.08, pkR: PK, thumbR: THUMB } : {}) }));
         if (id === 'tw5') { phone.visible = true; phoneFit(ines, 'Right', phone); }
         tracker.visible = true; tracker.position.set(D.x - 0.12, DH + 0.0039, D.z + 0.12); tracker.rotation.set(-Math.PI / 2, 0, 0.5); tracker.updateMatrixWorld(true);
@@ -423,31 +448,47 @@ export async function create() {
       // --- the bar (1:24): the flashback
       if (set === 'bar') {
         const sitBar = (av, st, o = {}) => sit(av, { pos: V(st.pos.x, BAR.SEAT + 0.005, st.pos.z), yaw: Math.PI, legs: 'chair', floor: 0.315, seat: 0.11, ...o });   // feet on the foot ring
-        show(ines, () => sitBar(ines, STOOL, { look: id === 'tw3a' || id === 'tw3b' ? wp(man.bones.Head) : wp(lea.bones.Head), lookK: 0.8, handL: lapL, handR: (P, fwd, left, up) => ({ hand: V(STOOL.pos.x - 0.05, BAR.CY + 0.04, BAR.CZ - 0.16), pole: P.clone().addScaledVector(up, 0.2).addScaledVector(left, -0.6), F: fwd.clone(), N: V(0, -1, 0), curl: 0.5 }) }));
-        show(lea, () => sitBar(lea, STOOL_L, { look: id === 'tw2' ? coatDrape.position.clone() : wp(ines.bones.Head), lookK: 0.85, twist: id === 'tw2' ? 0.35 : 0, handL: lapL, handR: lapL }));
+        show(ines, () => sitBar(ines, STOOL, { look: id === 'tw3a' || id === 'tw3b' ? V(STOOL.pos.x + 0.55, 1.62, STOOL.pos.z + 0.6) : id === 'tw4' ? V(STOOL.pos.x + 0.1, BAR.CY, BAR.CZ - 0.2) : V(STOOL_L.pos.x, 1.25, STOOL_L.pos.z), lookK: 0.8, handL: lapL, handR: (P, fwd, left, up) => ({ hand: V(STOOL.pos.x - 0.24, BAR.CY + 0.04, BAR.CZ - 0.13), pole: P.clone().addScaledVector(up, 0.2).addScaledVector(left, -0.6), F: fwd.clone(), N: V(0, -1, 0), curl: 0.5 }) }));
+        show(lea, () => sitBar(lea, STOOL_L, { look: id === 'tw2' ? STOOL.back.c.clone().add(V(0, -0.2, 0.1)) : wp(ines.bones.Head), lookK: 0.85, twist: id === 'tw2' ? 0.35 : 0, handL: lapL, handR: lapL }));
         if (id === 'tw2') { const sp = Math.max(0, Math.sin((tt - Lw(21, 'Inès')) * 12)) * smooth(Lw(21, 'Inès') - 0.05, Lw(21, 'Inès'), tt); morph(lea, { jawopen: 0.3 * sp }); }
         morph(ines, { mouthsmile: id === 'tw2' ? 0.3 : 0.15 });
         // her coat: over the stool's back, then sliding off (tw2), then in his hands (tw3)
-        if (id === 'tw2') { coatDrape.visible = true; const sl = smooth(0.55, 1.0, k); coatDrape.position.copy(STOOL.back.c).add(V(0, -0.35 * sl * sl, 0.12 * sl)); coatDrape.rotation.set(0.5 * sl, 0, 0); }
+        if (id === 'tw2') { coatDrape.visible = true; const sl = smooth(0.55, 1.0, k); coatDrape.position.copy(STOOL.back.c).add(V(0, -0.35 * sl * sl, 0.12 * sl)); coatDrape.rotation.set(-0.5 * sl, Math.PI, 0); }
         if (id === 'tw3a' || id === 'tw3b') {
-          const rise = id === 'tw3a' ? smooth(0.0, 0.7, k) : 1;
-          show(man, () => stand(man, { pos: V(STOOL.pos.x + 0.55, 0, STOOL.pos.z + 0.6), yaw: Math.PI + 0.9, crouch: 0.45 * (1 - rise), hipBend: 0.6 * (1 - rise), breath: t * 0.35, look: wp(ines.bones.Head), lookK: 0.85,
-            armL: (sh, fwd, left, up) => ({ hand: sh.clone().addScaledVector(fwd, 0.38).addScaledVector(up, -0.28).addScaledVector(left, -0.05), pole: sh.clone().addScaledVector(up, -0.4).addScaledVector(left, 0.5), F: fwd.clone(), N: V(0, 1, 0), curl: 0.25 }),
-            armR: (sh, fwd, left, up) => ({ hand: sh.clone().addScaledVector(fwd, 0.36).addScaledVector(up, -0.22).addScaledVector(left, 0.12), pole: sh.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.5), F: fwd.clone(), N: left.clone().negate(), curl: 0.5 }) }));
+          const rise = id === 'tw3a' ? 0.45 + 0.55 * smooth(0.0, 0.7, k) : 1;
+          const manO = (armR) => ({ pos: V(STOOL.pos.x + 0.55, 0, STOOL.pos.z + 0.6), yaw: Math.PI + 0.9, crouch: 0.45 * (1 - rise), hipBend: 0.6 * (1 - rise), breath: t * 0.35, look: wp(ines.bones.Head), lookK: 0.85,
+            armL: (sh, fwd, left, up) => ({ hand: sh.clone().addScaledVector(fwd, 0.48).addScaledVector(up, -0.26).addScaledVector(left, -0.12), pole: sh.clone().addScaledVector(up, -0.4).addScaledVector(left, 0.5), F: fwd.clone(), N: V(0, 1, 0), curl: 0.25 }), armR });
+          const armR0 = (sh, fwd, left, up) => ({ hand: sh.clone().addScaledVector(fwd, 0.36).addScaledVector(up, -0.22).addScaledVector(left, 0.12), pole: sh.clone().addScaledVector(up, -0.4).addScaledVector(left, -0.5), F: fwd.clone(), N: left.clone().negate(), curl: 0.5 });
+          const placeCoat = () => { const fa = wp(man.bones.LeftForeArm), hd = wp(man.bones.LeftHand), X = hd.clone().sub(fa).normalize(), Y = V(0, 1, 0).addScaledVector(X, -X.y).normalize(), Z = X.clone().cross(Y);
+            coatArm.position.copy(fa.clone().lerp(hd, 0.4)); coatArm.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(X, Y, Z)); coatArm.updateMatrixWorld(true); };
+          show(man, () => {
+            stand(man, manO(armR0)); man.root.updateMatrixWorld(true); placeCoat();
+            if (id === 'tw3b') {
+              const gap = coatArm.localToWorld(V(-0.125, -0.17, 0)), Fd = V(0, 1, 0).transformDirection(coatArm.matrixWorld), Nd = V(0, 0, -1).transformDirection(coatArm.matrixWorld);
+              const Xd = V(1, 0, 0).transformDirection(coatArm.matrixWorld);
+              const spec = (sh, fwd, left, up) => ({ hand: gap.clone().addScaledVector(Xd, -0.09), pole: sh.clone().addScaledVector(up, -0.45).addScaledVector(left, -0.3), F: Xd.clone(), N: Nd.clone(), curl: 0.35, thumb: 0.2 });
+              pressPose(man, 'Right', gap, (arm) => stand(man, manO(arm)), spec, () => wp(man.bones.RightHandIndex3).lerp(wp(man.bones.RightHandThumb3), 0.5));
+              man.root.updateMatrixWorld(true); placeCoat();
+            }
+          });
           morph(man, { mouthsmile: 0.45 });
-          coatArm.visible = true; const fa = wp(man.bones.LeftForeArm), hd = wp(man.bones.LeftHand), ax = hd.clone().sub(fa).normalize();
-          coatArm.position.copy(fa.clone().lerp(hd, 0.55)).add(V(0, 0.02, 0)); coatArm.quaternion.setFromUnitVectors(V(1, 0, 0), ax);
-          if (id === 'tw3b') { tracker.visible = true; const tip = wp(man.bones.RightHandIndex3).lerp(wp(man.bones.RightHandThumb3), 0.5); tracker.position.copy(tip); tracker.quaternion.copy(coatArm.quaternion); }
+          coatArm.visible = true;
+          if (id === 'tw3b') { tracker.visible = true; tracker.position.copy(wp(man.bones.RightHandIndex3).lerp(wp(man.bones.RightHandThumb3), 0.5)); tracker.quaternion.copy(coatArm.quaternion).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, Math.PI / 2, 0))); }
         }
         if (id === 'tw4') {
-          glassHer.visible = true; glassHer.position.set(STOOL.pos.x - 0.05, BAR.CY, BAR.CZ - 0.2);
-          glassHis.visible = true; const set2 = smooth(0.1, 0.7, k); glassHis.position.set(STOOL.pos.x + 0.18, BAR.CY + 0.06 * (1 - set2), BAR.CZ - 0.22);
+          glassHer.visible = true; glassHer.position.set(STOOL.pos.x - 0.04, BAR.CY, BAR.CZ - 0.22);
+          glassHis.visible = true; const set2 = smooth(0.1, 0.75, k); glassHis.position.set(STOOL.pos.x + 0.15 + 0.08 * (1 - set2), BAR.CY, BAR.CZ - 0.24); glassHis.updateMatrixWorld(true);
+          // his index finger on the glass's foot as he slides it over to hers
+          const stem = glassHis.position.clone().add(V(0.031, 0.0235, 0.004));
+          const manO = (armR) => ({ pos: V(STOOL.pos.x + 0.42, 0, -0.3), yaw: Math.PI - 0.2, hipBend: 0.3, breath: t * 0.35, look: stem, lookK: 0.6, armL: armDown(1), armR });
+          const spec = (sh, fwd, left, up) => ({ hand: stem.clone().add(V(0.09, 0.03, 0.02)), pole: sh.clone().addScaledVector(up, -0.4).addScaledVector(left, 0.5), F: V(-1, -0.35, 0).normalize(), N: V(0, -1, 0), curl: 0.15, idx: 0.05, thumb: 0.3 });
+          show(man, () => pressPose(man, 'Left', stem, (arm) => stand(man, { ...manO(armDown(-1)), armL: arm }), spec, () => { const a = wp(man.bones.LeftHandIndex3), b2 = wp(man.bones.LeftHandIndex2); return a.addScaledVector(a.clone().sub(b2).normalize(), 0.009); }));
         }
         if (['tw2', 'tw3a'].includes(id)) { show(exA, () => sit(exA, { pos: V(-0.2, 0.47, 2.95), yaw: Math.PI, legs: 'chair', floor: 0, seat: 0.11, look: V(-0.2, 1.0, 2.3), lookK: 0.6 })); show(exB, () => sit(exB, { pos: V(0.1, 0.47, 2.05), yaw: 0, legs: 'chair', floor: 0, seat: 0.11, look: V(-0.2, 1.2, 2.9), lookK: 0.6 })); }
       }
       // the Bordeaux cards: a tracker hidden in a car (stat1), in a coat's lining (stat2)
       if (id === 'stat1') { tracker.visible = true; tracker.position.copy(toW(grey, -0.37, 0.33, -0.36)); tracker.quaternion.copy(grey.group.quaternion).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0.2))); tracker.blink(0.5 + 0.5 * Math.sin(tt * 12)); }
-      if (id === 'stat2') { coatSeat.visible = true; coatSeat.position.set(ST.DESK.x - 0.1, ST.DESK_H, ST.DESK.z); coatSeat.rotation.set(0, 0.3, 0); coatSeat.flap(0.9);
+      if (id === 'stat2') { coatSeat.visible = true; coatSeat.position.set(ST.DESK.x - 0.1, ST.DESK_H, ST.DESK.z); coatSeat.rotation.set(0, Math.PI + 0.3, 0); coatSeat.flap(0.9);
         tracker.visible = true; const pk = coatSeat.pocket.c; tracker.position.copy(coatSeat.localToWorld(V(pk.x, pk.y + 0.004, pk.z + 0.012))); tracker.quaternion.copy(coatSeat.quaternion).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, 0, 0.4))); tracker.blink(0.5 + 0.5 * Math.sin(tt * 12)); }
 
       // --- phone screens
@@ -475,46 +516,56 @@ export async function create() {
       cam.near = 0.012; cam.far = 900;
       if (id === 'hook') {
         // her eyes in the back seat: Lucas half-turned to her with his easy smile, the alert in her hand at the bottom of the frame
-        const e = smooth(0, 1, k), eye = wp(ines.bones.Head).add(V(0, 0.07, 0)), fwd = toW(grey, 0, 0, 1).sub(grey.group.position).normalize();
-        cam.position.copy(eye).addScaledVector(fwd, 0.09); cam.up.set(0, 1, 0); cam.lookAt(wp(lucas.bones.Head).lerp(phone.position, 0.42 - 0.06 * e)); cam.fov = lerp(64, 58, e);
+        const e = smooth(0, 1, k), eye = wp(ines.bones.Head).add(V(0, 0.07, 0)), M = toW(grey, 0, MIR_Y, MIR_Z), dM = M.clone().sub(eye).normalize(), dP = phone.position.clone().sub(eye).normalize();
+        cam.position.copy(eye).addScaledVector(dM, 0.12).add(toW(grey, 0.1, 0.05, 0).sub(toW(grey, 0, 0, 0))); cam.up.set(0, 1, 0); cam.lookAt(cam.position.clone().add(dM.multiplyScalar(0.47 + 0.03 * e).add(dP.multiplyScalar(0.53 - 0.03 * e)))); cam.fov = lerp(64, 60, e);
       }
-      if (id === 's1a') fixed(V(gx + 9, 1.5, LANE + 4.2), V(gx + 5, 1.45, LANE + 4.4), V(gx, 0.9, LANE), V(gx - 1, 0.9, LANE), 46, 44);
+      if (id === 's1a') fixed(V(gx + 10, 2.0, LANE + 5.5), V(gx + 6.5, 1.9, LANE + 5.6), V(gx, 0.8, LANE), V(gx, 0.8, LANE), 44, 42);
       if (id === 's1b') phoneCam(0.28, 34);
-      if (id === 's2') carCam(grey, k, V(-0.36, 1.14, 0.25), V(-0.35, 1.14, 0.22), V(0.37, 1.18, -0.05), V(0.37, 1.18, -0.05), 44, 41);
+      if (id === 's2') { const hl = grey.group.worldToLocal(wp(lucas.bones.Head)); carCam(grey, k, V(-0.36, 1.13, 0.2), V(-0.36, 1.13, 0.18), hl.clone().add(V(0, -0.05, 0)), hl.clone().add(V(0, -0.05, 0)), 50, 47); }
       if (id === 's3' || id === 'etsi') { carCam(grey, id === 'etsi' ? 0.6 + 0.4 * k : 0.6 * k, V(0.02, 1.13, -0.4), V(0.0, 1.13, -0.42), V(-0.42, 1.17, -0.96), V(-0.42, 1.17, -0.96), 36, 32); cam.lookAt(wp(ines.bones.Head).add(V(0, 0.06, 0))); }
       if (id === 'r1') { carCam(grey, k, V(0.0, 1.12, -0.3), V(-0.02, 1.12, -0.32), V(-0.42, 1.17, -0.96), V(-0.42, 1.17, -0.96), 40, 37); cam.lookAt(wp(ines.bones.Head).add(V(0, 0.05, 0))); }
-      if (id === 'e1a') fixed(V(HOME_X - 6.5, 1.55, 7.4), V(HOME_X - 6.0, 1.52, 7.3), V(HOME_X + 0.8, 1.5, 1.5), V(HOME_X + 0.8, 1.5, 1.5), 50, 48);
-      if (id === 'e1b') { const bt = BOLT(); fixed(bt.clone().add(V(-0.75, 0.15, 0.9)), bt.clone().add(V(-0.7, 0.15, 0.85)), bt.clone().add(V(0.05, -0.1, 0)), bt.clone().add(V(0.05, -0.1, 0)), 44, 42); }
-      if (id === 'e2') { const n = V(0, 0, 1).applyQuaternion(phone2.quaternion), upv = V(0, 1, 0).applyQuaternion(phone2.quaternion); cam.position.copy(phone2.position).addScaledVector(n, 0.3).addScaledVector(upv, 0.05); cam.up.copy(upv); cam.lookAt(phone2.position); cam.up.set(0, 1, 0); cam.fov = 34; }
-      if (id === 'e3') fixed(V(2.55, ROOM.Y0 + 0.75, -2.45), V(2.5, ROOM.Y0 + 0.72, -2.5), V(2.05, ROOM.Y0 + 0.34, -3.15), V(2.05, ROOM.Y0 + 0.34, -3.15), 40, 37);
-      if (id === 'e4') { const eye = V(HERO_BAY - 0.15, ROOM.SILL + 0.55, -0.35); fixed(eye, eye.clone().add(V(0.01, 0, 0.01)), wp(man.bones.Head).add(V(0, 0.3, 0)), wp(man.bones.Head).add(V(0, 0.1, 0)), 16, 13); }
+      if (id === 'e1a') fixed(V(HOME_X + 6.0, 1.55, 6.3), V(HOME_X + 5.6, 1.55, 6.1), V(HOME_X + 1.2, 1.1, 1.3), V(HOME_X + 1.0, 1.1, 1.2), 40, 38);
+      if (id === 'e1b') { const bt = BOLT(); fixed(V(4.45, ROOM.Y0 + 1.45, -3.25), V(4.43, ROOM.Y0 + 1.44, -3.28), bt.clone().add(V(-0.12, -0.15, 0)), bt.clone().add(V(-0.12, -0.15, 0)), 46, 43); }
+      if (id === 'e2') { const n = V(0, 0, 1).applyQuaternion(phone2.quaternion), upv = V(0, 1, 0).applyQuaternion(phone2.quaternion); cam.position.copy(phone2.position).addScaledVector(n, 0.3); cam.up.copy(upv); cam.lookAt(phone2.position.clone().addScaledVector(upv, -0.012)); cam.up.set(0, 1, 0); cam.fov = 34; }
+      if (id === 'e3') fixed(V(2.62, ROOM.Y0 + 1.12, -2.48), V(2.6, ROOM.Y0 + 1.1, -2.52), V(1.98, ROOM.Y0 + 0.62, -3.38), V(1.98, ROOM.Y0 + 0.62, -3.38), 38, 35);
+      if (id === 'e4') { const hd = wp(man.bones.Head), win = V(HERO_BAY, ROOM.SILL + 0.65, -0.3), c0 = hd.clone().add(V(-0.4, -0.04, 1.0)), c1 = hd.clone().add(V(-0.38, -0.05, 0.96));
+        const az = win.clone().sub(c0).setY(0).normalize(), aim = (c, el) => c.clone().add(az.clone().multiplyScalar(Math.cos(el))).add(V(0, Math.sin(el), 0));
+        fixed(c0, c1, aim(c0, 0.55), aim(c1, 0.53), 72, 70); }
       if (id === 'stat1') carCam(grey, k, V(-0.2, 0.62, -0.75), V(-0.21, 0.6, -0.72), V(-0.37, 0.33, -0.36), V(-0.37, 0.33, -0.36), 34, 30);
       if (id === 'stat2') fixed(V(D.x - 0.1, DH + 0.42, D.z + 0.36), V(D.x - 0.1, DH + 0.4, D.z + 0.33), tracker.position.clone(), tracker.position.clone(), 36, 32);
-      if (id === 'tip1') fixed(V(ST.DOOR + 4.5, 1.45, STREET.W - 3.2), V(ST.DOOR + 4.0, 1.45, STREET.W - 3.3), V(ST.DOOR, 2.0, 0), V(ST.DOOR, 2.0, 0), 52, 50);
+      if (id === 'tip1') fixed(V(ST.DOOR + 1.0, 1.6, 8.0), V(ST.DOOR + 0.8, 1.6, 7.8), V(ST.DOOR, 2.6, 0), V(ST.DOOR, 2.6, 0), 54, 52);
       if (id === 'tip2') phoneCam(0.27, 34);
-      if (id === 'tip3') carCam(grey, k, V(-0.15, 0.98, -0.62), V(-0.14, 0.96, -0.64), V(0.18, 0.52, -0.99), V(0.18, 0.52, -0.99), 40, 36);
-      if (id === 'tip4a') { const c = phone.position.clone(), n = V(0, 0, 1).applyQuaternion(phone.quaternion), side = V(1, 0, 0).applyQuaternion(phone.quaternion); cam.position.copy(c).addScaledVector(n, -0.12).addScaledVector(side, 0.2).add(V(0, 0.06, 0)); cam.lookAt(c.clone().addScaledVector(n, -0.01)); cam.fov = 36; }
+      if (id === 'tip3') { const pkw = coatSeat.localToWorld(coatSeat.pocket.c.clone()), pl = grey.group.worldToLocal(pkw.clone()); carCam(grey, k, V(pl.x - 0.32, pl.y + 0.42, pl.z + 0.12), V(pl.x - 0.3, pl.y + 0.4, pl.z + 0.1), pl, pl, 42, 38); }
+      if (id === 'tip4a') { const n = V(0, 0, 1).applyQuaternion(phone.quaternion), upP = V(0, 1, 0).applyQuaternion(phone.quaternion), side = V(1, 0, 0).applyQuaternion(phone.quaternion), c = tracker.position.clone();
+        cam.position.copy(c).addScaledVector(n, 0.12).addScaledVector(side, -0.26).addScaledVector(upP, 0.07); cam.lookAt(c.clone().addScaledVector(n, 0.004)); cam.fov = 36; }
       if (id === 'tip4b' || id === 'tip5') phoneCam(0.27, 34);
       if (id === 'tip6') fixed(V(ST.DOOR - 3.6, 1.5, 4.8), V(ST.DOOR - 3.4, 1.5, 4.6), V(ST.DOOR, 1.5, 0.4), V(ST.DOOR, 1.5, 0.2), 48, 46);
-      if (id === 'r2') fixed(V(D.x - 0.25, 1.3, D.z + 1.45), V(D.x - 0.2, 1.28, D.z + 1.4), V(D.x, 0.95, D.z - 0.05), V(D.x, 0.95, D.z - 0.05), 46, 44);
+      if (id === 'r2') { const ah = wp(agent.bones.Head); fixed(V(D.x - 1.3, 1.36, D.z + 0.42), V(D.x - 1.25, 1.35, D.z + 0.4), ah.clone().add(V(-0.25, -0.22, 0)), ah.clone().add(V(-0.25, -0.24, 0)), 44, 42); }
       if (id === 'tw1') { const hd = wp(agent.bones.Head); fixed(hd.clone().add(V(-0.95, -0.05, 0.42)), hd.clone().add(V(-0.9, -0.05, 0.4)), hd.clone().add(V(0, 0.02, 0)), hd.clone().add(V(0, 0.02, 0)), 30, 27); }
       if (id === 'tw5') { const hd = wp(ines.bones.Head); fixed(hd.clone().add(V(0.85, 0.0, 0.35)), hd.clone().add(V(0.8, 0.0, 0.33)), hd.clone().add(V(0, -0.04, 0)), hd.clone().add(V(0, -0.04, 0)), 32, 29); }
-      if (id === 'tw2') fixed(V(STOOL.pos.x + 1.7, 1.42, STOOL.pos.z + 1.7), V(STOOL.pos.x + 1.55, 1.4, STOOL.pos.z + 1.6), V(STOOL.pos.x - 0.35, 1.05, STOOL.pos.z - 0.1), V(STOOL.pos.x - 0.35, 1.05, STOOL.pos.z - 0.1), 46, 43);
-      if (id === 'tw3a') fixed(V(STOOL.pos.x - 1.4, 1.35, STOOL.pos.z + 1.8), V(STOOL.pos.x - 1.3, 1.34, STOOL.pos.z + 1.7), V(STOOL.pos.x + 0.3, 1.15, STOOL.pos.z + 0.3), V(STOOL.pos.x + 0.3, 1.2, STOOL.pos.z + 0.3), 42, 40);
-      if (id === 'tw3b') { const c = coatArm.position.clone(); fixed(c.clone().add(V(-0.35, 0.12, 0.3)), c.clone().add(V(-0.32, 0.11, 0.28)), c.clone().add(V(0, -0.05, 0)), c.clone().add(V(0, -0.05, 0)), 34, 31); }
-      if (id === 'tw4') { const c = V(STOOL.pos.x + 0.06, BAR.CY + 0.06, BAR.CZ - 0.21); fixed(c.clone().add(V(0.05, 0.12, 0.55)), c.clone().add(V(0.04, 0.11, 0.52)), c, c, 32, 30); }
+      if (id === 'tw2') fixed(V(STOOL.pos.x + 0.95, 1.12, STOOL.pos.z + 0.8), V(STOOL.pos.x + 0.92, 1.11, STOOL.pos.z + 0.77), V(STOOL.pos.x - 0.05, 0.98, STOOL.pos.z + 0.12), V(STOOL.pos.x - 0.05, 0.96, STOOL.pos.z + 0.12), 46, 44);
+      if (id === 'tw3a') fixed(V(STOOL.pos.x + 1.25, 1.4, BAR.CZ - 0.85), V(STOOL.pos.x + 1.2, 1.4, BAR.CZ - 0.8), V(STOOL.pos.x + 0.35, 1.2, STOOL.pos.z + 0.5), V(STOOL.pos.x + 0.35, 1.28, STOOL.pos.z + 0.5), 44, 42);
+      if (id === 'tw3b') { const c = coatArm.localToWorld(V(-0.125, -0.17, 0)), X = V(1, 0, 0).transformDirection(coatArm.matrixWorld), Z = V(0, 0, 1).transformDirection(coatArm.matrixWorld);
+        // the coat's edge by his elbow: his fingers slipping the tracker in between the halves
+        fixed(c.clone().addScaledVector(X, -0.22).addScaledVector(Z, 0.2).add(V(0, 0.04, 0)), c.clone().addScaledVector(X, -0.21).addScaledVector(Z, 0.19).add(V(0, 0.04, 0)), c, c, 38, 35); }
+      if (id === 'tw4') { const c = V(STOOL.pos.x + 0.06, BAR.CY + 0.07, BAR.CZ - 0.23); fixed(c.clone().add(V(-0.02, 0.26, 0.82)), c.clone().add(V(-0.02, 0.25, 0.79)), c, c, 34, 32); }
       if (id === 'end') fixed(V(ST.DOOR + 3.2, 1.6, 6.5), V(ST.DOOR + 3.0, 1.6, 6.3), V(ST.DOOR, 2.4, 0), V(ST.DOOR, 2.4, 0), 50);
       if (id === 's3' || id === 'etsi' || id === 'r1' || id === 's2') cam.near = 0.012;
       if (set === 'stn' || set === 'home' || set === 'bar') cam.near = Math.min(cam.near, 0.02);
       cam.updateProjectionMatrix(); cam.updateMatrixWorld();
 
+      if (greyOn) { const M = toW(grey, 0, MIR_Y, MIR_Z), eI = ines.root.visible ? wp(ines.bones.Head).add(V(0, 0.07, 0)) : toW(grey, -0.42, 1.17, -0.95), eD = wp(lucas.bones.Head).add(V(0, 0.12, 0));
+        const n = eI.clone().sub(M).normalize().add(eD.clone().sub(M).normalize()).normalize(); grey.mirror.parent.lookAt(M.clone().sub(n)); grey.mirror.parent.updateMatrixWorld(true); }
       // --- looks
       if (etsi && id !== 'etsi') { G.uSat.value = 0.4; G.uTint.value.set(1.05, 0.96, 0.94); }
       if (IN_CAR) { R.renderer.toneMappingExposure = 1.35; FILL[set].intensity = 0.22; FILL[set].position.copy(cam.position).add(V(0, 0.18, 0)); }
       if (id === 'hook') { CABIN[set].intensity = 0.5; CABIN[set].position.copy(toW(grey, 0.0, 1.05, 0.15)); }
-      if (set === 'bar') { G.uSat.value = 0.62; G.uTint.value.set(1.08, 0.98, 0.88); G.uVignette.value = 1.1; R.renderer.toneMappingExposure = 1.15; }
-      if (['stat1', 'stat2'].includes(id)) { G.uSat.value = 0.25; R.renderer.toneMappingExposure = 1.2; FILL[set].intensity = 0.6; FILL[set].position.copy(cam.position).add(V(0.1, 0.25, 0)); }
+      if (id === 'tip3') { FILL[set].intensity = 0.45; FILL[set].position.copy(coatSeat.position).add(V(0, 0.55, 0)); }
+      if (set === 'bar') { G.uSat.value = 0.62; G.uTint.value.set(1.08, 0.98, 0.88); G.uVignette.value = 1.1; R.renderer.toneMappingExposure = 1.25; FILL.bar.intensity = 0.35; FILL.bar.position.copy(cam.position).add(V(0, 0.3, 0)); }
+      if (['stat1', 'stat2'].includes(id)) { G.uSat.value = 0.25; R.renderer.toneMappingExposure = 1.25; FILL[set].intensity = id === 'stat1' ? 1.4 : 0.6; FILL[set].position.copy(cam.position).add(V(0.1, 0.25, 0)); }
       if (['r2', 'tw1', 'tw5'].includes(id)) R.renderer.toneMappingExposure = 0.95;
+      if (['e1a', 'e4'].includes(id)) R.renderer.toneMappingExposure = 1.45;
+      if (id === 'e1b') { R.renderer.toneMappingExposure = 1.3; FILL.home.intensity = 0.3; }
       if (id === 'end') G.uFade.value = 1;
       if (S.rewind.t0 <= t && t < S.rewind.t1) { G.uScan.value = 1.0; G.uSat.value = 0.4; G.uAberr.value = 0.012; }
 

@@ -502,3 +502,48 @@ west, away from west-facing coasts like San Francisco's, then stops dead.
   banner is generic (no brand's wording or icon).
 - Fiction (not claims): Inès, the times (2:14 → 2:31), the black car (HV-917-RB) and its driver, the grey car (GK-482-TL) and its
   driver Lucas, the app, the bars' names, the battery (12 % → 9 %), the tracker and whoever planted it.
+
+## EP25 (« 12 % » saison 2 · Partie 2 · Le traceur): an unknown tracker has been moving with Inès since 1:24 am. Fiction; the advice and the case are real
+Sources checked 30 Oct 2026.
+- "Un traceur vous suit depuis 1 h" / phone alert "Traceur inconnu · Avec vous depuis 1 h 18 · 4 lieux": phones warn when an unknown
+  Bluetooth tracker separated from its owner travels with you. Android help (support.google.com/android/answer/13658562, « Recevoir
+  des alertes pour traceurs inconnus »): the alert says a tracker « se déplace avec vous », shows a map of where it was detected, and
+  only comes after you have moved with it « pendant un certain temps ». iPhone: support.apple.com/fr-fr/119874. The screens in the
+  video are generic (no brand's look, icon or wording).
+- "Avril 2024, Bordeaux : 18 mois ferme pour un homme qui pistait son ex avec un traceur." / card "18 mois de prison ferme : il suivait
+  son ex avec un traceur caché dans sa voiture": tribunal correctionnel de Bordeaux, Thursday 4 April 2024, a 36-year-old truck
+  driver, an AirTag hidden in his ex-partner's car to know where she was at all times, 18 months « de prison ferme »
+  (tomsguide.fr, « AirTag : il traque son ex-femme avec l'appareil, la justice le condamne lourdement », citing Sud Ouest;
+  journaldugeek.com, 14 April 2024, « En Gironde, il écope de prison après avoir espionné une ex avec un AirTag », citing Le Parisien).
+- "Il en avait déjà caché un dans la doublure d'un manteau." / card "AVANT ÇA : DANS LA DOUBLURE D'UN MANTEAU": same Tom's Guide article:
+  « Par le passé, il avait déjà caché un objet connecté dans la doublure du manteau de son ex-conjointe pour la traquer. » (Journal du
+  Geek: an earlier conviction for similar facts against another ex-partner.) The video says "un traceur" (no brand).
+- "Allez dans un lieu public, éclairé" / card "JAMAIS CHEZ VOUS · allez dans un lieu public, éclairé": Android help, same page: if you
+  feel unsafe, go to a public place and « contacter les forces de l'ordre ou un contact de confiance ». Going home leads the tracker
+  to your address: the logic of the advice (a tracker reports where it is).
+- "Sur l'alerte, touchez « Faire sonner »": Android help: « appuyez sur Faire sonner pour faire sonner le traceur » (iPhone: « Émettre
+  un son »). The owner is not told (tomsguide.fr on Android's alerts: « sans que le propriétaire en soit informé »).
+- "Collez-le au dos du téléphone : son numéro de série, parfois la fin du numéro de son propriétaire." / card "AU DOS DU TÉLÉPHONE ·
+  son numéro de série, parfois la fin du numéro du propriétaire": Apple (support.apple.com/fr-fr/119874): hold the top of an
+  NFC-capable phone to the white side of the AirTag, a web page shows « son numéro de série » and « les quatre derniers chiffres du
+  numéro de téléphone de la personne qui l'a enregistré »; Android help: some trackers show a serial number or owner details when held
+  near the back of the phone, others a masked e-mail ("parfois": it depends on the tracker). The screen shows only « •• •• •• •• 58 »
+  (fiction).
+- "Capture d'écran. Et gardez-le : c'est une preuve." / card "CAPTURE D'ÉCRAN · et gardez le traceur : c'est une preuve": Apple: « Vous
+  pouvez réaliser une capture d'écran afin de conserver ces informations », the authorities can work with Apple and « vous devrez
+  peut-être fournir le numéro de série »; Android help: take a screenshot, and disabling some trackers « peut entraîner le
+  rétablissement de la configuration d'usine » (the link to the owner the police need is lost); you may keep it active if disabling
+  it could be dangerous.
+- "Suivre quelqu'un à son insu, c'est un délit : un an de prison, 45 000 € d'amende." / card "ARTICLE 226-1 DU CODE PÉNAL ·
+  géolocaliser quelqu'un sans son accord : 1 an de prison, 45 000 € d'amende": code pénal art. 226-1, 3° (Légifrance, version in force
+  since 23 March 2024): « En captant, enregistrant ou transmettant, par quelque moyen que ce soit, la localisation en temps réel ou en
+  différé d'une personne sans le consentement de celle-ci », « un an d'emprisonnement et 45 000 euros d'amende » (2 years and 60 000 €
+  for a spouse or partner, not said in the video).
+- "La police doit prendre votre plainte." / card "LA POLICE DOIT PRENDRE VOTRE PLAINTE · dans le commissariat de votre choix":
+  service-public.gouv.fr F1435 (« Porter plainte »): « Vous devez vous rendre dans un commissariat de police ou à la gendarmerie de
+  votre choix », « Les services de police ou de gendarmerie sont obligés d'enregistrer votre plainte si vous êtes victime d'une
+  infraction »; no online complaint when you know or suspect the author (go in person).
+- "Pour elle : le commissariat du 18e": the 18e arrondissement has its police station (commissariat central du 18e); the façade, the
+  office, the officer and the plate on the wall in the video are fiction (no real address on screen).
+- Fiction (not claims): Inès, the times (2:31 → 3:02 in the ET SI, 2:56 at the station), the battery (9 % → 6 %), Lucas, the man and
+  what he does, the bar « Minuit », her friend, the tracker and its serial number, the SMS number, the officer, the form on her screen.

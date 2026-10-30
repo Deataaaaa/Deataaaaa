@@ -71,8 +71,8 @@ export function makeCoat(kind = 'hang', o = {}) {
       const side = s < Lf + Math.PI * r / 2 ? 1 : -1, dn = Math.min(1, d / Math.max(Lf, Lb));
       const w = w0 + (w1 - w0) * Math.pow(Math.min(1, d / 0.18), 0.7), x = (u - 0.5) * w;
       const flare = (hang ? 0.022 : 0.02) * Math.pow(dn, 1.4) + (hang ? 0.01 : 0) * Math.pow(Math.min(1, d / 0.06), 0.5);
-      const fz = (0.014 + 0.005 * side) * Math.pow(dn, 0.9) * fold(u, side > 0 ? 0.4 : 1.9, side > 0 ? 2.2 : 2.9);
-      const hem = d > 0.02 ? 0.012 * Math.pow(dn, 2) * fold(u, 2.2, 1.3) : 0;
+      const fz = (0.017 + 0.006 * side) * Math.pow(dn, 0.8) * (fold(u, side > 0 ? 0.4 : 1.9, side > 0 ? 2.2 : 2.9) + 0.45 * fold(u, side > 0 ? 2.1 : 0.6, side > 0 ? 5.3 : 6.1));   // two sets of folds: no board
+      const hem = d > 0.02 ? (0.016 + 0.01 * side) * Math.pow(dn, 2) * fold(u, side > 0 ? 2.2 : 0.9, 1.3) : 0;
       return V(x + 0.006 * dn * fold(v, 0.7, 2), y + hem, z + side * (flare + fz));
     };
     g.add(skins(P, 18, 64, wool, lining));
@@ -83,7 +83,12 @@ export function makeCoat(kind = 'hang', o = {}) {
     for (let k = 0; k < 3; k++) { const d = 0.1 + k * 0.11, bt = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.005, 16), btnM);
       const p = P(0.86, (Lf - d) / A); bt.position.set(p.x, p.y, p.z + 0.004); bt.rotation.x = Math.PI / 2; g.add(bt); }
     g.userData.top = V(0, r, 0);
-    g.boxes = [{ c: V(0, -0.24, 0), h: V(Math.max(w0, w1) / 2, 0.26, r + 0.065), nm: 'coat' }];
+    // the halves as thin slabs (the gap between them stays free: a hand can go in), the fold over the top, the sleeve
+    const fl = hang ? 0.022 : 0.02, sz = (side, L) => side * (r + TH / 2 + fl * 0.45 + 0.01);
+    // (the halves' boxes start under the fold, where the arm or the bar sits: y below -(r + 1 cm))
+    const y0 = r + 0.01;
+    g.boxes = [{ c: V(0, -(Lf + y0) / 2, sz(1, Lf)), h: V(w1 / 2 + 0.01, Math.max(0.005, (Lf - y0) / 2), fl * 0.55 + 0.034), nm: 'coat front' }, { c: V(0, -(Lb + y0) / 2, sz(-1, Lb)), h: V(w1 / 2 + 0.01, Math.max(0.005, (Lb - y0) / 2), fl * 0.55 + 0.034), nm: 'coat back' },
+      { c: V(0, r * 0.4, 0), h: V(w0 / 2 + 0.01, r * 0.65 + TH, r + TH), nm: 'coat fold' }, { c: V(-w1 * 0.28, -Lb * 0.47, -r - 0.05), h: V(0.046, Lb * 0.43, 0.046), nm: 'coat sleeve' }];
   } else {
     // folded in four, about 44 x 40 cm and 6 cm thick; the top layer (the coat's front panel) is a flap hinged along the far edge (+z):
     // coat.flap(a) lifts its near edge, showing the lining and the inside pocket's welt (where the tracker sits)

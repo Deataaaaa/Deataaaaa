@@ -1,0 +1,1655 @@
+{
+ "duration": 92.369,
+ "lines": [
+  {
+   "t0": 0.1,
+   "t1": 2.878,
+   "units": [
+    {
+     "shown": "Le",
+     "red": false,
+     "t0": 0.1,
+     "t1": 0.24
+    },
+    {
+     "shown": "chauffeur",
+     "red": false,
+     "t0": 0.24,
+     "t1": 0.78
+    },
+    {
+     "shown": "connaît",
+     "red": false,
+     "t0": 0.78,
+     "t1": 1.2
+    },
+    {
+     "shown": "votre",
+     "red": false,
+     "t0": 1.2,
+     "t1": 1.3
+    },
+    {
+     "shown": "prénom…",
+     "red": true,
+     "t0": 1.3,
+     "t1": 2.2
+    },
+    {
+     "shown": "vous",
+     "red": false,
+     "t0": 2.2,
+     "t1": 2.34
+    },
+    {
+     "shown": "montez",
+     "red": true,
+     "t0": 2.34,
+     "t1": 2.78
+    },
+    {
+     "shown": "?",
+     "red": false,
+     "t0": 2.78,
+     "t1": 2.84
+    }
+   ]
+  },
+  {
+   "t0": 3.228,
+   "t1": 6.632,
+   "units": [
+    {
+     "shown": "2 h 14,",
+     "red": false,
+     "t0": 3.228,
+     "t1": 4.868
+    },
+    {
+     "shown": "Pigalle.",
+     "red": false,
+     "t0": 4.868,
+     "t1": 5.308
+    },
+    {
+     "shown": "Inès",
+     "red": false,
+     "t0": 5.628,
+     "t1": 5.988
+    },
+    {
+     "shown": "rentre",
+     "red": false,
+     "t0": 5.988,
+     "t1": 6.288
+    },
+    {
+     "shown": "seule.",
+     "red": false,
+     "t0": 6.288,
+     "t1": 6.508
+    }
+   ]
+  },
+  {
+   "t0": 6.932,
+   "t1": 10.212,
+   "units": [
+    {
+     "shown": "12 %",
+     "red": false,
+     "t0": 6.932,
+     "t1": 7.952
+    },
+    {
+     "shown": "de",
+     "red": false,
+     "t0": 7.952,
+     "t1": 8.332
+    },
+    {
+     "shown": "batterie.",
+     "red": false,
+     "t0": 8.332,
+     "t1": 9.032
+    },
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 9.032,
+     "t1": 9.232
+    },
+    {
+     "shown": "commande",
+     "red": false,
+     "t0": 9.232,
+     "t1": 9.672
+    },
+    {
+     "shown": "un",
+     "red": false,
+     "t0": 9.672,
+     "t1": 9.672
+    },
+    {
+     "shown": "VTC.",
+     "red": false,
+     "t0": 9.672,
+     "t1": 10.012
+    }
+   ]
+  },
+  {
+   "t0": 10.512,
+   "t1": 13.134,
+   "units": [
+    {
+     "shown": "Une",
+     "red": false,
+     "t0": 10.512,
+     "t1": 10.632
+    },
+    {
+     "shown": "voiture",
+     "red": false,
+     "t0": 10.632,
+     "t1": 10.932
+    },
+    {
+     "shown": "noire",
+     "red": false,
+     "t0": 10.932,
+     "t1": 11.432
+    },
+    {
+     "shown": "s'arrête.",
+     "red": false,
+     "t0": 11.432,
+     "t1": 11.952
+    },
+    {
+     "shown": "La",
+     "red": false,
+     "t0": 12.132,
+     "t1": 12.352
+    },
+    {
+     "shown": "vitre",
+     "red": false,
+     "t0": 12.352,
+     "t1": 12.672
+    },
+    {
+     "shown": "descend.",
+     "red": false,
+     "t0": 12.672,
+     "t1": 12.992
+    }
+   ]
+  },
+  {
+   "t0": 13.384,
+   "t1": 14.619,
+   "units": [
+    {
+     "shown": "«",
+     "red": false,
+     "t0": 13.384,
+     "t1": 13.384
+    },
+    {
+     "shown": "C'est",
+     "red": false,
+     "t0": 13.384,
+     "t1": 13.644
+    },
+    {
+     "shown": "pour",
+     "red": false,
+     "t0": 13.644,
+     "t1": 13.884
+    },
+    {
+     "shown": "Inès",
+     "red": true,
+     "t0": 13.884,
+     "t1": 14.464
+    },
+    {
+     "shown": "?",
+     "red": false,
+     "t0": 14.464,
+     "t1": 14.584
+    },
+    {
+     "shown": "»",
+     "red": false,
+     "t0": 14.584,
+     "t1": 14.619
+    }
+   ]
+  },
+  {
+   "t0": 14.919,
+   "t1": 17.19,
+   "units": [
+    {
+     "shown": "Il",
+     "red": false,
+     "t0": 14.919,
+     "t1": 15.019
+    },
+    {
+     "shown": "connaît",
+     "red": false,
+     "t0": 15.019,
+     "t1": 15.299
+    },
+    {
+     "shown": "son",
+     "red": false,
+     "t0": 15.299,
+     "t1": 15.379
+    },
+    {
+     "shown": "prénom.",
+     "red": false,
+     "t0": 15.379,
+     "t1": 15.659
+    },
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 15.919,
+     "t1": 16.319
+    },
+    {
+     "shown": "ouvre",
+     "red": false,
+     "t0": 16.319,
+     "t1": 16.599
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 16.599,
+     "t1": 16.699
+    },
+    {
+     "shown": "portière…",
+     "red": false,
+     "t0": 16.699,
+     "t1": 17.059
+    }
+   ]
+  },
+  {
+   "t0": 17.54,
+   "t1": 18.677,
+   "units": [
+    {
+     "shown": "Et",
+     "red": false,
+     "t0": 17.54,
+     "t1": 17.7
+    },
+    {
+     "shown": "si",
+     "red": false,
+     "t0": 17.7,
+     "t1": 17.96
+    },
+    {
+     "shown": "elle",
+     "red": false,
+     "t0": 17.96,
+     "t1": 18.12
+    },
+    {
+     "shown": "montait",
+     "red": true,
+     "t0": 18.12,
+     "t1": 18.56
+    },
+    {
+     "shown": "?",
+     "red": false,
+     "t0": 18.56,
+     "t1": 18.64
+    }
+   ]
+  },
+  {
+   "t0": 18.977,
+   "t1": 20.635,
+   "units": [
+    {
+     "shown": "Clac.",
+     "red": false,
+     "t0": 18.977,
+     "t1": 19.237
+    },
+    {
+     "shown": "Les",
+     "red": false,
+     "t0": 19.617,
+     "t1": 19.877
+    },
+    {
+     "shown": "portes",
+     "red": false,
+     "t0": 19.877,
+     "t1": 20.177
+    },
+    {
+     "shown": "se",
+     "red": false,
+     "t0": 20.177,
+     "t1": 20.257
+    },
+    {
+     "shown": "verrouillent.",
+     "red": true,
+     "t0": 20.257,
+     "t1": 20.597
+    }
+   ]
+  },
+  {
+   "t0": 20.935,
+   "t1": 23.59,
+   "units": [
+    {
+     "shown": "Sur",
+     "red": false,
+     "t0": 20.935,
+     "t1": 21.135
+    },
+    {
+     "shown": "l'appli,",
+     "red": false,
+     "t0": 21.135,
+     "t1": 21.514
+    },
+    {
+     "shown": "sa",
+     "red": false,
+     "t0": 21.835,
+     "t1": 21.955
+    },
+    {
+     "shown": "vraie",
+     "red": false,
+     "t0": 21.955,
+     "t1": 22.175
+    },
+    {
+     "shown": "voiture",
+     "red": false,
+     "t0": 22.175,
+     "t1": 22.455
+    },
+    {
+     "shown": "est",
+     "red": false,
+     "t0": 22.455,
+     "t1": 22.635
+    },
+    {
+     "shown": "encore",
+     "red": false,
+     "t0": 22.635,
+     "t1": 22.835
+    },
+    {
+     "shown": "à",
+     "red": false,
+     "t0": 22.835,
+     "t1": 23.035
+    },
+    {
+     "shown": "4",
+     "red": false,
+     "t0": 23.035,
+     "t1": 23.195
+    },
+    {
+     "shown": "minutes.",
+     "red": false,
+     "t0": 23.195,
+     "t1": 23.475
+    }
+   ]
+  },
+  {
+   "t0": 23.89,
+   "t1": 25.909,
+   "units": [
+    {
+     "shown": "La",
+     "red": false,
+     "t0": 23.89,
+     "t1": 24.07
+    },
+    {
+     "shown": "voiture",
+     "red": false,
+     "t0": 24.07,
+     "t1": 24.35
+    },
+    {
+     "shown": "tourne.",
+     "red": false,
+     "t0": 24.35,
+     "t1": 24.99
+    },
+    {
+     "shown": "Dans",
+     "red": false,
+     "t0": 24.99,
+     "t1": 25.27
+    },
+    {
+     "shown": "le",
+     "red": false,
+     "t0": 25.27,
+     "t1": 25.37
+    },
+    {
+     "shown": "mauvais",
+     "red": false,
+     "t0": 25.37,
+     "t1": 25.57
+    },
+    {
+     "shown": "sens.",
+     "red": false,
+     "t0": 25.57,
+     "t1": 25.77
+    }
+   ]
+  },
+  {
+   "t0": 26.209,
+   "t1": 29.014,
+   "units": [
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 26.209,
+     "t1": 26.349
+    },
+    {
+     "shown": "tire",
+     "red": false,
+     "t0": 26.349,
+     "t1": 26.509
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 26.509,
+     "t1": 26.649
+    },
+    {
+     "shown": "poignée.",
+     "red": false,
+     "t0": 26.649,
+     "t1": 27.009
+    },
+    {
+     "shown": "Rien.",
+     "red": false,
+     "t0": 27.389,
+     "t1": 27.709
+    },
+    {
+     "shown": "Sécurité",
+     "red": true,
+     "t0": 28.129,
+     "t1": 28.669
+    },
+    {
+     "shown": "enfant.",
+     "red": true,
+     "t0": 28.669,
+     "t1": 28.889
+    }
+   ]
+  },
+  {
+   "t0": 29.314,
+   "t1": 31.087,
+   "units": [
+    {
+     "shown": "Dans",
+     "red": false,
+     "t0": 29.314,
+     "t1": 29.454
+    },
+    {
+     "shown": "le",
+     "red": false,
+     "t0": 29.454,
+     "t1": 29.574
+    },
+    {
+     "shown": "rétro,",
+     "red": false,
+     "t0": 29.574,
+     "t1": 29.994
+    },
+    {
+     "shown": "il",
+     "red": false,
+     "t0": 30.234,
+     "t1": 30.314
+    },
+    {
+     "shown": "ne",
+     "red": false,
+     "t0": 30.314,
+     "t1": 30.454
+    },
+    {
+     "shown": "sourit",
+     "red": false,
+     "t0": 30.454,
+     "t1": 30.834
+    },
+    {
+     "shown": "plus.",
+     "red": false,
+     "t0": 30.834,
+     "t1": 30.974
+    }
+   ]
+  },
+  {
+   "t0": 31.537,
+   "t1": 37.37,
+   "units": [
+    {
+     "shown": "Avril",
+     "red": false,
+     "t0": 31.537,
+     "t1": 31.917
+    },
+    {
+     "shown": "2024,",
+     "red": false,
+     "t0": 31.917,
+     "t1": 32.917
+    },
+    {
+     "shown": "à",
+     "red": false,
+     "t0": 32.917,
+     "t1": 33.297
+    },
+    {
+     "shown": "Paris.",
+     "red": false,
+     "t0": 33.297,
+     "t1": 33.577
+    },
+    {
+     "shown": "Deux",
+     "red": false,
+     "t0": 33.977,
+     "t1": 34.457
+    },
+    {
+     "shown": "jeunes",
+     "red": false,
+     "t0": 34.457,
+     "t1": 34.557
+    },
+    {
+     "shown": "femmes",
+     "red": false,
+     "t0": 34.557,
+     "t1": 34.857
+    },
+    {
+     "shown": "montent",
+     "red": false,
+     "t0": 34.857,
+     "t1": 35.237
+    },
+    {
+     "shown": "dans",
+     "red": false,
+     "t0": 35.237,
+     "t1": 35.337
+    },
+    {
+     "shown": "une",
+     "red": false,
+     "t0": 35.337,
+     "t1": 35.517
+    },
+    {
+     "shown": "voiture",
+     "red": false,
+     "t0": 35.517,
+     "t1": 35.897
+    },
+    {
+     "shown": "qu'elles",
+     "red": false,
+     "t0": 35.897,
+     "t1": 36.157
+    },
+    {
+     "shown": "prennent",
+     "red": false,
+     "t0": 36.157,
+     "t1": 36.557
+    },
+    {
+     "shown": "pour",
+     "red": false,
+     "t0": 36.557,
+     "t1": 36.717
+    },
+    {
+     "shown": "leur",
+     "red": false,
+     "t0": 36.717,
+     "t1": 36.837
+    },
+    {
+     "shown": "VTC.",
+     "red": false,
+     "t0": 36.837,
+     "t1": 37.137
+    }
+   ]
+  },
+  {
+   "t0": 37.67,
+   "t1": 41.321,
+   "units": [
+    {
+     "shown": "Leur",
+     "red": false,
+     "t0": 37.67,
+     "t1": 37.93
+    },
+    {
+     "shown": "commande",
+     "red": false,
+     "t0": 37.93,
+     "t1": 38.37
+    },
+    {
+     "shown": "n'était",
+     "red": false,
+     "t0": 38.37,
+     "t1": 38.55
+    },
+    {
+     "shown": "jamais",
+     "red": true,
+     "t0": 38.55,
+     "t1": 38.79
+    },
+    {
+     "shown": "passée.",
+     "red": true,
+     "t0": 38.79,
+     "t1": 39.27
+    },
+    {
+     "shown": "Le",
+     "red": false,
+     "t0": 39.53,
+     "t1": 39.79
+    },
+    {
+     "shown": "conducteur",
+     "red": false,
+     "t0": 39.79,
+     "t1": 40.31
+    },
+    {
+     "shown": "file",
+     "red": false,
+     "t0": 40.31,
+     "t1": 40.51
+    },
+    {
+     "shown": "vers",
+     "red": false,
+     "t0": 40.51,
+     "t1": 40.71
+    },
+    {
+     "shown": "La",
+     "red": false,
+     "t0": 40.71,
+     "t1": 40.83
+    },
+    {
+     "shown": "Défense.",
+     "red": false,
+     "t0": 40.83,
+     "t1": 41.19
+    }
+   ]
+  },
+  {
+   "t0": 41.621,
+   "t1": 44.53,
+   "units": [
+    {
+     "shown": "L'une",
+     "red": false,
+     "t0": 41.621,
+     "t1": 41.941
+    },
+    {
+     "shown": "d'elles",
+     "red": false,
+     "t0": 41.941,
+     "t1": 42.341
+    },
+    {
+     "shown": "saute",
+     "red": true,
+     "t0": 42.341,
+     "t1": 42.701
+    },
+    {
+     "shown": "de",
+     "red": false,
+     "t0": 42.701,
+     "t1": 42.961
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 42.961,
+     "t1": 43.081
+    },
+    {
+     "shown": "voiture,",
+     "red": false,
+     "t0": 43.081,
+     "t1": 43.501
+    },
+    {
+     "shown": "dans",
+     "red": false,
+     "t0": 43.761,
+     "t1": 44.021
+    },
+    {
+     "shown": "le",
+     "red": false,
+     "t0": 44.021,
+     "t1": 44.141
+    },
+    {
+     "shown": "tunnel.",
+     "red": false,
+     "t0": 44.141,
+     "t1": 44.501
+    }
+   ]
+  },
+  {
+   "t0": 44.98,
+   "t1": 46.122,
+   "units": [
+    {
+     "shown": "Retour",
+     "red": false,
+     "t0": 44.98,
+     "t1": 45.52
+    },
+    {
+     "shown": "en",
+     "red": false,
+     "t0": 45.52,
+     "t1": 45.74
+    },
+    {
+     "shown": "arrière.",
+     "red": false,
+     "t0": 45.74,
+     "t1": 46.1
+    }
+   ]
+  },
+  {
+   "t0": 46.422,
+   "t1": 49.519,
+   "units": [
+    {
+     "shown": "Inès",
+     "red": false,
+     "t0": 46.422,
+     "t1": 46.862
+    },
+    {
+     "shown": "ne",
+     "red": false,
+     "t0": 46.862,
+     "t1": 47.342
+    },
+    {
+     "shown": "monte",
+     "red": false,
+     "t0": 47.342,
+     "t1": 47.582
+    },
+    {
+     "shown": "pas.",
+     "red": false,
+     "t0": 47.582,
+     "t1": 47.822
+    },
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 48.222,
+     "t1": 48.562
+    },
+    {
+     "shown": "regarde",
+     "red": false,
+     "t0": 48.562,
+     "t1": 48.902
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 48.902,
+     "t1": 49.062
+    },
+    {
+     "shown": "voiture.",
+     "red": false,
+     "t0": 49.062,
+     "t1": 49.302
+    }
+   ]
+  },
+  {
+   "t0": 49.819,
+   "t1": 54.802,
+   "units": [
+    {
+     "shown": "Un",
+     "red": false,
+     "t0": 49.819,
+     "t1": 49.959
+    },
+    {
+     "shown": "VTC",
+     "red": false,
+     "t0": 49.959,
+     "t1": 50.359
+    },
+    {
+     "shown": "ne",
+     "red": false,
+     "t0": 50.359,
+     "t1": 50.579
+    },
+    {
+     "shown": "peut",
+     "red": false,
+     "t0": 50.579,
+     "t1": 50.719
+    },
+    {
+     "shown": "pas",
+     "red": false,
+     "t0": 50.719,
+     "t1": 50.959
+    },
+    {
+     "shown": "vous",
+     "red": false,
+     "t0": 50.959,
+     "t1": 51.119
+    },
+    {
+     "shown": "prendre",
+     "red": false,
+     "t0": 51.119,
+     "t1": 51.399
+    },
+    {
+     "shown": "sans",
+     "red": true,
+     "t0": 51.399,
+     "t1": 51.699
+    },
+    {
+     "shown": "réservation.",
+     "red": true,
+     "t0": 51.699,
+     "t1": 52.259
+    },
+    {
+     "shown": "Dans",
+     "red": false,
+     "t0": 52.459,
+     "t1": 52.679
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 52.679,
+     "t1": 52.839
+    },
+    {
+     "shown": "rue,",
+     "red": false,
+     "t0": 52.839,
+     "t1": 53.039
+    },
+    {
+     "shown": "seul",
+     "red": false,
+     "t0": 53.299,
+     "t1": 53.539
+    },
+    {
+     "shown": "un",
+     "red": false,
+     "t0": 53.539,
+     "t1": 53.679
+    },
+    {
+     "shown": "taxi",
+     "red": false,
+     "t0": 53.679,
+     "t1": 54.039
+    },
+    {
+     "shown": "s'arrête",
+     "red": false,
+     "t0": 54.039,
+     "t1": 54.439
+    },
+    {
+     "shown": "pour",
+     "red": false,
+     "t0": 54.439,
+     "t1": 54.599
+    },
+    {
+     "shown": "vous.",
+     "red": false,
+     "t0": 54.599,
+     "t1": 54.779
+    }
+   ]
+  },
+  {
+   "t0": 55.102,
+   "t1": 60.298,
+   "units": [
+    {
+     "shown": "Vérifiez",
+     "red": false,
+     "t0": 55.102,
+     "t1": 55.702
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 55.702,
+     "t1": 55.862
+    },
+    {
+     "shown": "plaque,",
+     "red": true,
+     "t0": 55.862,
+     "t1": 56.182
+    },
+    {
+     "shown": "le",
+     "red": false,
+     "t0": 56.622,
+     "t1": 56.702
+    },
+    {
+     "shown": "modèle",
+     "red": true,
+     "t0": 56.702,
+     "t1": 57.102
+    },
+    {
+     "shown": "et",
+     "red": false,
+     "t0": 57.102,
+     "t1": 57.342
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 57.342,
+     "t1": 57.462
+    },
+    {
+     "shown": "photo",
+     "red": true,
+     "t0": 57.462,
+     "t1": 57.702
+    },
+    {
+     "shown": "du",
+     "red": false,
+     "t0": 57.702,
+     "t1": 57.902
+    },
+    {
+     "shown": "chauffeur.",
+     "red": false,
+     "t0": 57.902,
+     "t1": 58.342
+    },
+    {
+     "shown": "Tout",
+     "red": false,
+     "t0": 58.642,
+     "t1": 58.902
+    },
+    {
+     "shown": "doit",
+     "red": false,
+     "t0": 58.902,
+     "t1": 59.202
+    },
+    {
+     "shown": "correspondre",
+     "red": false,
+     "t0": 59.202,
+     "t1": 59.842
+    },
+    {
+     "shown": "à",
+     "red": false,
+     "t0": 59.842,
+     "t1": 59.922
+    },
+    {
+     "shown": "l'appli.",
+     "red": false,
+     "t0": 59.922,
+     "t1": 60.202
+    }
+   ]
+  },
+  {
+   "t0": 60.598,
+   "t1": 63.512,
+   "units": [
+    {
+     "shown": "Cherchez",
+     "red": false,
+     "t0": 60.598,
+     "t1": 61.058
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 61.058,
+     "t1": 61.198
+    },
+    {
+     "shown": "vignette",
+     "red": true,
+     "t0": 61.198,
+     "t1": 61.598
+    },
+    {
+     "shown": "rouge",
+     "red": false,
+     "t0": 61.598,
+     "t1": 61.798
+    },
+    {
+     "shown": "VTC,",
+     "red": false,
+     "t0": 61.798,
+     "t1": 62.318
+    },
+    {
+     "shown": "en",
+     "red": false,
+     "t0": 62.318,
+     "t1": 62.638
+    },
+    {
+     "shown": "bas",
+     "red": false,
+     "t0": 62.638,
+     "t1": 62.838
+    },
+    {
+     "shown": "du",
+     "red": false,
+     "t0": 62.838,
+     "t1": 62.978
+    },
+    {
+     "shown": "pare-brise.",
+     "red": false,
+     "t0": 62.978,
+     "t1": 63.512
+    }
+   ]
+  },
+  {
+   "t0": 63.812,
+   "t1": 67.951,
+   "units": [
+    {
+     "shown": "Et",
+     "red": false,
+     "t0": 63.812,
+     "t1": 63.972
+    },
+    {
+     "shown": "un",
+     "red": false,
+     "t0": 63.972,
+     "t1": 64.312
+    },
+    {
+     "shown": "prénom",
+     "red": false,
+     "t0": 64.312,
+     "t1": 64.572
+    },
+    {
+     "shown": "ne",
+     "red": false,
+     "t0": 64.572,
+     "t1": 64.692
+    },
+    {
+     "shown": "prouve",
+     "red": false,
+     "t0": 64.692,
+     "t1": 64.972
+    },
+    {
+     "shown": "rien.",
+     "red": true,
+     "t0": 64.972,
+     "t1": 65.212
+    },
+    {
+     "shown": "Demandez",
+     "red": false,
+     "t0": 65.712,
+     "t1": 66.092
+    },
+    {
+     "shown": "plutôt",
+     "red": false,
+     "t0": 66.092,
+     "t1": 66.392
+    },
+    {
+     "shown": ":",
+     "red": false,
+     "t0": 66.392,
+     "t1": 66.972
+    },
+    {
+     "shown": "«",
+     "red": false,
+     "t0": 66.972,
+     "t1": 66.972
+    },
+    {
+     "shown": "Vous",
+     "red": false,
+     "t0": 66.972,
+     "t1": 67.092
+    },
+    {
+     "shown": "êtes",
+     "red": false,
+     "t0": 67.092,
+     "t1": 67.292
+    },
+    {
+     "shown": "là",
+     "red": false,
+     "t0": 67.292,
+     "t1": 67.412
+    },
+    {
+     "shown": "pour",
+     "red": false,
+     "t0": 67.412,
+     "t1": 67.612
+    },
+    {
+     "shown": "qui",
+     "red": false,
+     "t0": 67.612,
+     "t1": 67.812
+    },
+    {
+     "shown": "?",
+     "red": false,
+     "t0": 67.812,
+     "t1": 67.912
+    },
+    {
+     "shown": "»",
+     "red": false,
+     "t0": 67.912,
+     "t1": 67.912
+    }
+   ]
+  },
+  {
+   "t0": 68.251,
+   "t1": 72.198,
+   "units": [
+    {
+     "shown": "La",
+     "red": false,
+     "t0": 68.251,
+     "t1": 68.451
+    },
+    {
+     "shown": "plaque",
+     "red": false,
+     "t0": 68.451,
+     "t1": 68.851
+    },
+    {
+     "shown": "ne",
+     "red": false,
+     "t0": 68.851,
+     "t1": 69.131
+    },
+    {
+     "shown": "correspond",
+     "red": false,
+     "t0": 69.131,
+     "t1": 69.531
+    },
+    {
+     "shown": "pas.",
+     "red": false,
+     "t0": 69.531,
+     "t1": 69.871
+    },
+    {
+     "shown": "Pas",
+     "red": false,
+     "t0": 70.311,
+     "t1": 70.531
+    },
+    {
+     "shown": "de",
+     "red": false,
+     "t0": 70.531,
+     "t1": 70.631
+    },
+    {
+     "shown": "vignette.",
+     "red": false,
+     "t0": 70.631,
+     "t1": 71.011
+    },
+    {
+     "shown": "Inès",
+     "red": false,
+     "t0": 71.351,
+     "t1": 71.711
+    },
+    {
+     "shown": "recule.",
+     "red": false,
+     "t0": 71.711,
+     "t1": 72.071
+    }
+   ]
+  },
+  {
+   "t0": 72.498,
+   "t1": 74.794,
+   "units": [
+    {
+     "shown": "La",
+     "red": false,
+     "t0": 72.498,
+     "t1": 72.658
+    },
+    {
+     "shown": "voiture",
+     "red": false,
+     "t0": 72.658,
+     "t1": 73.018
+    },
+    {
+     "shown": "noire",
+     "red": false,
+     "t0": 73.018,
+     "t1": 73.418
+    },
+    {
+     "shown": "repart.",
+     "red": false,
+     "t0": 73.418,
+     "t1": 73.958
+    },
+    {
+     "shown": "Lentement.",
+     "red": false,
+     "t0": 74.098,
+     "t1": 74.698
+    }
+   ]
+  },
+  {
+   "t0": 75.144,
+   "t1": 79.558,
+   "units": [
+    {
+     "shown": "4",
+     "red": false,
+     "t0": 75.144,
+     "t1": 75.404
+    },
+    {
+     "shown": "minutes",
+     "red": false,
+     "t0": 75.404,
+     "t1": 75.704
+    },
+    {
+     "shown": "plus",
+     "red": false,
+     "t0": 75.704,
+     "t1": 75.984
+    },
+    {
+     "shown": "tard,",
+     "red": false,
+     "t0": 75.984,
+     "t1": 76.304
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 76.764,
+     "t1": 76.864
+    },
+    {
+     "shown": "berline",
+     "red": false,
+     "t0": 76.864,
+     "t1": 77.184
+    },
+    {
+     "shown": "grise.",
+     "red": false,
+     "t0": 77.184,
+     "t1": 77.624
+    },
+    {
+     "shown": "Bonne",
+     "red": false,
+     "t0": 77.824,
+     "t1": 78.264
+    },
+    {
+     "shown": "plaque,",
+     "red": false,
+     "t0": 78.264,
+     "t1": 78.464
+    },
+    {
+     "shown": "bonne",
+     "red": false,
+     "t0": 78.884,
+     "t1": 79.124
+    },
+    {
+     "shown": "photo.",
+     "red": false,
+     "t0": 79.124,
+     "t1": 79.364
+    }
+   ]
+  },
+  {
+   "t0": 79.858,
+   "t1": 81.71,
+   "units": [
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 79.858,
+     "t1": 80.018
+    },
+    {
+     "shown": "monte",
+     "red": false,
+     "t0": 80.018,
+     "t1": 80.218
+    },
+    {
+     "shown": "derrière",
+     "red": false,
+     "t0": 80.218,
+     "t1": 80.578
+    },
+    {
+     "shown": "et",
+     "red": false,
+     "t0": 80.578,
+     "t1": 80.858
+    },
+    {
+     "shown": "partage",
+     "red": true,
+     "t0": 80.858,
+     "t1": 81.218
+    },
+    {
+     "shown": "son",
+     "red": false,
+     "t0": 81.218,
+     "t1": 81.338
+    },
+    {
+     "shown": "trajet.",
+     "red": false,
+     "t0": 81.338,
+     "t1": 81.658
+    }
+   ]
+  },
+  {
+   "t0": 82.16,
+   "t1": 84.947,
+   "units": [
+    {
+     "shown": "Mais",
+     "red": false,
+     "t0": 82.16,
+     "t1": 82.48
+    },
+    {
+     "shown": "lui…",
+     "red": false,
+     "t0": 82.48,
+     "t1": 83.36
+    },
+    {
+     "shown": "comment",
+     "red": false,
+     "t0": 83.36,
+     "t1": 83.54
+    },
+    {
+     "shown": "connaissait-il",
+     "red": false,
+     "t0": 83.54,
+     "t1": 84.28
+    },
+    {
+     "shown": "son",
+     "red": false,
+     "t0": 84.28,
+     "t1": 84.46
+    },
+    {
+     "shown": "prénom",
+     "red": true,
+     "t0": 84.46,
+     "t1": 84.82
+    },
+    {
+     "shown": "?",
+     "red": false,
+     "t0": 84.82,
+     "t1": 84.92
+    }
+   ]
+  },
+  {
+   "t0": 85.247,
+   "t1": 87.214,
+   "units": [
+    {
+     "shown": "Son",
+     "red": false,
+     "t0": 85.247,
+     "t1": 85.407
+    },
+    {
+     "shown": "téléphone",
+     "red": false,
+     "t0": 85.467,
+     "t1": 85.827
+    },
+    {
+     "shown": "vibre.",
+     "red": false,
+     "t0": 85.827,
+     "t1": 86.207
+    },
+    {
+     "shown": "9 %.",
+     "red": false,
+     "t0": 86.467,
+     "t1": 87.127
+    }
+   ]
+  },
+  {
+   "t0": 87.514,
+   "t1": 89.773,
+   "units": [
+    {
+     "shown": "«",
+     "red": false,
+     "t0": 87.514,
+     "t1": 87.534
+    },
+    {
+     "shown": "Un",
+     "red": false,
+     "t0": 87.534,
+     "t1": 87.654
+    },
+    {
+     "shown": "traceur",
+     "red": true,
+     "t0": 87.654,
+     "t1": 88.234
+    },
+    {
+     "shown": "inconnu",
+     "red": false,
+     "t0": 88.234,
+     "t1": 88.754
+    },
+    {
+     "shown": "se",
+     "red": false,
+     "t0": 88.754,
+     "t1": 88.874
+    },
+    {
+     "shown": "déplace",
+     "red": false,
+     "t0": 88.874,
+     "t1": 89.234
+    },
+    {
+     "shown": "avec",
+     "red": false,
+     "t0": 89.234,
+     "t1": 89.454
+    },
+    {
+     "shown": "vous.",
+     "red": false,
+     "t0": 89.454,
+     "t1": 89.674
+    },
+    {
+     "shown": "»",
+     "red": false,
+     "t0": 89.734,
+     "t1": 89.734
+    }
+   ]
+  },
+  {
+   "t0": 90.373,
+   "t1": 92.369,
+   "units": [
+    {
+     "shown": "Et",
+     "red": false,
+     "t0": 90.373,
+     "t1": 90.533
+    },
+    {
+     "shown": "vous…",
+     "red": false,
+     "t0": 90.533,
+     "t1": 91.273
+    },
+    {
+     "shown": "vous",
+     "red": false,
+     "t0": 91.273,
+     "t1": 91.893
+    },
+    {
+     "shown": "montez",
+     "red": true,
+     "t0": 91.893,
+     "t1": 92.293
+    },
+    {
+     "shown": "?",
+     "red": false,
+     "t0": 92.293,
+     "t1": 92.333
+    }
+   ]
+  }
+ ]
+}

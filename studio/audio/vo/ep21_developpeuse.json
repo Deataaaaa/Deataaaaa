@@ -1,0 +1,2375 @@
+{
+ "duration": 128.127,
+ "lines": [
+  {
+   "t0": 0.1,
+   "t1": 4.744,
+   "units": [
+    {
+     "shown": "Quelqu'un",
+     "red": false,
+     "t0": 0.1,
+     "t1": 0.54
+    },
+    {
+     "shown": "vous",
+     "red": false,
+     "t0": 0.54,
+     "t1": 0.78
+    },
+    {
+     "shown": "suit",
+     "red": true,
+     "t0": 0.78,
+     "t1": 1.0
+    },
+    {
+     "shown": "dans",
+     "red": false,
+     "t0": 1.0,
+     "t1": 1.14
+    },
+    {
+     "shown": "l'escalier",
+     "red": false,
+     "t0": 1.14,
+     "t1": 1.7
+    },
+    {
+     "shown": "à",
+     "red": false,
+     "t0": 1.7,
+     "t1": 1.84
+    },
+    {
+     "shown": "4 h du matin…",
+     "red": false,
+     "t0": 1.84,
+     "t1": 2.76
+    },
+    {
+     "shown": "vous",
+     "red": false,
+     "t0": 2.76,
+     "t1": 3.46
+    },
+    {
+     "shown": "courez",
+     "red": true,
+     "t0": 3.46,
+     "t1": 3.82
+    },
+    {
+     "shown": "jusqu'à",
+     "red": false,
+     "t0": 3.82,
+     "t1": 4.34
+    },
+    {
+     "shown": "chez",
+     "red": false,
+     "t0": 4.34,
+     "t1": 4.46
+    },
+    {
+     "shown": "vous",
+     "red": false,
+     "t0": 4.46,
+     "t1": 4.66
+    },
+    {
+     "shown": "?",
+     "red": false,
+     "t0": 4.66,
+     "t1": 4.72
+    }
+   ]
+  },
+  {
+   "t0": 5.094,
+   "t1": 9.99,
+   "units": [
+    {
+     "shown": "Inès",
+     "red": false,
+     "t0": 5.094,
+     "t1": 5.46
+    },
+    {
+     "shown": "n'a",
+     "red": false,
+     "t0": 5.46,
+     "t1": 5.754
+    },
+    {
+     "shown": "pas",
+     "red": false,
+     "t0": 5.754,
+     "t1": 5.934
+    },
+    {
+     "shown": "couru.",
+     "red": false,
+     "t0": 5.934,
+     "t1": 6.634
+    },
+    {
+     "shown": "Et",
+     "red": false,
+     "t0": 6.634,
+     "t1": 6.934
+    },
+    {
+     "shown": "ce",
+     "red": false,
+     "t0": 6.934,
+     "t1": 6.994
+    },
+    {
+     "shown": "qu'elle",
+     "red": false,
+     "t0": 6.994,
+     "t1": 7.454
+    },
+    {
+     "shown": "a",
+     "red": false,
+     "t0": 7.454,
+     "t1": 7.774
+    },
+    {
+     "shown": "fait",
+     "red": false,
+     "t0": 7.774,
+     "t1": 8.014
+    },
+    {
+     "shown": "à",
+     "red": false,
+     "t0": 8.014,
+     "t1": 8.114
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 8.114,
+     "t1": 8.194
+    },
+    {
+     "shown": "place,",
+     "red": false,
+     "t0": 8.194,
+     "t1": 8.614
+    },
+    {
+     "shown": "presque",
+     "red": false,
+     "t0": 8.754,
+     "t1": 8.994
+    },
+    {
+     "shown": "personne",
+     "red": false,
+     "t0": 8.994,
+     "t1": 9.514
+    },
+    {
+     "shown": "n'y",
+     "red": false,
+     "t0": 9.514,
+     "t1": 9.714
+    },
+    {
+     "shown": "pense.",
+     "red": false,
+     "t0": 9.714,
+     "t1": 9.874
+    }
+   ]
+  },
+  {
+   "t0": 10.34,
+   "t1": 15.361,
+   "units": [
+    {
+     "shown": "4 h 20.",
+     "red": false,
+     "t0": 10.34,
+     "t1": 11.18
+    },
+    {
+     "shown": "Le",
+     "red": false,
+     "t0": 11.62,
+     "t1": 11.8
+    },
+    {
+     "shown": "feu",
+     "red": false,
+     "t0": 11.8,
+     "t1": 12.02
+    },
+    {
+     "shown": "du",
+     "red": false,
+     "t0": 12.02,
+     "t1": 12.14
+    },
+    {
+     "shown": "2e",
+     "red": false,
+     "t0": 12.14,
+     "t1": 12.56
+    },
+    {
+     "shown": "est",
+     "red": false,
+     "t0": 12.56,
+     "t1": 13.02
+    },
+    {
+     "shown": "éteint.",
+     "red": false,
+     "t0": 13.02,
+     "t1": 13.34
+    },
+    {
+     "shown": "Les",
+     "red": false,
+     "t0": 13.66,
+     "t1": 13.88
+    },
+    {
+     "shown": "pompiers",
+     "red": false,
+     "t0": 13.88,
+     "t1": 14.24
+    },
+    {
+     "shown": "rangent",
+     "red": false,
+     "t0": 14.24,
+     "t1": 14.5
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 14.5,
+     "t1": 14.62
+    },
+    {
+     "shown": "grande",
+     "red": false,
+     "t0": 14.62,
+     "t1": 14.86
+    },
+    {
+     "shown": "échelle.",
+     "red": false,
+     "t0": 14.86,
+     "t1": 15.26
+    }
+   ]
+  },
+  {
+   "t0": 15.611,
+   "t1": 16.574,
+   "units": [
+    {
+     "shown": "Batterie",
+     "red": false,
+     "t0": 15.611,
+     "t1": 16.011
+    },
+    {
+     "shown": ":",
+     "red": false,
+     "t0": 16.171,
+     "t1": 16.391
+    },
+    {
+     "shown": "3 %.",
+     "red": false,
+     "t0": 16.391,
+     "t1": 16.574
+    }
+   ]
+  },
+  {
+   "t0": 16.874,
+   "t1": 19.933,
+   "units": [
+    {
+     "shown": "Dans",
+     "red": false,
+     "t0": 16.874,
+     "t1": 17.014
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 17.014,
+     "t1": 17.154
+    },
+    {
+     "shown": "rue,",
+     "red": false,
+     "t0": 17.154,
+     "t1": 17.334
+    },
+    {
+     "shown": "elle",
+     "red": false,
+     "t0": 17.534,
+     "t1": 17.814
+    },
+    {
+     "shown": "le",
+     "red": false,
+     "t0": 17.814,
+     "t1": 17.954
+    },
+    {
+     "shown": "cherche",
+     "red": false,
+     "t0": 17.954,
+     "t1": 18.134
+    },
+    {
+     "shown": "des",
+     "red": false,
+     "t0": 18.134,
+     "t1": 18.374
+    },
+    {
+     "shown": "yeux.",
+     "red": false,
+     "t0": 18.374,
+     "t1": 18.614
+    },
+    {
+     "shown": "L'homme",
+     "red": true,
+     "t0": 18.614,
+     "t1": 19.454
+    },
+    {
+     "shown": "de",
+     "red": false,
+     "t0": 19.454,
+     "t1": 19.594
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 19.594,
+     "t1": 19.714
+    },
+    {
+     "shown": "porte.",
+     "red": false,
+     "t0": 19.714,
+     "t1": 19.854
+    }
+   ]
+  },
+  {
+   "t0": 20.133,
+   "t1": 20.672,
+   "units": [
+    {
+     "shown": "Disparu.",
+     "red": true,
+     "t0": 20.133,
+     "t1": 20.633
+    }
+   ]
+  },
+  {
+   "t0": 20.972,
+   "t1": 23.341,
+   "units": [
+    {
+     "shown": "La",
+     "red": false,
+     "t0": 20.972,
+     "t1": 21.112
+    },
+    {
+     "shown": "police",
+     "red": false,
+     "t0": 21.112,
+     "t1": 21.472
+    },
+    {
+     "shown": "laisse",
+     "red": false,
+     "t0": 21.472,
+     "t1": 21.832
+    },
+    {
+     "shown": "les",
+     "red": false,
+     "t0": 21.832,
+     "t1": 22.052
+    },
+    {
+     "shown": "habitants",
+     "red": false,
+     "t0": 22.052,
+     "t1": 22.492
+    },
+    {
+     "shown": "remonter",
+     "red": false,
+     "t0": 22.492,
+     "t1": 22.872
+    },
+    {
+     "shown": "chez",
+     "red": false,
+     "t0": 22.872,
+     "t1": 23.072
+    },
+    {
+     "shown": "eux.",
+     "red": false,
+     "t0": 23.072,
+     "t1": 23.272
+    }
+   ]
+  },
+  {
+   "t0": 23.591,
+   "t1": 26.828,
+   "units": [
+    {
+     "shown": "Inès",
+     "red": false,
+     "t0": 23.591,
+     "t1": 23.911
+    },
+    {
+     "shown": "passe",
+     "red": false,
+     "t0": 23.911,
+     "t1": 24.131
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 24.131,
+     "t1": 24.311
+    },
+    {
+     "shown": "première.",
+     "red": false,
+     "t0": 24.311,
+     "t1": 24.571
+    },
+    {
+     "shown": "6",
+     "red": false,
+     "t0": 25.011,
+     "t1": 25.311
+    },
+    {
+     "shown": "étages,",
+     "red": false,
+     "t0": 25.311,
+     "t1": 25.791
+    },
+    {
+     "shown": "sans",
+     "red": false,
+     "t0": 26.011,
+     "t1": 26.251
+    },
+    {
+     "shown": "ascenseur.",
+     "red": false,
+     "t0": 26.251,
+     "t1": 26.791
+    }
+   ]
+  },
+  {
+   "t0": 27.078,
+   "t1": 29.849,
+   "units": [
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 27.078,
+     "t1": 27.238
+    },
+    {
+     "shown": "appuie",
+     "red": false,
+     "t0": 27.238,
+     "t1": 27.618
+    },
+    {
+     "shown": "sur",
+     "red": false,
+     "t0": 27.618,
+     "t1": 27.758
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 27.758,
+     "t1": 27.858
+    },
+    {
+     "shown": "minuterie.",
+     "red": true,
+     "t0": 27.858,
+     "t1": 28.358
+    },
+    {
+     "shown": "2 minutes",
+     "red": false,
+     "t0": 28.578,
+     "t1": 29.138
+    },
+    {
+     "shown": "de",
+     "red": false,
+     "t0": 29.138,
+     "t1": 29.418
+    },
+    {
+     "shown": "lumière.",
+     "red": false,
+     "t0": 29.418,
+     "t1": 29.598
+    }
+   ]
+  },
+  {
+   "t0": 30.099,
+   "t1": 33.23,
+   "units": [
+    {
+     "shown": "Premier",
+     "red": false,
+     "t0": 30.499,
+     "t1": 30.499
+    },
+    {
+     "shown": "étage.",
+     "red": false,
+     "t0": 30.499,
+     "t1": 31.019
+    },
+    {
+     "shown": "Deuxième",
+     "red": false,
+     "t0": 31.359,
+     "t1": 31.879
+    },
+    {
+     "shown": ":",
+     "red": false,
+     "t0": 31.879,
+     "t1": 32.079
+    },
+    {
+     "shown": "ça",
+     "red": false,
+     "t0": 32.079,
+     "t1": 32.159
+    },
+    {
+     "shown": "sent",
+     "red": false,
+     "t0": 32.159,
+     "t1": 32.319
+    },
+    {
+     "shown": "encore",
+     "red": false,
+     "t0": 32.319,
+     "t1": 32.619
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 32.619,
+     "t1": 32.819
+    },
+    {
+     "shown": "fumée.",
+     "red": false,
+     "t0": 32.819,
+     "t1": 33.179
+    }
+   ]
+  },
+  {
+   "t0": 33.53,
+   "t1": 35.341,
+   "units": [
+    {
+     "shown": "Au",
+     "red": false,
+     "t0": 33.53,
+     "t1": 33.61
+    },
+    {
+     "shown": "3e…",
+     "red": false,
+     "t0": 33.61,
+     "t1": 33.97
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 33.97,
+     "t1": 34.65
+    },
+    {
+     "shown": "lumière",
+     "red": false,
+     "t0": 34.65,
+     "t1": 34.87
+    },
+    {
+     "shown": "s'éteint.",
+     "red": true,
+     "t0": 34.87,
+     "t1": 35.341
+    }
+   ]
+  },
+  {
+   "t0": 35.591,
+   "t1": 38.542,
+   "units": [
+    {
+     "shown": "Le",
+     "red": false,
+     "t0": 35.591,
+     "t1": 35.791
+    },
+    {
+     "shown": "noir",
+     "red": false,
+     "t0": 35.791,
+     "t1": 36.091
+    },
+    {
+     "shown": "complet.",
+     "red": false,
+     "t0": 36.091,
+     "t1": 36.611
+    },
+    {
+     "shown": "Juste",
+     "red": false,
+     "t0": 36.811,
+     "t1": 37.191
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 37.191,
+     "t1": 37.291
+    },
+    {
+     "shown": "lampe",
+     "red": false,
+     "t0": 37.291,
+     "t1": 37.631
+    },
+    {
+     "shown": "de",
+     "red": false,
+     "t0": 37.631,
+     "t1": 37.771
+    },
+    {
+     "shown": "son",
+     "red": false,
+     "t0": 37.771,
+     "t1": 37.911
+    },
+    {
+     "shown": "téléphone.",
+     "red": false,
+     "t0": 37.911,
+     "t1": 38.351
+    }
+   ]
+  },
+  {
+   "t0": 38.842,
+   "t1": 40.625,
+   "units": [
+    {
+     "shown": "En",
+     "red": false,
+     "t0": 38.842,
+     "t1": 38.962
+    },
+    {
+     "shown": "bas,",
+     "red": false,
+     "t0": 38.962,
+     "t1": 39.162
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 39.382,
+     "t1": 39.462
+    },
+    {
+     "shown": "porte",
+     "red": false,
+     "t0": 39.462,
+     "t1": 39.722
+    },
+    {
+     "shown": "de",
+     "red": false,
+     "t0": 39.722,
+     "t1": 39.902
+    },
+    {
+     "shown": "l'immeuble",
+     "red": false,
+     "t0": 39.902,
+     "t1": 40.282
+    },
+    {
+     "shown": "claque.",
+     "red": true,
+     "t0": 40.282,
+     "t1": 40.502
+    }
+   ]
+  },
+  {
+   "t0": 40.875,
+   "t1": 43.064,
+   "units": [
+    {
+     "shown": "Des",
+     "red": false,
+     "t0": 40.875,
+     "t1": 41.095
+    },
+    {
+     "shown": "pas.",
+     "red": false,
+     "t0": 41.095,
+     "t1": 41.315
+    },
+    {
+     "shown": "Lents.",
+     "red": false,
+     "t0": 41.795,
+     "t1": 42.155
+    },
+    {
+     "shown": "Qui",
+     "red": false,
+     "t0": 42.495,
+     "t1": 42.755
+    },
+    {
+     "shown": "montent.",
+     "red": true,
+     "t0": 42.755,
+     "t1": 43.035
+    }
+   ]
+  },
+  {
+   "t0": 43.364,
+   "t1": 45.017,
+   "units": [
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 43.364,
+     "t1": 43.504
+    },
+    {
+     "shown": "s'arrête.",
+     "red": false,
+     "t0": 43.504,
+     "t1": 44.224
+    },
+    {
+     "shown": "Les",
+     "red": false,
+     "t0": 44.224,
+     "t1": 44.484
+    },
+    {
+     "shown": "pas",
+     "red": false,
+     "t0": 44.484,
+     "t1": 44.664
+    },
+    {
+     "shown": "s'arrêtent.",
+     "red": false,
+     "t0": 44.664,
+     "t1": 45.017
+    }
+   ]
+  },
+  {
+   "t0": 45.317,
+   "t1": 46.901,
+   "units": [
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 45.317,
+     "t1": 45.437
+    },
+    {
+     "shown": "repart.",
+     "red": false,
+     "t0": 45.437,
+     "t1": 45.837
+    },
+    {
+     "shown": "Les",
+     "red": false,
+     "t0": 46.217,
+     "t1": 46.397
+    },
+    {
+     "shown": "pas",
+     "red": false,
+     "t0": 46.397,
+     "t1": 46.557
+    },
+    {
+     "shown": "repartent.",
+     "red": true,
+     "t0": 46.557,
+     "t1": 46.877
+    }
+   ]
+  },
+  {
+   "t0": 47.201,
+   "t1": 49.669,
+   "units": [
+    {
+     "shown": "Son",
+     "red": false,
+     "t0": 47.201,
+     "t1": 47.421
+    },
+    {
+     "shown": "téléphone",
+     "red": false,
+     "t0": 47.421,
+     "t1": 47.841
+    },
+    {
+     "shown": "vibre.",
+     "red": false,
+     "t0": 47.841,
+     "t1": 48.601
+    },
+    {
+     "shown": "Numéro",
+     "red": false,
+     "t0": 48.621,
+     "t1": 49.141
+    },
+    {
+     "shown": "inconnu.",
+     "red": false,
+     "t0": 49.141,
+     "t1": 49.641
+    }
+   ]
+  },
+  {
+   "t0": 49.919,
+   "t1": 51.552,
+   "units": [
+    {
+     "shown": "«",
+     "red": false,
+     "t0": 49.919,
+     "t1": 50.079
+    },
+    {
+     "shown": "6e,",
+     "red": false,
+     "t0": 50.079,
+     "t1": 50.579
+    },
+    {
+     "shown": "c'est",
+     "red": false,
+     "t0": 50.579,
+     "t1": 51.199
+    },
+    {
+     "shown": "ça",
+     "red": false,
+     "t0": 51.199,
+     "t1": 51.399
+    },
+    {
+     "shown": "?",
+     "red": false,
+     "t0": 51.399,
+     "t1": 51.519
+    },
+    {
+     "shown": "»",
+     "red": false,
+     "t0": 51.519,
+     "t1": 51.519
+    }
+   ]
+  },
+  {
+   "t0": 51.852,
+   "t1": 55.983,
+   "units": [
+    {
+     "shown": "Ce",
+     "red": false,
+     "t0": 51.852,
+     "t1": 51.972
+    },
+    {
+     "shown": "soir,",
+     "red": false,
+     "t0": 51.972,
+     "t1": 52.332
+    },
+    {
+     "shown": "à",
+     "red": false,
+     "t0": 52.492,
+     "t1": 52.572
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 52.572,
+     "t1": 52.652
+    },
+    {
+     "shown": "porte,",
+     "red": false,
+     "t0": 52.652,
+     "t1": 52.972
+    },
+    {
+     "shown": "il",
+     "red": false,
+     "t0": 53.292,
+     "t1": 53.412
+    },
+    {
+     "shown": "lui",
+     "red": false,
+     "t0": 53.412,
+     "t1": 53.532
+    },
+    {
+     "shown": "avait",
+     "red": false,
+     "t0": 53.532,
+     "t1": 53.692
+    },
+    {
+     "shown": "demandé",
+     "red": false,
+     "t0": 53.692,
+     "t1": 54.032
+    },
+    {
+     "shown": "son",
+     "red": false,
+     "t0": 54.032,
+     "t1": 54.252
+    },
+    {
+     "shown": "étage.",
+     "red": false,
+     "t0": 54.252,
+     "t1": 54.672
+    },
+    {
+     "shown": "Et",
+     "red": false,
+     "t0": 54.672,
+     "t1": 55.192
+    },
+    {
+     "shown": "elle",
+     "red": false,
+     "t0": 55.192,
+     "t1": 55.312
+    },
+    {
+     "shown": "avait",
+     "red": false,
+     "t0": 55.312,
+     "t1": 55.472
+    },
+    {
+     "shown": "répondu.",
+     "red": true,
+     "t0": 55.472,
+     "t1": 55.952
+    }
+   ]
+  },
+  {
+   "t0": 56.383,
+   "t1": 58.829,
+   "units": [
+    {
+     "shown": "Et",
+     "red": false,
+     "t0": 56.383,
+     "t1": 56.663
+    },
+    {
+     "shown": "si",
+     "red": false,
+     "t0": 56.663,
+     "t1": 57.103
+    },
+    {
+     "shown": "elle",
+     "red": false,
+     "t0": 57.103,
+     "t1": 57.223
+    },
+    {
+     "shown": "courait",
+     "red": true,
+     "t0": 57.223,
+     "t1": 57.683
+    },
+    {
+     "shown": "jusqu'à",
+     "red": false,
+     "t0": 57.683,
+     "t1": 58.123
+    },
+    {
+     "shown": "chez",
+     "red": false,
+     "t0": 58.123,
+     "t1": 58.263
+    },
+    {
+     "shown": "elle",
+     "red": false,
+     "t0": 58.263,
+     "t1": 58.603
+    },
+    {
+     "shown": "?",
+     "red": false,
+     "t0": 58.603,
+     "t1": 58.803
+    }
+   ]
+  },
+  {
+   "t0": 59.129,
+   "t1": 63.062,
+   "units": [
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 59.129,
+     "t1": 59.289
+    },
+    {
+     "shown": "court.",
+     "red": false,
+     "t0": 59.289,
+     "t1": 59.549
+    },
+    {
+     "shown": "4e.",
+     "red": false,
+     "t0": 60.089,
+     "t1": 60.529
+    },
+    {
+     "shown": "5e.",
+     "red": false,
+     "t0": 60.529,
+     "t1": 61.289
+    },
+    {
+     "shown": "Derrière",
+     "red": false,
+     "t0": 61.289,
+     "t1": 61.849
+    },
+    {
+     "shown": "elle,",
+     "red": false,
+     "t0": 61.849,
+     "t1": 62.049
+    },
+    {
+     "shown": "les",
+     "red": false,
+     "t0": 62.269,
+     "t1": 62.309
+    },
+    {
+     "shown": "pas",
+     "red": false,
+     "t0": 62.309,
+     "t1": 62.469
+    },
+    {
+     "shown": "courent",
+     "red": true,
+     "t0": 62.469,
+     "t1": 62.729
+    },
+    {
+     "shown": "aussi.",
+     "red": false,
+     "t0": 62.729,
+     "t1": 62.929
+    }
+   ]
+  },
+  {
+   "t0": 63.312,
+   "t1": 67.983,
+   "units": [
+    {
+     "shown": "6e.",
+     "red": false,
+     "t0": 63.312,
+     "t1": 63.772
+    },
+    {
+     "shown": "Ses",
+     "red": false,
+     "t0": 63.772,
+     "t1": 64.232
+    },
+    {
+     "shown": "clés",
+     "red": false,
+     "t0": 64.232,
+     "t1": 64.532
+    },
+    {
+     "shown": "lui",
+     "red": false,
+     "t0": 64.532,
+     "t1": 64.612
+    },
+    {
+     "shown": "glissent",
+     "red": false,
+     "t0": 64.612,
+     "t1": 65.072
+    },
+    {
+     "shown": "des",
+     "red": false,
+     "t0": 65.072,
+     "t1": 65.292
+    },
+    {
+     "shown": "mains.",
+     "red": false,
+     "t0": 65.292,
+     "t1": 65.492
+    },
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 65.752,
+     "t1": 66.172
+    },
+    {
+     "shown": "les",
+     "red": false,
+     "t0": 66.172,
+     "t1": 66.332
+    },
+    {
+     "shown": "cherche",
+     "red": false,
+     "t0": 66.332,
+     "t1": 66.552
+    },
+    {
+     "shown": "à",
+     "red": false,
+     "t0": 66.552,
+     "t1": 66.732
+    },
+    {
+     "shown": "tâtons,",
+     "red": false,
+     "t0": 66.732,
+     "t1": 67.092
+    },
+    {
+     "shown": "dans",
+     "red": false,
+     "t0": 67.292,
+     "t1": 67.592
+    },
+    {
+     "shown": "le",
+     "red": false,
+     "t0": 67.592,
+     "t1": 67.712
+    },
+    {
+     "shown": "noir.",
+     "red": false,
+     "t0": 67.712,
+     "t1": 67.852
+    }
+   ]
+  },
+  {
+   "t0": 68.233,
+   "t1": 70.691,
+   "units": [
+    {
+     "shown": "La",
+     "red": false,
+     "t0": 68.233,
+     "t1": 68.473
+    },
+    {
+     "shown": "serrure.",
+     "red": false,
+     "t0": 68.473,
+     "t1": 68.993
+    },
+    {
+     "shown": "La",
+     "red": false,
+     "t0": 69.353,
+     "t1": 69.433
+    },
+    {
+     "shown": "porte.",
+     "red": false,
+     "t0": 69.433,
+     "t1": 69.753
+    },
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 70.213,
+     "t1": 70.373
+    },
+    {
+     "shown": "entre…",
+     "red": false,
+     "t0": 70.373,
+     "t1": 70.653
+    }
+   ]
+  },
+  {
+   "t0": 70.891,
+   "t1": 72.486,
+   "units": [
+    {
+     "shown": "…et",
+     "red": false,
+     "t0": 70.891,
+     "t1": 71.104
+    },
+    {
+     "shown": "une",
+     "red": false,
+     "t0": 71.104,
+     "t1": 71.317
+    },
+    {
+     "shown": "main",
+     "red": false,
+     "t0": 71.317,
+     "t1": 71.582
+    },
+    {
+     "shown": "bloque",
+     "red": true,
+     "t0": 71.582,
+     "t1": 71.955
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 71.955,
+     "t1": 72.114
+    },
+    {
+     "shown": "porte.",
+     "red": false,
+     "t0": 72.114,
+     "t1": 72.486
+    }
+   ]
+  },
+  {
+   "t0": 72.836,
+   "t1": 74.881,
+   "units": [
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 72.836,
+     "t1": 72.996
+    },
+    {
+     "shown": "vient",
+     "red": false,
+     "t0": 72.996,
+     "t1": 73.256
+    },
+    {
+     "shown": "de",
+     "red": false,
+     "t0": 73.256,
+     "t1": 73.456
+    },
+    {
+     "shown": "lui",
+     "red": false,
+     "t0": 73.456,
+     "t1": 73.576
+    },
+    {
+     "shown": "montrer",
+     "red": false,
+     "t0": 73.576,
+     "t1": 73.996
+    },
+    {
+     "shown": "où",
+     "red": true,
+     "t0": 73.996,
+     "t1": 74.376
+    },
+    {
+     "shown": "elle",
+     "red": false,
+     "t0": 74.376,
+     "t1": 74.556
+    },
+    {
+     "shown": "dort.",
+     "red": true,
+     "t0": 74.556,
+     "t1": 74.736
+    }
+   ]
+  },
+  {
+   "t0": 75.231,
+   "t1": 78.459,
+   "units": [
+    {
+     "shown": "76 %",
+     "red": false,
+     "t0": 75.231,
+     "t1": 76.351
+    },
+    {
+     "shown": "des",
+     "red": false,
+     "t0": 76.351,
+     "t1": 76.511
+    },
+    {
+     "shown": "Françaises",
+     "red": false,
+     "t0": 76.511,
+     "t1": 77.131
+    },
+    {
+     "shown": "ont",
+     "red": false,
+     "t0": 77.131,
+     "t1": 77.211
+    },
+    {
+     "shown": "déjà",
+     "red": false,
+     "t0": 77.211,
+     "t1": 77.451
+    },
+    {
+     "shown": "été",
+     "red": false,
+     "t0": 77.451,
+     "t1": 77.671
+    },
+    {
+     "shown": "suivies",
+     "red": true,
+     "t0": 77.671,
+     "t1": 78.051
+    },
+    {
+     "shown": "dans",
+     "red": false,
+     "t0": 78.051,
+     "t1": 78.131
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 78.131,
+     "t1": 78.251
+    },
+    {
+     "shown": "rue.",
+     "red": false,
+     "t0": 78.251,
+     "t1": 78.431
+    }
+   ]
+  },
+  {
+   "t0": 78.859,
+   "t1": 79.964,
+   "units": [
+    {
+     "shown": "Retour",
+     "red": false,
+     "t0": 78.859,
+     "t1": 79.359
+    },
+    {
+     "shown": "en",
+     "red": false,
+     "t0": 79.359,
+     "t1": 79.559
+    },
+    {
+     "shown": "arrière.",
+     "red": false,
+     "t0": 79.559,
+     "t1": 79.939
+    }
+   ]
+  },
+  {
+   "t0": 80.314,
+   "t1": 83.683,
+   "units": [
+    {
+     "shown": "Inès",
+     "red": false,
+     "t0": 80.314,
+     "t1": 80.573
+    },
+    {
+     "shown": "ne",
+     "red": false,
+     "t0": 80.573,
+     "t1": 80.729
+    },
+    {
+     "shown": "monte",
+     "red": false,
+     "t0": 80.729,
+     "t1": 81.04
+    },
+    {
+     "shown": "pas.",
+     "red": false,
+     "t0": 81.04,
+     "t1": 81.299
+    },
+    {
+     "shown": "On",
+     "red": false,
+     "t0": 81.299,
+     "t1": 81.454
+    },
+    {
+     "shown": "ne",
+     "red": false,
+     "t0": 81.454,
+     "t1": 81.61
+    },
+    {
+     "shown": "mène",
+     "red": false,
+     "t0": 81.61,
+     "t1": 81.869
+    },
+    {
+     "shown": "jamais",
+     "red": true,
+     "t0": 81.869,
+     "t1": 82.232
+    },
+    {
+     "shown": "quelqu'un",
+     "red": false,
+     "t0": 82.232,
+     "t1": 82.75
+    },
+    {
+     "shown": "jusqu'à",
+     "red": false,
+     "t0": 82.75,
+     "t1": 83.164
+    },
+    {
+     "shown": "chez",
+     "red": false,
+     "t0": 83.164,
+     "t1": 83.424
+    },
+    {
+     "shown": "soi.",
+     "red": false,
+     "t0": 83.424,
+     "t1": 83.683
+    }
+   ]
+  },
+  {
+   "t0": 83.983,
+   "t1": 88.324,
+   "units": [
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 83.983,
+     "t1": 84.163
+    },
+    {
+     "shown": "frappe",
+     "red": false,
+     "t0": 84.163,
+     "t1": 84.703
+    },
+    {
+     "shown": "à",
+     "red": false,
+     "t0": 84.703,
+     "t1": 84.883
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 84.883,
+     "t1": 84.983
+    },
+    {
+     "shown": "porte",
+     "red": false,
+     "t0": 84.983,
+     "t1": 85.303
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 85.303,
+     "t1": 85.583
+    },
+    {
+     "shown": "plus",
+     "red": false,
+     "t0": 85.583,
+     "t1": 85.803
+    },
+    {
+     "shown": "proche.",
+     "red": false,
+     "t0": 85.803,
+     "t1": 86.343
+    },
+    {
+     "shown": "Fort.",
+     "red": false,
+     "t0": 86.523,
+     "t1": 86.883
+    },
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 87.383,
+     "t1": 87.563
+    },
+    {
+     "shown": "sonne",
+     "red": false,
+     "t0": 87.563,
+     "t1": 87.923
+    },
+    {
+     "shown": "partout.",
+     "red": true,
+     "t0": 87.923,
+     "t1": 88.163
+    }
+   ]
+  },
+  {
+   "t0": 88.624,
+   "t1": 91.409,
+   "units": [
+    {
+     "shown": "Le",
+     "red": false,
+     "t0": 88.624,
+     "t1": 88.744
+    },
+    {
+     "shown": "bruit,",
+     "red": false,
+     "t0": 88.744,
+     "t1": 89.124
+    },
+    {
+     "shown": "c'est",
+     "red": false,
+     "t0": 89.124,
+     "t1": 89.644
+    },
+    {
+     "shown": "une",
+     "red": false,
+     "t0": 89.644,
+     "t1": 89.944
+    },
+    {
+     "shown": "arme",
+     "red": false,
+     "t0": 89.944,
+     "t1": 90.324
+    },
+    {
+     "shown": ":",
+     "red": false,
+     "t0": 90.324,
+     "t1": 90.404
+    },
+    {
+     "shown": "il",
+     "red": false,
+     "t0": 90.404,
+     "t1": 90.484
+    },
+    {
+     "shown": "réveille",
+     "red": false,
+     "t0": 90.484,
+     "t1": 90.884
+    },
+    {
+     "shown": "les",
+     "red": false,
+     "t0": 90.884,
+     "t1": 90.984
+    },
+    {
+     "shown": "témoins.",
+     "red": true,
+     "t0": 90.984,
+     "t1": 91.384
+    }
+   ]
+  },
+  {
+   "t0": 91.709,
+   "t1": 95.59,
+   "units": [
+    {
+     "shown": "Une",
+     "red": false,
+     "t0": 91.709,
+     "t1": 91.849
+    },
+    {
+     "shown": "porte",
+     "red": false,
+     "t0": 91.849,
+     "t1": 92.049
+    },
+    {
+     "shown": "s'ouvre.",
+     "red": false,
+     "t0": 92.049,
+     "t1": 92.709
+    },
+    {
+     "shown": "Un",
+     "red": false,
+     "t0": 92.709,
+     "t1": 92.929
+    },
+    {
+     "shown": "voisin,",
+     "red": false,
+     "t0": 92.929,
+     "t1": 93.589
+    },
+    {
+     "shown": "à",
+     "red": false,
+     "t0": 93.609,
+     "t1": 93.729
+    },
+    {
+     "shown": "moitié",
+     "red": false,
+     "t0": 93.729,
+     "t1": 94.049
+    },
+    {
+     "shown": "endormi.",
+     "red": false,
+     "t0": 94.049,
+     "t1": 94.469
+    },
+    {
+     "shown": "Il",
+     "red": false,
+     "t0": 94.849,
+     "t1": 94.949
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 94.949,
+     "t1": 95.129
+    },
+    {
+     "shown": "fait",
+     "red": false,
+     "t0": 95.129,
+     "t1": 95.249
+    },
+    {
+     "shown": "entrer.",
+     "red": false,
+     "t0": 95.249,
+     "t1": 95.569
+    }
+   ]
+  },
+  {
+   "t0": 95.89,
+   "t1": 98.635,
+   "units": [
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 95.89,
+     "t1": 96.05
+    },
+    {
+     "shown": "ne",
+     "red": false,
+     "t0": 96.05,
+     "t1": 96.23
+    },
+    {
+     "shown": "peut",
+     "red": false,
+     "t0": 96.23,
+     "t1": 96.43
+    },
+    {
+     "shown": "pas",
+     "red": false,
+     "t0": 96.43,
+     "t1": 96.61
+    },
+    {
+     "shown": "appeler",
+     "red": false,
+     "t0": 96.61,
+     "t1": 96.93
+    },
+    {
+     "shown": ":",
+     "red": false,
+     "t0": 96.93,
+     "t1": 97.05
+    },
+    {
+     "shown": "on",
+     "red": false,
+     "t0": 97.05,
+     "t1": 97.13
+    },
+    {
+     "shown": "l'entendrait",
+     "red": false,
+     "t0": 97.13,
+     "t1": 97.71
+    },
+    {
+     "shown": "depuis",
+     "red": false,
+     "t0": 97.71,
+     "t1": 97.97
+    },
+    {
+     "shown": "l'escalier.",
+     "red": false,
+     "t0": 97.97,
+     "t1": 98.635
+    }
+   ]
+  },
+  {
+   "t0": 98.885,
+   "t1": 104.42,
+   "units": [
+    {
+     "shown": "Alors",
+     "red": false,
+     "t0": 98.885,
+     "t1": 99.165
+    },
+    {
+     "shown": "elle",
+     "red": false,
+     "t0": 99.165,
+     "t1": 99.645
+    },
+    {
+     "shown": "écrit",
+     "red": false,
+     "t0": 99.645,
+     "t1": 99.965
+    },
+    {
+     "shown": "au",
+     "red": false,
+     "t0": 99.965,
+     "t1": 100.165
+    },
+    {
+     "shown": "114.",
+     "red": false,
+     "t0": 100.165,
+     "t1": 100.985
+    },
+    {
+     "shown": "Par",
+     "red": false,
+     "t0": 100.985,
+     "t1": 101.405
+    },
+    {
+     "shown": "SMS.",
+     "red": false,
+     "t0": 101.405,
+     "t1": 101.885
+    },
+    {
+     "shown": "Son",
+     "red": false,
+     "t0": 102.225,
+     "t1": 102.485
+    },
+    {
+     "shown": "nom,",
+     "red": false,
+     "t0": 102.485,
+     "t1": 102.725
+    },
+    {
+     "shown": "son",
+     "red": false,
+     "t0": 102.825,
+     "t1": 102.925
+    },
+    {
+     "shown": "adresse,",
+     "red": false,
+     "t0": 102.925,
+     "t1": 103.365
+    },
+    {
+     "shown": "«",
+     "red": false,
+     "t0": 103.665,
+     "t1": 103.825
+    },
+    {
+     "shown": "je",
+     "red": false,
+     "t0": 103.825,
+     "t1": 103.825
+    },
+    {
+     "shown": "suis",
+     "red": false,
+     "t0": 103.825,
+     "t1": 104.025
+    },
+    {
+     "shown": "suivie",
+     "red": false,
+     "t0": 104.025,
+     "t1": 104.385
+    },
+    {
+     "shown": "».",
+     "red": false,
+     "t0": 104.385,
+     "t1": 104.385
+    }
+   ]
+  },
+  {
+   "t0": 104.72,
+   "t1": 109.591,
+   "units": [
+    {
+     "shown": "Le",
+     "red": false,
+     "t0": 104.72,
+     "t1": 104.88
+    },
+    {
+     "shown": "114,",
+     "red": false,
+     "t0": 104.88,
+     "t1": 105.76
+    },
+    {
+     "shown": "c'est",
+     "red": false,
+     "t0": 105.76,
+     "t1": 106.06
+    },
+    {
+     "shown": "le",
+     "red": false,
+     "t0": 106.06,
+     "t1": 106.16
+    },
+    {
+     "shown": "17",
+     "red": false,
+     "t0": 106.16,
+     "t1": 106.66
+    },
+    {
+     "shown": "quand",
+     "red": false,
+     "t0": 106.66,
+     "t1": 106.8
+    },
+    {
+     "shown": "on",
+     "red": false,
+     "t0": 106.8,
+     "t1": 106.98
+    },
+    {
+     "shown": "ne",
+     "red": false,
+     "t0": 106.98,
+     "t1": 107.1
+    },
+    {
+     "shown": "peut",
+     "red": false,
+     "t0": 107.1,
+     "t1": 107.26
+    },
+    {
+     "shown": "pas",
+     "red": false,
+     "t0": 107.26,
+     "t1": 107.5
+    },
+    {
+     "shown": "parler.",
+     "red": false,
+     "t0": 107.5,
+     "t1": 107.86
+    },
+    {
+     "shown": "Gratuit,",
+     "red": false,
+     "t0": 108.46,
+     "t1": 108.82
+    },
+    {
+     "shown": "jour",
+     "red": false,
+     "t0": 109.0,
+     "t1": 109.22
+    },
+    {
+     "shown": "et",
+     "red": false,
+     "t0": 109.22,
+     "t1": 109.34
+    },
+    {
+     "shown": "nuit.",
+     "red": false,
+     "t0": 109.34,
+     "t1": 109.48
+    }
+   ]
+  },
+  {
+   "t0": 109.941,
+   "t1": 113.282,
+   "units": [
+    {
+     "shown": "4 h 26.",
+     "red": false,
+     "t0": 109.941,
+     "t1": 110.881
+    },
+    {
+     "shown": "Deux",
+     "red": false,
+     "t0": 110.881,
+     "t1": 111.541
+    },
+    {
+     "shown": "policiers",
+     "red": false,
+     "t0": 111.541,
+     "t1": 111.861
+    },
+    {
+     "shown": "montent.",
+     "red": false,
+     "t0": 111.861,
+     "t1": 112.341
+    },
+    {
+     "shown": "Batterie",
+     "red": false,
+     "t0": 112.361,
+     "t1": 112.821
+    },
+    {
+     "shown": ":",
+     "red": false,
+     "t0": 112.821,
+     "t1": 112.821
+    },
+    {
+     "shown": "1 %.",
+     "red": false,
+     "t0": 112.821,
+     "t1": 113.181
+    }
+   ]
+  },
+  {
+   "t0": 113.582,
+   "t1": 115.879,
+   "units": [
+    {
+     "shown": "Ils",
+     "red": false,
+     "t0": 113.582,
+     "t1": 113.807
+    },
+    {
+     "shown": "fouillent",
+     "red": false,
+     "t0": 113.807,
+     "t1": 114.367
+    },
+    {
+     "shown": "tout",
+     "red": false,
+     "t0": 114.367,
+     "t1": 114.647
+    },
+    {
+     "shown": "l'escalier.",
+     "red": false,
+     "t0": 114.647,
+     "t1": 115.319
+    },
+    {
+     "shown": "Personne.",
+     "red": true,
+     "t0": 115.319,
+     "t1": 115.879
+    }
+   ]
+  },
+  {
+   "t0": 116.229,
+   "t1": 118.12,
+   "units": [
+    {
+     "shown": "Au",
+     "red": false,
+     "t0": 116.229,
+     "t1": 116.349
+    },
+    {
+     "shown": "5e,",
+     "red": false,
+     "t0": 116.349,
+     "t1": 116.949
+    },
+    {
+     "shown": "une",
+     "red": false,
+     "t0": 116.949,
+     "t1": 117.269
+    },
+    {
+     "shown": "porte",
+     "red": false,
+     "t0": 117.269,
+     "t1": 117.609
+    },
+    {
+     "shown": "s'ouvre.",
+     "red": false,
+     "t0": 117.609,
+     "t1": 118.12
+    }
+   ]
+  },
+  {
+   "t0": 118.42,
+   "t1": 119.04,
+   "units": [
+    {
+     "shown": "C'est",
+     "red": false,
+     "t0": 118.42,
+     "t1": 118.66
+    },
+    {
+     "shown": "lui.",
+     "red": true,
+     "t0": 118.66,
+     "t1": 118.82
+    }
+   ]
+  },
+  {
+   "t0": 119.34,
+   "t1": 121.103,
+   "units": [
+    {
+     "shown": "Il",
+     "red": false,
+     "t0": 119.34,
+     "t1": 119.5
+    },
+    {
+     "shown": "habite",
+     "red": false,
+     "t0": 119.5,
+     "t1": 119.82
+    },
+    {
+     "shown": "juste",
+     "red": false,
+     "t0": 119.82,
+     "t1": 120.02
+    },
+    {
+     "shown": "en",
+     "red": false,
+     "t0": 120.02,
+     "t1": 120.2
+    },
+    {
+     "shown": "dessous",
+     "red": false,
+     "t0": 120.2,
+     "t1": 120.5
+    },
+    {
+     "shown": "de",
+     "red": false,
+     "t0": 120.5,
+     "t1": 120.54
+    },
+    {
+     "shown": "chez",
+     "red": false,
+     "t0": 120.54,
+     "t1": 120.7
+    },
+    {
+     "shown": "elle.",
+     "red": false,
+     "t0": 120.7,
+     "t1": 120.94
+    }
+   ]
+  },
+  {
+   "t0": 121.453,
+   "t1": 123.484,
+   "units": [
+    {
+     "shown": "Il",
+     "red": false,
+     "t0": 121.453,
+     "t1": 121.613
+    },
+    {
+     "shown": "la",
+     "red": false,
+     "t0": 121.613,
+     "t1": 121.773
+    },
+    {
+     "shown": "regarde.",
+     "red": false,
+     "t0": 121.773,
+     "t1": 122.193
+    },
+    {
+     "shown": "«",
+     "red": false,
+     "t0": 122.433,
+     "t1": 122.493
+    },
+    {
+     "shown": "Bonne",
+     "red": false,
+     "t0": 122.493,
+     "t1": 122.913
+    },
+    {
+     "shown": "nuit,",
+     "red": false,
+     "t0": 122.913,
+     "t1": 123.013
+    },
+    {
+     "shown": "Inès.",
+     "red": true,
+     "t0": 123.173,
+     "t1": 123.393
+    },
+    {
+     "shown": "»",
+     "red": false,
+     "t0": 123.453,
+     "t1": 123.453
+    }
+   ]
+  },
+  {
+   "t0": 123.834,
+   "t1": 125.691,
+   "units": [
+    {
+     "shown": "Elle",
+     "red": false,
+     "t0": 123.834,
+     "t1": 123.994
+    },
+    {
+     "shown": "ne",
+     "red": false,
+     "t0": 123.994,
+     "t1": 124.154
+    },
+    {
+     "shown": "lui",
+     "red": false,
+     "t0": 124.154,
+     "t1": 124.294
+    },
+    {
+     "shown": "a",
+     "red": false,
+     "t0": 124.294,
+     "t1": 124.454
+    },
+    {
+     "shown": "jamais",
+     "red": true,
+     "t0": 124.454,
+     "t1": 124.694
+    },
+    {
+     "shown": "dit",
+     "red": false,
+     "t0": 124.694,
+     "t1": 124.994
+    },
+    {
+     "shown": "son",
+     "red": false,
+     "t0": 124.994,
+     "t1": 125.174
+    },
+    {
+     "shown": "prénom.",
+     "red": false,
+     "t0": 125.174,
+     "t1": 125.554
+    }
+   ]
+  },
+  {
+   "t0": 126.291,
+   "t1": 128.127,
+   "units": [
+    {
+     "shown": "Partie",
+     "red": false,
+     "t0": 126.291,
+     "t1": 126.591
+    },
+    {
+     "shown": "trois.",
+     "red": false,
+     "t0": 126.591,
+     "t1": 127.291
+    },
+    {
+     "shown": "Le",
+     "red": false,
+     "t0": 127.291,
+     "t1": 127.531
+    },
+    {
+     "shown": "cinquième.",
+     "red": false,
+     "t0": 127.531,
+     "t1": 128.011
+    }
+   ]
+  }
+ ]
+}

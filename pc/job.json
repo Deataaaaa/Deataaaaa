@@ -1,0 +1,12 @@
+{
+  "queue": [
+    {
+      "ep": "ep25",
+      "name": "12pct_s2p2_letraceur",
+      "cover": "videos/12pct_s2p2_cover.jpg",
+      "workers": 3,
+      "note": "12 % Saison 2 · Partie 2 : Le traceur (~91 s). S2 P1 (Le VTC) is posted.",
+      "post": "pc/posts/s2p2.txt"
+    }
+  ]
+}

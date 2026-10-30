@@ -4,6 +4,7 @@
 //        node render.mjs --ep ep01 --out /path/frames [--from 0 --to 1800] [--fps 30] [--resume]
 //        [--step N --offset k]   this worker takes frames from+k, from+k+N, ... (tools/renderall.mjs runs N of them)
 //        [--gpu [--headed]]      render on the graphics card (the owner's PC) instead of SwiftShader (this cloud box)
+//        [--queue]               take chunks of frames from tools/renderall.mjs over IPC (its adaptive worker pool)
 import { chromium } from 'playwright';
 import http from 'http'; import fs from 'fs'; import path from 'path'; import { fileURLToPath } from 'url';
 
@@ -46,6 +47,7 @@ if (gpu && /swiftshader|llvmpipe|software|basic render/i.test(glName)) {
 }
 await page.waitForFunction(() => window.ready === true, null, { timeout: 300000 });
 console.log('scene ready');
+
 const meta = await page.evaluate(() => window.META);
 const fps = Number(args.fps || meta.fps || 30);
 
@@ -93,6 +95,24 @@ if (args.cover) {
 } else if (args.stills) {
   const list = String(args.stills).split(',').map(Number);
   for (const t of list) { const f = path.join(out, `still_${t.toFixed(2)}.jpg`); const t0 = Date.now(); await shot(t, f); console.log('still', t, f, Date.now() - t0, 'ms'); }
+} else if (args.queue && process.send) {
+  process.send({ ready: true, total: Math.round(meta.duration * fps) });
+  // --queue (tools/renderall.mjs): ask the controller for chunks of frames until it says stop, so workers can be added
+  // while the render runs and a fast worker simply takes more chunks
+  const ask = () => new Promise((res) => { process.once('message', res); process.send({ want: true }); });
+  const t0 = Date.now(); let n = 0;
+  for (;;) {
+    const m = await ask();
+    if (!m || m.stop) break;
+    const [a, b] = m.chunk;
+    for (let i = a; i < b; i++) {
+      const f = path.join(out, `f_${String(i).padStart(5, '0')}.jpg`);
+      if (fs.existsSync(f)) continue;
+      await shot(i / fps, f); n++;
+    }
+    process.send({ done: [a, b], n, sec: (Date.now() - t0) / 1000 });
+  }
+  console.log('done (queue)', ((Date.now() - t0) / 1000).toFixed(1), 's', `${n} frames`);
 } else {
   const total = Math.round(meta.duration * fps);
   const from = Number(args.from || 0), to = Math.min(total, Number(args.to || total));

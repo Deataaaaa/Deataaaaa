@@ -1,8 +1,0 @@
-{
-  "hook": [0, 3.15],
-  "clips": [
-    { "name": "le-prenom", "from": 3.15, "to": 31.46 },
-    { "name": "les-bons-reflexes", "from": 46.34, "to": 72.42 },
-    { "name": "le-traceur", "from": 72.42, "to": 96.8 }
-  ]
-}

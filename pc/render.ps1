@@ -124,7 +124,7 @@ try {
 
       # 5. render: the workers run in the background (their output in a log), the window shows the progress
       Stage '5/8' 'Render'
-      WL (' ' + $workers + ' workers on the graphics card') 'DarkGray'
+      WL (' ' + $workers + ' workers to start, more while the graphics card has room (up to 100%)') 'DarkGray'
       $frames = Join-Path $out ('frames_' + $ep)
       $wlog = Join-Path $out 'render_workers_log.txt'; $werr = Join-Path $out 'render_workers_err.txt'
       $tr = Get-Date
@@ -183,15 +183,10 @@ try {
       if (-not (Test-Path -LiteralPath $phone)) { Done 'FAIL' 'the encoding failed'; Tail 12; throw 'encode' }
       $lufs = ''; $pl = @($script:LastOut | Where-Object { $_ -match '^OK .*_phone\.mp4' }) | Select-Object -First 1
       if ($pl -match '(-?[\d.]+) LUFS') { $lufs = '  ' + $Matches[1] + ' LUFS' }
+      $encd = @($script:LastOut | Where-Object { $_ -match '^ENCODER ' }) | Select-Object -First 1; $how = ''; if ($encd -match 'amf') { $how = '  (graphics card)' } elseif ($encd) { $how = '  (processor)' }
       if ($c7 -ne 0) { Done 'WARN' ('sound check: ' + (@($script:LastOut) | Select-Object -Last 1)); $warn += 'sound' }
-      else { Done 'OK' ($name + '_phone.mp4  ' + (Size (Get-Item -LiteralPath $phone).Length) + $lufs) }
+      else { Done 'OK' ($name + '_phone.mp4  ' + (Size (Get-Item -LiteralPath $phone).Length) + $lufs + $how) }
       if ($j.post -and (Test-Path -LiteralPath (Join-Path $repo $j.post))) { Copy-Item -LiteralPath (Join-Path $repo $j.post) -Destination (Join-Path $repo ('videos\' + $name + '_post.txt')) -Force }   # captions + times next to the video
-      if ($j.clips -and (Test-Path -LiteralPath (Join-Path $repo $j.clips))) {   # short extracts that open on the hook: more posts from one render
-        Stage '   ' 'Clips'
-        $c9 = Run $bash @('studio/tools/clips.sh', ('videos/' + $name + '_phone.mp4'), $j.clips, 'videos')
-        $nc = @(Get-ChildItem -LiteralPath (Join-Path $repo 'videos') -Filter ($name + '_clip*.mp4') -ErrorAction SilentlyContinue).Count
-        if ($c9 -ne 0 -or $nc -eq 0) { Done 'WARN' 'clips failed: send me the log'; $warn += 'clips' } else { Done 'OK' ($nc.ToString() + ' clips in videos\') }
-      }
       $fl = @($script:LastOut | Where-Object { $_ -match 'FLICKER CHECK' }) | Select-Object -First 1
       Stage '   ' 'Flicker check'
       $secs = @(Get-Content -LiteralPath (Join-Path $repo ('videos\' + $name + '_flicker.txt')) -ErrorAction SilentlyContinue | Where-Object { $_ -match '<--' } | ForEach-Object { Log $_; ($_.Trim() -split '\s+')[0] + ' s' })

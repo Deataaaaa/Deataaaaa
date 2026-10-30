@@ -213,6 +213,11 @@ own series (pitch first, rule 10). Rules that clash with it (3, 5, 11, 16, 17, 2
   (Node zip, python.org installer, gyan.dev ffmpeg, Git installer); Git itself came from git-scm.com. Keep `pc/*.ps1` ASCII only (PowerShell 5.1) and bash scripts LF (`.gitattributes`); Windows
   tools print `\r\n`, so strip `\r` from every `$(...)` in bash. `render.mjs --gpu` exits 3 if Chromium lands on a
   software renderer; `renderall.mjs` then retries with `--headed`.
+  Owner, 30 Oct 2026: « on fait que la principale » (one video per part, no clips) and « utilise bien 100 % de mon GPU, pour
+  l'encodage pareil »: `renderall.mjs` feeds 12-frame chunks to `render.mjs --queue` workers over IPC and, with `--gpu`, adds a
+  worker every ~25 s while the card's 3D load is under 90 %, RAM is free and the last one added still raised the fps (`--max`
+  caps it); `encode.sh` encodes on the card (`h264_amf`: HQ at QP 16/18/20, phone at its bitrate with pre-analysis, redone by
+  x264 if over 29 MB) and falls back to x264 when AMF is missing (`ENCODER=x264` forces it).
 - Wait for every texture before the first frame (`TEX_PENDING` in `engine/elevator.js`), or the first
   frame of each worker samples black textures.
 - Never `pkill -f`/`pgrep -f` with a pattern that also appears in your own shell command (it kills or

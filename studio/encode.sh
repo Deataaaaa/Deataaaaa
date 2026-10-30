@@ -13,16 +13,36 @@ EXP=$($PY -c "print(round($DUR*30))" | tr -d '\r')
 AUD=(-c:a aac -b:a 192k -ar 48000 -ac 2)
 VID=(-pix_fmt yuv420p -profile:v high -level 4.2 -movflags +faststart)
 
-# x264 tuned for clean CG frames (no grain): film tune, variance AQ biased to dark areas (no banding or blocks
-# crawling in skies and shadows), lighter deblocking so fine sparks keep their shape
-X264=(-tune film -x264-params "aq-mode=3:aq-strength=0.85:deblock=-1,-1")
-ffmpeg -y -v error -framerate 30 -i "$FR/f_%05d.jpg" -i "$WAV" -map 0:v:0 -map 1:a:0 \
-  -c:v libx264 -preset slow -crf 17 "${X264[@]}" "${VID[@]}" "${AUD[@]}" -shortest "$OUT.mp4"
-
 VB=$($PY -c "print(int((28.5*8*1024*1024/$DUR - 200000)/1000))" | tr -d '\r')
-ffmpeg -y -v error -framerate 30 -i "$FR/f_%05d.jpg" -c:v libx264 -preset veryslow -b:v ${VB}k "${X264[@]}" -pass 1 -passlogfile "$PASSLOG" -pix_fmt yuv420p -an -f null /dev/null
-ffmpeg -y -v error -framerate 30 -i "$FR/f_%05d.jpg" -i "$WAV" -map 0:v:0 -map 1:a:0 \
-  -c:v libx264 -preset veryslow -b:v ${VB}k "${X264[@]}" -pass 2 -passlogfile "$PASSLOG" "${VID[@]}" "${AUD[@]}" -shortest "${OUT}_phone.mp4"
+# On the owner's PC (AMD RX 6700 XT) the graphics card's video engine encodes (owner, 30 Oct 2026: the encoding on the GPU too):
+# h264_amf, the HQ file at constant quality, the phone file at its size budget with pre-analysis and variance AQ. A ffmpeg
+# without AMF, or a driver that refuses it, falls back to x264 on the processor (this cloud box, or a broken driver).
+ENC=x264
+if [ "${ENCODER:-auto}" != x264 ] && ffmpeg -hide_banner -encoders 2>/dev/null | grep -q h264_amf \
+   && ffmpeg -v error -f lavfi -i color=c=gray:s=256x256:d=0.2 -c:v h264_amf -f null - 2>/dev/null; then ENC=amf; fi
+if [ $ENC = amf ]; then
+  AMF=(-c:v h264_amf -usage transcoding -quality quality)
+  ffmpeg -y -v error -framerate 30 -i "$FR/f_%05d.jpg" -i "$WAV" -map 0:v:0 -map 1:a:0 \
+    "${AMF[@]}" -rc cqp -qp_i 16 -qp_p 18 -qp_b 20 "${VID[@]}" "${AUD[@]}" -shortest "$OUT.mp4" \
+  && { ffmpeg -y -v error -framerate 30 -i "$FR/f_%05d.jpg" -i "$WAV" -map 0:v:0 -map 1:a:0 \
+      "${AMF[@]}" -rc vbr_peak -b:v ${VB}k -maxrate $((VB * 2))k -bufsize $((VB * 2))k -preanalysis true -vbaq true "${VID[@]}" "${AUD[@]}" -shortest "${OUT}_phone.mp4" \
+    || ffmpeg -y -v error -framerate 30 -i "$FR/f_%05d.jpg" -i "$WAV" -map 0:v:0 -map 1:a:0 \
+      "${AMF[@]}" -rc vbr_peak -b:v ${VB}k -maxrate $((VB * 2))k -bufsize $((VB * 2))k "${VID[@]}" "${AUD[@]}" -shortest "${OUT}_phone.mp4"; } \
+  || { echo "AMF encoding failed: falling back to x264"; ENC=x264; }   # (older drivers or ffmpeg builds lack pre-analysis: the second try goes without)
+  # the phone file must stay under the chat's 29 MB: if the GPU's rate control overshot, the processor redoes it
+  if [ $ENC = amf ] && [ "$(stat -c %s "${OUT}_phone.mp4" 2>/dev/null || wc -c < "${OUT}_phone.mp4")" -gt 30408704 ]; then echo "AMF phone file over 29 MB: x264 instead"; ENC=x264; fi
+fi
+if [ $ENC = x264 ]; then
+  # x264 tuned for clean CG frames (no grain): film tune, variance AQ biased to dark areas (no banding or blocks
+  # crawling in skies and shadows), lighter deblocking so fine sparks keep their shape
+  X264=(-tune film -x264-params "aq-mode=3:aq-strength=0.85:deblock=-1,-1")
+  ffmpeg -y -v error -framerate 30 -i "$FR/f_%05d.jpg" -i "$WAV" -map 0:v:0 -map 1:a:0 \
+    -c:v libx264 -preset slow -crf 17 "${X264[@]}" "${VID[@]}" "${AUD[@]}" -shortest "$OUT.mp4"
+  ffmpeg -y -v error -framerate 30 -i "$FR/f_%05d.jpg" -c:v libx264 -preset veryslow -b:v ${VB}k "${X264[@]}" -pass 1 -passlogfile "$PASSLOG" -pix_fmt yuv420p -an -f null /dev/null
+  ffmpeg -y -v error -framerate 30 -i "$FR/f_%05d.jpg" -i "$WAV" -map 0:v:0 -map 1:a:0 \
+    -c:v libx264 -preset veryslow -b:v ${VB}k "${X264[@]}" -pass 2 -passlogfile "$PASSLOG" "${VID[@]}" "${AUD[@]}" -shortest "${OUT}_phone.mp4"
+fi
+echo "ENCODER $ENC"
 
 REF=$(ffmpeg -hide_banner -nostats -i "$WAV" -af ebur128 -f null - 2>&1 | tr -d '\r' | awk '/Summary/{s=1} s&&/I:/{print $2; exit}')
 for f in "$OUT.mp4" "${OUT}_phone.mp4"; do

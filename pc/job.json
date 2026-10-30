@@ -6,8 +6,7 @@
       "cover": "videos/12pct_s2p1_cover.jpg",
       "workers": 3,
       "note": "12 % Saison 2 · Partie 1 : Le VTC (~97 s). Season 1 (parts 1-4) is posted.",
-      "post": "pc/posts/s2p1.txt",
-      "clips": "pc/clips/s2p1.json"
+      "post": "pc/posts/s2p1.txt"
     }
   ]
 }

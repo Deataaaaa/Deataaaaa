@@ -31,6 +31,9 @@ rules below, they win; every other rule still holds (realism, loud phone sound, 
   season 1, Inès goes out for the first time and has to get home alone from Pigalle at 2 am with 12 % battery (12 % → 0 % over the
   season). The season 1 man is in prison and never returns; the thread is someone new who knows her name and tracks her (a new man,
   the same in every part of season 2). Each part = a trusted figure who is not one + a « vous ___ ? » dilemma (the P3 recipe).
+  **Owner, 31 Oct 2026:** S1 P3 exploded on TikTok (481.3K views, 5,157 h watched, avg 36.9 s, 5.45 % full, +1.3K follows: x13);
+  the comments say it scared them: « on va faire des histoires qui font beaucoup plus peur ». From S2 P3 on: scarier first (dread,
+  the threat close and in frame, darker sound), the tips still checked.
   Parts: P1 « Le VTC » (approved: a car stops, the driver says her name), then « Le traceur », « Le verre », « Le dernier bus »
   (to pitch as we go). Format from the P3 data: ~90 s, the « ET SI » before 20 s, the hook in POV on the trusted person.
 - **Voice (owner, 22 Oct 2026: "A"):** Kyutai TTS 1.6B en_fr (CC-BY 4.0, credited on the end card) with Kyutai's own CC0 French voice

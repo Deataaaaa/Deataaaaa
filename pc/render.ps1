@@ -9,6 +9,12 @@ $studio = Join-Path $repo 'studio'
 $script:Quiet = $true
 Remove-Item Env:\NODE_TLS_REJECT_UNAUTHORIZED -ErrorAction SilentlyContinue   # set on this PC by another program: node warned about it
 try { $Host.UI.RawUI.WindowTitle = 'DeatAnimation Render Engine (beta)' } catch {}
+# a click in the window (QuickEdit) froze the whole render until a key was pressed (owner, 31 Oct 2026): switch QuickEdit off
+try {
+  Add-Type -Namespace DA -Name Con -MemberDefinition '[DllImport("kernel32.dll")] public static extern System.IntPtr GetStdHandle(int h); [DllImport("kernel32.dll")] public static extern bool GetConsoleMode(System.IntPtr h, out uint m); [DllImport("kernel32.dll")] public static extern bool SetConsoleMode(System.IntPtr h, uint m);'
+  $hIn = [DA.Con]::GetStdHandle(-10); $cm = [uint32]0
+  if ([DA.Con]::GetConsoleMode($hIn, [ref]$cm)) { $null = [DA.Con]::SetConsoleMode($hIn, (($cm -band (-bnot [uint32]0x0040)) -bor [uint32]0x0080)) }
+} catch {}
 RefreshPath
 $VERSION = '2.0-beta'
 $BLK = [string][char]0x2588; $SHD = [string][char]0x2591            # full block, light shade (PowerShell names ignore case: no $f/$e)

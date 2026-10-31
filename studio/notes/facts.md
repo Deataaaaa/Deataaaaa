@@ -547,3 +547,33 @@ Sources checked 30 Oct 2026.
   office, the officer and the plate on the wall in the video are fiction (no real address on screen).
 - Fiction (not claims): Inès, the times (2:31 → 3:02 in the ET SI, 2:56 at the station), the battery (9 % → 6 %), Lucas, the man and
   what he does, the bar « Minuit », her friend, the tracker and its serial number, the SMS number, the officer, the form on her screen.
+
+## EP26 (« 12 % » saison 2 · Partie 3 · Le verre): 1:24 am, a stranger's glass next to hers at the bar. Fiction; the advice and the numbers are real
+Sources checked 31 Oct 2026.
+- « 1 377 cas suspects de soumission chimique signalés en France en 2024 »: ANSM / CEIP-A de Paris, « Soumission chimique, résultats de
+  l'enquête 2024 » (plaquette n° 20, ansm.sante.fr/uploads/2026/07/10/20260710-plaquette-sc-2024.pdf): « 1377 signalements suspects »
+  of agressions facilitées par les substances (AFS), +30.4 % on 2023. "cas suspects … signalés" matches their wording (signalements suspects).
+- « Le plus souvent, dans un verre d'alcool »: same leaflet, soumissions chimiques vraisemblables, adults: « la boisson alcoolisée est le
+  principal vecteur suspecté (44,8 %) ».
+- « Deux victimes sur trois ne se souviennent de rien »: same leaflet, « près de 2 victimes sur 3 rapporte une amnésie des faits (94 cas) »
+  of the 140 likely cases (94 / 140 = 67 %).
+- Victims mostly women (85.5 %), mostly « sphère festive » (56.5 % of known cases): context for the bar (not on screen).
+- « Un verre que vous n'avez pas vu servir, vous n'y touchez pas » / « Votre verre est resté seul ? Vous en recommandez un »: gendarmerie
+  nationale (UNPJ, « La soumission chimique, un enjeu de santé publique sous haute surveillance », IRCGN toxicology department): « garder un
+  œil sur sa boisson », « ne pas accepter de verre d'un inconnu ».
+- « Elle le montre au barman » / « alertez une amie, le personnel »: ANSM leaflet: « La vigilance solidaire constitue un facteur protecteur
+  (amis jamais perdus de vue, intervention des vigiles et des dispositifs de sécurité, entraide…) » and the protective reflexes « écoute du
+  doute, extraction de la zone de danger et/ou appel à l'aide ».
+- « le 15 ou le 17 »: SAMU 15, police-gendarmerie 17 (112 in Europe).
+- « Puis une prise de sang et d'urine, vite : les traces s'effacent en quelques heures »: blood and urine samples are the only proof and must
+  be taken quickly (ANEMF victims' resource sheet 2025; Assemblée nationale written answers; info.gouv.fr « Piqûres suspectes, soumission
+  chimique : que faire ? »). GHB, the classic case, is detectable only ~6 h in blood and ~12 h in urine (toxicology literature): "quelques
+  heures". A complaint is not required to get tested: toxicology analyses are reimbursed on prescription in the experimental scheme (Ordre des
+  pharmaciens). The CRAFS (Centre de référence sur les agressions facilitées par les substances, AP-HP, founded 15 Oct 2024) advises victims:
+  01 40 05 42 70, Monday-Friday 9-13 h and 14-18 h, lecrafs.com (on the card).
+- « Droguer quelqu'un pour l'agresser : 5 ans de prison, 75 000 € d'amende »: code pénal art. 222-30-1 (loi n° 2018-703 du 3 août 2018):
+  administering to a person without their knowledge a substance that alters their discernment or the control of their acts in order to
+  commit a rape or sexual assault, 5 years and 75 000 € (7 years and 100 000 € on a minor under 15 or a vulnerable person); attempt punished
+  (art. 222-31). Confirmed by the circular of 3 Sept 2018 and the Guerriau case (tribunal correctionnel de Paris, 27 Jan 2026).
+- Times: 2:58 / 3:05 at the commissariat (after Part 2's complaint at 2:56), 1:24 the flashback (Part 2's bar). Battery 6 % → 3 %.
+- The receipt « MINUIT » (the fictional bar), « 1 COCKTAIL MAISON 12,00 € », 01:26: fiction.

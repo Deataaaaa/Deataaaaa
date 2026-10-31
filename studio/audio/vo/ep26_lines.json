@@ -1,0 +1,30 @@
+{
+ "note": "« 12 % » Saison 2 · Partie 3 · Le verre. [spoken|shown], *red*. Voice A (Kyutai developpeuse), read in blocks (tools/vo_text.py).",
+ "lines": [
+  {"gap": 0.1, "t": "Un inconnu pose un verre à côté du vôtre… vous le *buvez* ?"},
+  {"gap": 0.5, "t": "[Deux heures cinquante-huit|2 h 58]. Au commissariat, la policière relit sa plainte.", "brk": 1},
+  {"gap": 0.3, "t": "« Et ce verre, à côté du vôtre… vous l'avez *bu* ? »"},
+  {"gap": 0.5, "t": "[Une heure vingt-quatre|1 h 24]. Léa est aux toilettes. Le verre est là, plein.", "brk": 1},
+  {"gap": 0.3, "t": "Personne ne l'a vu le *servir*."},
+  {"gap": 0.5, "t": "Et si elle l'avait bu ?", "brk": 1},
+  {"gap": 0.6, "t": "Une gorgée. Dix minutes plus tard, la salle *tangue*.", "brk": 1},
+  {"gap": 0.3, "t": "Les sons s'étirent. Ses jambes ne répondent plus."},
+  {"gap": 0.4, "t": "Une main lui serre le bras : « Elle a trop bu. Je la *ramène*. »", "brk": 1},
+  {"gap": 0.3, "t": "Personne ne bouge. La porte du bar se *referme*."},
+  {"gap": 0.6, "t": "En [deux mille vingt-quatre|2024], [mille trois cent soixante-dix-sept|1 377] cas suspects de *soumission chimique* signalés en France.", "brk": 1},
+  {"gap": 0.3, "t": "Le plus souvent, dans un verre d'alcool. Deux victimes sur trois ne se souviennent de *rien*."},
+  {"gap": 0.6, "t": "Retour en arrière.", "brk": 1},
+  {"gap": 0.5, "t": "Inès ne boit pas.", "brk": 1},
+  {"gap": 0.3, "t": "Un verre que vous n'avez pas vu servir, vous n'y touchez *pas*."},
+  {"gap": 0.3, "t": "Votre verre est resté seul ? Vous en recommandez un.", "brk": 1},
+  {"gap": 0.3, "t": "Elle le montre au barman : « Ce n'est pas le mien. »"},
+  {"gap": 0.4, "t": "Un malaise soudain, bien plus fort que ce que vous avez bu : alertez une amie, le personnel, le [quinze|15] ou le [dix-sept|17].", "brk": 1},
+  {"gap": 0.3, "t": "Puis une prise de sang et d'urine, *vite* : les traces s'effacent en quelques heures."},
+  {"gap": 0.3, "t": "Droguer quelqu'un pour l'agresser : [cinq ans|5 ans] de prison, [soixante-quinze mille euros|75 000 €] d'amende.", "brk": 1},
+  {"gap": 0.6, "t": "[Trois heures cinq|3 h 05]. En partant, Inès fouille la poche de son manteau.", "brk": 1},
+  {"gap": 0.3, "t": "La note du bar. Un cocktail qu'elle n'a jamais commandé."},
+  {"gap": 0.5, "t": "Au dos, à la main : « Tu n'as pas bu. La prochaine fois, *Inès*. »", "brk": 1},
+  {"gap": 0.4, "t": "[Trois pour cent|3 %].", "brk": 1},
+  {"gap": 0.6, "t": "Et vous… vous l'auriez *bu* ?", "brk": 1}
+ ]
+}

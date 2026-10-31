@@ -51,12 +51,13 @@ const GradeShader = {
     uTunnel: { value: 0 }, uScan: { value: 0 },
     uWarp: { value: 0 }, uWarpC: { value: new THREE.Vector2(0.5, 0.5) }, uWarpR: { value: 0 }, uWarpW: { value: 0.05 },
     uHeatA: { value: 0 }, uHeatC: { value: new THREE.Vector2(0.5, 0.5) }, uHeatR: { value: 0.2 }, uBarrel: { value: 0 },
+    uGhost: { value: 0 }, uGhostO: { value: new THREE.Vector2(0, 0) },
   },
   vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
   fragmentShader: `
     uniform sampler2D tDiffuse; uniform float uTime,uVignette,uGrain,uFade,uFadeWhite,uSat,uContrast,uAberr,uTunnel,uScan;
     uniform vec3 uTint; uniform vec2 uShake; varying vec2 vUv;
-    uniform float uWarp, uWarpR, uWarpW, uHeatA, uHeatR, uBarrel; uniform vec2 uWarpC, uHeatC;
+    uniform float uWarp, uWarpR, uWarpW, uHeatA, uHeatR, uBarrel, uGhost; uniform vec2 uWarpC, uHeatC, uGhostO;
     float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
     void main(){
       vec2 uv = vUv + uShake; vec2 c = uv - 0.5;
@@ -76,6 +77,12 @@ const GradeShader = {
         float r = length(c*vec2(1.0,0.62)); vec2 o = c * uTunnel * 0.035 * smoothstep(0.1, 0.6, r);
         col = (col + texture2D(tDiffuse, uv + o).rgb + texture2D(tDiffuse, uv - o).rgb + texture2D(tDiffuse, uv + o.yx).rgb) / 4.0;
         col *= mix(1.0, smoothstep(0.7 - 0.42 * uTunnel, 0.12, r), clamp(uTunnel * 1.15, 0.0, 1.0));
+      }
+      if (uGhost > 0.001) {    // double vision and blur (drugged): a soft 8-tap blur plus a ghost copy offset by uGhostO; smooth in time
+        vec3 b = vec3(0.0); float rb = 0.006 * uGhost;
+        for (int i = 0; i < 8; i++) { float a = float(i) * 0.785398; b += texture2D(tDiffuse, uv + vec2(cos(a), sin(a) * 0.5625) * rb).rgb; }
+        col = mix(col, b / 8.0, clamp(uGhost * 1.2, 0.0, 0.85));
+        col = mix(col, texture2D(tDiffuse, uv + uGhostO).rgb, 0.42 * clamp(uGhost, 0.0, 1.0));
       }
       if (uScan > 0.001) {     // VHS: scanlines, tracking wobble, chroma bleed
         float line = 0.5 + 0.5 * sin(uv.y * 1920.0 * 1.5708);

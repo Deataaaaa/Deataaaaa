@@ -385,7 +385,9 @@ export async function create() {
       if (id === 'open' || id === 'rewind' || id === 'hook') {
         // the hook replays the door opening in slow motion (a third of real time), the black wave already pouring in
         const to = id === 'open' ? t : id === 'hook' ? S.open.t0 + 0.8 + t * 0.28 : S.open.t1 - (t - S.rewind.t0) * ((S.open.t1 - S.open.t0) / (S.rewind.t1 - S.rewind.t0)) * 0.9;
-        const ko = clamp((to - S.open.t0 - 0.35) / 0.9); room.setDoor(0.75 * ko * ko * (3 - 2 * ko));
+        // capped at 0.62 (was 0.75): past ~0.68 the leaf's free edge goes into the kitchenette cabinet (x 4.30, z -3.75), and at 0.75
+        // its last 11 cm sat inside it, in frame on the right in the hook, 'open' and 'rewind' (same cap as P3, ep22 DOOR_OPEN)
+        const ko = clamp((to - S.open.t0 - 0.35) / 0.9); room.setDoor(0.62 * ko * ko * (3 - 2 * ko));
         which.land = 1; which.flood = S.open.t0 + 0.5; W.stairLamp.intensity = 12; W.stair.lamp.material.emissiveIntensity = 3;
         const fk = clamp((to - S.open.t0 - 0.6) / 1.6);
         fogTo(0.05 + (id === 'hook' ? 0.16 : 0.4) * fk, fogA.copy(FOG_OPEN0).lerp(FOG_OPEN1, smooth(0.2, 0.8, fk)));   // the hook stays readable

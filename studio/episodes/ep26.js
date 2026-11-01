@@ -267,7 +267,7 @@ export async function create() {
   const GM = V(STOOL.pos.x + 0.15, BAR.CY, BAR.CZ - 0.24);                // his glass, once set down beside hers
   const MAN_END = V(1.55, 0, -0.05);                                      // where he waits, at the far end of the counter
   const BARMAN = V(STOOL.pos.x + 0.35, 0, BAR.CZ - 0.95);
-  const COAT_P = V(D.x - 0.14, DKH, D.z - 0.2);
+  const COAT_P = V(D.x - 0.2, DKH, D.z - 0.12);
   const PHONE_BAR = V(STOOL.pos.x - 0.3, BAR.CY + 0.0041, BAR.CZ - 0.2);   // her phone on the counter (left behind in e4)
 
   return {
@@ -309,7 +309,7 @@ export async function create() {
           receipt.visible = true; receipt.position.set(D.x - 0.12, DKH + 0.0004 + RW / 2 * Math.abs(Math.sin(a)) + 0.01 * Math.sin(a), D.z + 0.33); receipt.rotation.set(0, -Math.PI / 2, 0); receipt.rotateZ(a); receipt.updateMatrixWorld(true); }
         show(ines, () => {
           const o = { pos: V(D.x - 0.7, 0.47, D.z + 0.05), yaw: Math.PI / 2, legs: 'chair', floor: 0, seat: 0.11, look: id === 'tw1' ? pkW : ['tw2', 'tw3'].includes(id) ? receipt.position.clone() : id === 's1' || id === 's2' ? wp(agent.bones.Head) : V(D.x - 0.42, 0.82, D.z + 0.05), lookK: 0.85,
-            handL: lapL, curlL: 0.35, handR: id === 'tw4' ? phoneLap : lapR, ...(id === 'tw4' ? { curlR: 0.08, pkR: PK, thumbR: THUMB } : {}), lean: ['tw1', 'tw2', 'tw3'].includes(id) ? 0.22 : 0 };
+            handL: lapL, curlL: 0.35, handR: id === 'tw4' ? phoneLap : lapR, ...(id === 'tw4' ? { curlR: 0.08, pkR: PK, thumbR: THUMB } : {}), lean: id === 'tw1' ? 0.38 : ['tw2', 'tw3'].includes(id) ? 0.22 : 0 };
           sit(ines, o);
           if (pinch) { const spec = (sh, fwd, left, up) => ({ hand: pinch.clone().add(V(-0.07, 0.03, 0)), pole: sh.clone().addScaledVector(up, -0.45).addScaledVector(left, -0.4), F: V(1, -0.3, 0).normalize(), N: V(0, -1, 0), curl: 0.35, thumb: 0.2 });
             pressPose(ines, 'Right', pinch, (arm) => sit(ines, { ...o, handR: arm }), spec, () => wp(ines.bones.RightHandIndex3).lerp(wp(ines.bones.RightHandThumb3), 0.5)); }
@@ -320,7 +320,7 @@ export async function create() {
 
       // ===== the bar (1:24 and after) =====
       if (set === 'bar') {
-        const sitBar = (av, st, o = {}) => sit(av, { pos: V(st.pos.x, BAR.SEAT + 0.025, st.pos.z), yaw: Math.PI, legs: 'chair', floor: 0.315, seat: 0.11, footFwd: 0.3, ...o });   // feet on the foot ring
+        const sitBar = (av, st, o = {}) => sit(av, { pos: V(st.pos.x, BAR.SEAT + 0.045, st.pos.z), yaw: Math.PI, legs: 'chair', floor: 0.315, seat: 0.11, footFwd: 0.3, ...o });   // feet on the foot ring
         const handBar = (P, fwd, left, up) => ({ hand: V(STOOL.pos.x - 0.24, BAR.CY + 0.04, BAR.CZ - 0.13), pole: P.clone().addScaledVector(up, 0.2).addScaledVector(left, -0.6), F: fwd.clone(), N: V(0, -1, 0), curl: 0.5 });
         const drunk = ['e1b', 'e2', 'e3'].includes(id);
         const herLook = id === 'tip3' ? wp(barman.bones.Head) : id === 'tip4' ? V(STOOL_L.pos.x, 1.3, STOOL_L.pos.z) : id === 'tip5' ? null : drunk ? V(STOOL.pos.x + 0.05, BAR.CY - 0.1, BAR.CZ - 0.5) : GM.clone().add(V(0, 0.12, 0));
@@ -388,7 +388,7 @@ export async function create() {
       const fixed = (a, b, ta, tb, fa, fb = fa) => { const e = smooth(0, 1, k); cam.position.copy(a).lerp(b, e); cam.up.set(0, 1, 0); cam.lookAt(ta.clone().lerp(tb, e)); cam.fov = lerp(fa, fb, e); };
       cam.near = 0.012; cam.far = 200; let roll = 0;
       const sx = STOOL.pos.x;
-      if (id === 'hook') fixed(V(sx + 0.05, 1.25, -0.3), V(sx + 0.06, 1.25, -0.32), V(sx + 0.2, 1.5, -3.99), V(sx + 0.2, 1.51, -3.99), 62, 60);
+      if (id === 'hook') fixed(V(sx + 0.12, 1.25, -0.42), V(sx + 0.13, 1.25, -0.44), V(sx + 0.2, 1.5, -3.99), V(sx + 0.2, 1.51, -3.99), 62, 60);
       if (id === 's1') fixed(V(D.x - 1.18, 1.58, D.z + 0.22), V(D.x - 1.14, 1.57, D.z + 0.21), wp(agent.bones.Head).add(V(-0.3, -0.3, 0)), wp(agent.bones.Head).add(V(-0.3, -0.32, 0)), 46, 44);
       if (id === 's2') { const hd = wp(agent.bones.Head); fixed(hd.clone().add(V(-0.95, -0.05, 0.42)), hd.clone().add(V(-0.9, -0.05, 0.4)), hd.clone().add(V(0, 0.02, 0)), hd.clone().add(V(0, 0.02, 0)), 30, 27); }
       if (id === 'f1') fixed(V(sx + 2.4, 1.55, 1.9), V(sx + 2.2, 1.52, 1.75), V(sx + 0.1, 1.05, -0.3), V(sx + 0.1, 1.05, -0.3), 46, 44);

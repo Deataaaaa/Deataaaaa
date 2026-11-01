@@ -217,8 +217,8 @@ export async function create() {
   const handSet = (av, sd) => { const key = av.root.uuid + sd; if (!handSets.has(key)) { const st = new Set(); av.bones[sd + 'Hand'].traverse((o) => st.add(o)); handSets.set(key, st); } return handSets.get(key); };
   const boxPen = (av, obj, boxes, only = null) => { obj.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(obj.matrixWorld).invert(), p = V(0, 0, 0); let best = [-1e9, '', ''];
     skinPts(av, 1, (v, mesh, i) => { const b = only ? boneOf(mesh, i) : null; if (only && !only.has(b)) return; p.copy(v).applyMatrix4(inv);
-      for (const bx of boxes) { const d = Math.min(bx.h.x - Math.abs(p.x - bx.c.x), bx.h.y - Math.abs(p.y - bx.c.y), bx.h.z - Math.abs(p.z - bx.c.z)); if (d > best[0]) best = [d, bx.nm, (b || boneOf(mesh, i)).name]; } });
-    return `${(best[0] * 1000).toFixed(1)}mm ${best[1]} ${best[2]}`; };
+      for (const bx of boxes) { const d = Math.min(bx.h.x - Math.abs(p.x - bx.c.x), bx.h.y - Math.abs(p.y - bx.c.y), bx.h.z - Math.abs(p.z - bx.c.z)); if (d > best[0]) best = [d, bx.nm, (b || boneOf(mesh, i)).name, p.clone().sub(bx.c)]; } });
+    return `${(best[0] * 1000).toFixed(1)}mm ${best[1]} ${best[2]}${best[3] && best[0] > 0 ? ' at ' + best[3].toArray().map((x) => (x * 100).toFixed(1)).join(',') + 'cm' : ''}`; };
   // the counter's top and front, the stools' seats, in world space (an Object3D at the origin)
   const ORIGIN = new THREE.Object3D(); ORIGIN.updateMatrixWorld(true);
   const BAR_BOXES = [{ c: V(-0.5, BAR.CY - 0.03, BAR.CZ - 0.27), h: V(2.5, 0.03, 0.31), nm: 'counter top' }, { c: V(-0.5, (BAR.CY - 0.06) / 2, BAR.CZ - 0.06), h: V(2.5, (BAR.CY - 0.06) / 2, 0.04), nm: 'counter front' },
@@ -320,7 +320,7 @@ export async function create() {
 
       // ===== the bar (1:24 and after) =====
       if (set === 'bar') {
-        const sitBar = (av, st, o = {}) => sit(av, { pos: V(st.pos.x, BAR.SEAT + 0.045, st.pos.z), yaw: Math.PI, legs: 'chair', floor: 0.315, seat: 0.11, footFwd: 0.3, ...o });   // feet on the foot ring
+        const sitBar = (av, st, o = {}) => sit(av, { pos: V(st.pos.x, BAR.SEAT + 0.045, st.pos.z), yaw: Math.PI, legs: 'chair', floor: 0.315, seat: Number(q.get('bseat') ?? 0.14), footFwd: 0.3, ...o });   // feet on the foot ring
         const handBar = (P, fwd, left, up) => ({ hand: V(STOOL.pos.x - 0.24, BAR.CY + 0.04, BAR.CZ - 0.13), pole: P.clone().addScaledVector(up, 0.2).addScaledVector(left, -0.6), F: fwd.clone(), N: V(0, -1, 0), curl: 0.5 });
         const drunk = ['e1b', 'e2', 'e3'].includes(id);
         const herLook = id === 'tip3' ? wp(barman.bones.Head) : id === 'tip4' ? V(STOOL_L.pos.x, 1.3, STOOL_L.pos.z) : id === 'tip5' ? null : drunk ? V(STOOL.pos.x + 0.05, BAR.CY - 0.1, BAR.CZ - 0.5) : GM.clone().add(V(0, 0.12, 0));
@@ -388,7 +388,7 @@ export async function create() {
       const fixed = (a, b, ta, tb, fa, fb = fa) => { const e = smooth(0, 1, k); cam.position.copy(a).lerp(b, e); cam.up.set(0, 1, 0); cam.lookAt(ta.clone().lerp(tb, e)); cam.fov = lerp(fa, fb, e); };
       cam.near = 0.012; cam.far = 200; let roll = 0;
       const sx = STOOL.pos.x;
-      if (id === 'hook') fixed(V(sx + 0.12, 1.25, -0.42), V(sx + 0.13, 1.25, -0.44), V(sx + 0.2, 1.5, -3.99), V(sx + 0.2, 1.51, -3.99), 62, 60);
+      if (id === 'hook') fixed(V(sx + 0.0, 1.3, -0.28), V(sx + 0.01, 1.3, -0.31), V(sx + 0.1, 1.22, -0.95), V(sx + 0.1, 1.22, -0.95), 58, 56);
       if (id === 's1') fixed(V(D.x - 1.18, 1.58, D.z + 0.22), V(D.x - 1.14, 1.57, D.z + 0.21), wp(agent.bones.Head).add(V(-0.3, -0.3, 0)), wp(agent.bones.Head).add(V(-0.3, -0.32, 0)), 46, 44);
       if (id === 's2') { const hd = wp(agent.bones.Head); fixed(hd.clone().add(V(-0.95, -0.05, 0.42)), hd.clone().add(V(-0.9, -0.05, 0.4)), hd.clone().add(V(0, 0.02, 0)), hd.clone().add(V(0, 0.02, 0)), 30, 27); }
       if (id === 'f1') fixed(V(sx + 2.4, 1.55, 1.9), V(sx + 2.2, 1.52, 1.75), V(sx + 0.1, 1.05, -0.3), V(sx + 0.1, 1.05, -0.3), 46, 44);

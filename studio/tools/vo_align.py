@@ -39,6 +39,9 @@ def read(p):
 track, res, t = [], [], start
 for b in blocks(lines):
     x = read(f'{d}/{block_name(lines, b)}'); t += lines[b[0]].get('gap', 0.3)
+    # one level for every block: its speech RMS (frames above -45 dB) to -20 dB, within +-6 dB
+    fr = x[: len(x) // 480 * 480].reshape(-1, 480); e = np.sqrt((fr ** 2).mean(1)); sp = e[e > 0.0056]
+    if len(sp): x = x * 10 ** (np.clip(-20 - 20 * np.log10(np.sqrt((sp ** 2).mean())), -6, 6) / 20)
     U = [units_of(lines[i]['t']) for i in b]
     toks = [(li, k, w) for li, Ul in enumerate(U) for k, u in enumerate(Ul) for w in u['sp']]
     a16 = signal.resample_poly(x, 2, 3)

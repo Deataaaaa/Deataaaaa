@@ -3,12 +3,14 @@
  "lines": [
   {
    "gap": 0.1,
-   "t": "Un inconnu pose un verre à côté du vôtre… vous le *buvez* ?"
+   "t": "Un inconnu pose un verre à côté du vôtre… vous le *buvez* ?",
+   "sec": 1
   },
   {
    "gap": 0.5,
    "t": "[Deux heures cinquante-huit|2 h 58]. Au commissariat, la policière relit sa plainte.",
-   "brk": 1
+   "brk": 1,
+   "sec": 1
   },
   {
    "gap": 0.3,
@@ -26,7 +28,8 @@
   {
    "gap": 0.5,
    "t": "Et si elle l'avait bu ?",
-   "brk": 1
+   "brk": 1,
+   "sec": 1
   },
   {
    "gap": 0.6,
@@ -40,8 +43,7 @@
   {
    "gap": 0.4,
    "t": "Une main lui serre le bras : « Elle a trop bu. Je la *ramène*. »",
-   "brk": 1,
-   "seed": 1
+   "brk": 1
   },
   {
    "gap": 0.3,
@@ -59,12 +61,14 @@
   {
    "gap": 0.6,
    "t": "Retour en arrière.",
-   "brk": 1
+   "brk": 1,
+   "sec": 1
   },
   {
    "gap": 0.5,
    "t": "Inès ne boit pas.",
-   "brk": 1
+   "brk": 1,
+   "sec": 1
   },
   {
    "gap": 0.3,
@@ -91,13 +95,13 @@
   {
    "gap": 0.3,
    "t": "Droguer quelqu'un pour l'agresser : [cinq ans|5 ans] de prison, [soixante-quinze mille euros|75 000 €] d'amende.",
-   "brk": 1,
-   "seed": 1
+   "brk": 1
   },
   {
    "gap": 0.6,
    "t": "[Trois heures cinq|3 h 05]. En partant, Inès fouille la poche de son manteau.",
-   "brk": 1
+   "brk": 1,
+   "sec": 1
   },
   {
    "gap": 0.3,
@@ -111,7 +115,8 @@
   {
    "gap": 0.4,
    "t": "[Trois pour cent|3 %].",
-   "brk": 1
+   "brk": 1,
+   "sec": 1
   },
   {
    "gap": 0.6,

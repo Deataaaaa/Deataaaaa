@@ -19,8 +19,13 @@ def blocks(lines, split=0.45, most=4):
     """Consecutive lines read in one go, so the voice carries one intonation across them and pauses where it wants.
     A new block where the script leaves a real pause (gap >= split s), at a line marked "brk", or after `most` lines."""
     out = []
+    scenes = any(ln.get('sec') for ln in lines)
     for i, ln in enumerate(lines):
-        if not out or ln.get('brk') or ln.get('gap', 0.3) >= split or len(out[-1]) >= most: out.append([i])
+        # scene mode (a line marked "sec" anywhere): whole scenes read in one go, so pace, pitch and loudness stay one
+        # performance (owner, 4 Nov 2026, on S2 P2's blocks: « la voix était trop bizarre »)
+        if scenes: new = not out or ln.get('sec')
+        else: new = not out or ln.get('brk') or ln.get('gap', 0.3) >= split or len(out[-1]) >= most
+        if new: out.append([i])
         else: out[-1].append(i)
     return out
 

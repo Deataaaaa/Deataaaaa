@@ -45,9 +45,9 @@ for voice in voices:
         p = f'{d}/{block_name(lines, b)}'
         if os.path.exists(p): continue                                      # resume (a changed block has a new name)
         texts = [spoken(lines[i]['t']) for i in b]; best = None; t0 = time.time()
-        for k in range(4 if any(t.rstrip(' »').endswith('?') for t in texts) else 2):
+        for k in range(4 if any(t.rstrip(' »').endswith('?') for t in texts) or len(b) > 3 else 2):
             y = say(block_text(lines, b), voice, block_seed(lines, b) + 7919 * k); sc = score(y, SR, texts, asr)
-            print(f'   take {k}: {sc["bad"]}/{sc["n"]} words off, {sc["flat"]} flat question(s), cost {sc["cost"]}  ' + ' | '.join(sc['diffs']), flush=True)
+            print(f'   take {k}: {sc["bad"]}/{sc["n"]} words off, {sc["flat"]} flat question(s), f0 {sc["f0"]:.0f} Hz, w/s {sc["rates"]}, cost {sc["cost"]:.1f}  ' + ' | '.join(sc['diffs']), flush=True)
             if best is None or sc['cost'] < best[0]: best = (sc['cost'], y)
             if sc['cost'] == 0: break
         x = best[1]

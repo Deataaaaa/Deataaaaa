@@ -57,6 +57,7 @@ def rising(t):
     last = re.split(r'[.!…:]\s', t)[-1]
     return not WH.search(last) and not re.match(r"\s*«?\s*et si\b", last, re.I)
 
+F0_REF, RATE = 238.0, (2.4, 4.4)
 def score(x, sr, line_texts, model):
     """x: one block's audio; line_texts: the spoken text of each line in it. Returns a dict: bad (words heard differently),
     n (script words), flat (questions that do not rise), half (questions only one test passes), cost, diffs, rises, heard, words (Whisper's words with times)."""
@@ -89,5 +90,17 @@ def score(x, sr, line_texts, model):
         heardq, rose = '?' in hw[h][1], r == r and r >= 2.5
         ok = heardq or rose
         flat += not ok; half += ok and not (heardq and rose); rises.append((li, r, ok))
-    return {'bad': bad, 'n': len(A), 'flat': flat, 'half': half, 'cost': 2 * bad + 3 * flat + 0.5 * half, 'diffs': diffs, 'rises': rises,
+    # one performance: the block's pitch near the voice's own (F0_REF), and every line at a speaking pace (RATE words/s);
+    # S2 P2's blocks swung from 207 to 296 Hz and from 1.8 to 7.2 words/s, which read as several voices
+    fv = f[f > 0]; f0 = float(np.median(fv)) if len(fv) else F0_REF
+    off = abs(12 * np.log2(f0 / F0_REF)); pitch = max(0.0, off - 1.0)
+    rates, pace = [], 0.0
+    for li in range(len(line_texts)):
+        a0 = pos.get(ends[li - 1] + 1 if li else 0); a1 = pos.get(ends[li])
+        nw = ends[li] - (ends[li - 1] if li else -1)
+        if a0 is None or a1 is None or nw < 3: continue
+        r = nw / max(0.2, hw[a1][3] - hw[a0][2]); rates.append(round(r, 1))
+        pace += max(0.0, r - RATE[1]) + max(0.0, RATE[0] - r)
+    return {'bad': bad, 'n': len(A), 'flat': flat, 'half': half, 'f0': f0, 'rates': rates,
+            'cost': 2 * bad + 3 * flat + 0.5 * half + 2.0 * pitch + 1.5 * pace, 'diffs': diffs, 'rises': rises,
             'heard': ' '.join(s.text.strip() for s in segs), 'words': hw}

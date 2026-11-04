@@ -4,7 +4,8 @@
   {
    "gap": 0.1,
    "t": "Un inconnu pose un verre à côté du vôtre… vous le *buvez* ?",
-   "sec": 1
+   "sec": 1,
+   "seed": 1
   },
   {
    "gap": 0.5,
@@ -116,7 +117,8 @@
    "gap": 0.4,
    "t": "[Trois pour cent|3 %].",
    "brk": 1,
-   "sec": 1
+   "sec": 1,
+   "seed": 1
   },
   {
    "gap": 0.6,

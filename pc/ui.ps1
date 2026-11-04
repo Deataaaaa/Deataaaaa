@@ -20,7 +20,7 @@ $script:THEMES = @{
   ice     = @{ a = @(120, 220, 255); b = @(255, 255, 255); dim = @(100, 130, 150); text = @(225, 240, 250); ok = @(120, 255, 200); warn = @(255, 220, 120); fail = @(255, 100, 110) }
   mono    = @{ a = @(240, 240, 240); b = @(120, 120, 120); dim = @(100, 100, 100); text = @(230, 230, 230); ok = @(230, 230, 230); warn = @(200, 200, 200); fail = @(255, 255, 255) }
 }
-$script:CFG = @{ theme = 'inferno'; banner = 'block'; animate = $true; speed = 1.0; bar = 'smooth'; sysinfo = $true; logo = 'cat'; width = 34; outro = $true }
+$script:CFG = @{ theme = 'inferno'; banner = 'block'; animate = $true; speed = 1.0; bar = 'smooth'; sysinfo = $true; logo = 'cat'; width = 34; outro = $true; trail = $true; trailGravity = 38.0; trailDensity = 2.2; trailLife = 2.6; trailGlyphs = '' }
 function Load-Theme([string]$path) {
   if (Test-Path -LiteralPath $path) {
     try {
@@ -217,3 +217,19 @@ function Show-Outro([string]$word, [bool]$good) {
     } catch { [Console]::WriteLine(); foreach ($r in $rows) { [Console]::WriteLine('   ' + (Grad $r $a $b)) } }
   } else { foreach ($r in $rows) { [Console]::WriteLine('   ' + (Grad $r $a $b)) } }
 }
+
+# ---------- the mouse trail (pc\trail.cs): characters fall from the pointer under gravity, in rainbow colours ----------
+$script:TRAIL = $false
+function Start-Trail([string]$pc) {
+  if (-not $script:CFG.trail -or -not $script:VT) { return }
+  try {
+    Add-Type -TypeDefinition (Get-Content -Raw -LiteralPath (Join-Path $pc 'trail.cs')) -ErrorAction Stop
+    [DA.Trail]::Gravity = [double]$script:CFG.trailGravity; [DA.Trail]::Density = [double]$script:CFG.trailDensity; [DA.Trail]::Life = [double]$script:CFG.trailLife
+    if ([string]$script:CFG.trailGlyphs) { [DA.Trail]::Glyphs = [string]$script:CFG.trailGlyphs }
+    $script:TRAIL = [DA.Trail]::Start()
+  } catch { $script:TRAIL = $false }
+}
+function Stop-Trail { if ($script:TRAIL) { try { [DA.Trail]::Stop() } catch {}; $script:TRAIL = $false } }
+# keys go through the trail's queue while it reads the console's input (it takes every input record)
+function Key-Available { if ($script:TRAIL) { return [DA.Trail]::KeyAvailable() }; return [Console]::KeyAvailable }
+function Read-Key { if ($script:TRAIL) { return [DA.Trail]::ReadKey() }; return [Console]::ReadKey($true) }

@@ -5,6 +5,7 @@ function Mmss([double]$s) { $s = [int][Math]::Round($s); return ('{0}:{1:00}' -f
 function Pct([double]$v) { return ('{0,3:0}%' -f $v) }
 . (Join-Path $pc 'ui.ps1')
 Load-Theme (Join-Path $pc 'theme.json')
+Start-Trail $pc
 Show-Banner 'DEAT' 'A N I M A T I O N   //   render engine v3.0' 'V3'
 Show-Panel @(@('user', ($env:USERNAME + '@' + $env:COMPUTERNAME)), @('-', ''), @('theme', [string]$script:CFG.theme), @('banner', [string]$script:CFG.banner), @('bar', [string]$script:CFG.bar), @('logo', [string]$script:CFG.logo))
 Stage-Head '1/8' 'Update'; Start-Sleep -Milliseconds 300; Stage-Line '1/8' 'Update' 'OK' 'a1b2c3d S2 P3' 1.2
@@ -21,4 +22,6 @@ Stage-Line '7/8' 'Encode' 'OK' 'demo_phone.mp4  27 MB  (graphics card, 12 segmen
 Stage-Line '   ' 'Flicker check' 'WARN' 'at 18 s: send me the log' 9
 Show-Outro 'READY' $true
 [Console]::WriteLine()
-if ($Host.Name -eq 'ConsoleHost' -and -not $env:DA_FORCE_VT) { Write-Host '  press a key'; $null = [Console]::ReadKey($true) }
+if ($script:TRAIL) { Out-Raw (C '  move your mouse over the window (the trail)  -  press a key to quit' $script:T.dim); [Console]::WriteLine() }
+if ($Host.Name -eq 'ConsoleHost' -and -not $env:DA_FORCE_VT) { if (-not $script:TRAIL) { Write-Host '  press a key' }; $null = Read-Key }
+Stop-Trail

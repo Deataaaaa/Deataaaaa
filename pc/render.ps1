@@ -42,7 +42,7 @@ function Ask-YesNo([string]$q, [bool]$default, [int]$secs) {
   while ((Get-Date) -lt $end) {
     $left = [int][Math]::Ceiling(($end - (Get-Date)).TotalSeconds)
     W ("`r  " + $q + ' [Y/N]  (' + $dt + ' in ' + $left + ' s)  ') 'White'
-    if ([Console]::KeyAvailable) { $k = [Console]::ReadKey($true); if ($k.Key -eq 'Y') { $ans = $true; break }; if ($k.Key -eq 'N') { $ans = $false; break } }
+    if (Key-Available) { $k = Read-Key; if ($k.Key -eq 'Y') { $ans = $true; break }; if ($k.Key -eq 'N') { $ans = $false; break } }
     Start-Sleep -Milliseconds 100
   }
   $at = 'NO'; if ($ans) { $at = 'YES' }
@@ -76,6 +76,7 @@ $ok = $false; $shut = $false; $name = 'render'; $phone = $null; $warn = @()
 try {
   $gpuName = 'unknown graphics card'
   try { $vc = @(Get-CimInstance Win32_VideoController); $best = @($vc | Where-Object { $_.Name -match 'AMD|Radeon|NVIDIA|GeForce|Arc' }); if ($best.Count) { $gpuName = $best[0].Name } elseif ($vc.Count) { $gpuName = $vc[0].Name } } catch {}
+  Start-Trail $pc
   Banner $gpuName
   Set-Location $repo
   $job = Get-Content -Raw (Join-Path $pc 'job.json') | ConvertFrom-Json
@@ -86,10 +87,15 @@ try {
   WL
 
   # 1. latest version (always: whatever files are lying around)
+  # RENDER.bat already pulled the latest version before this script started (so a new engine runs at once): just report it
   Stage '1/8' 'Update'
-  $null = RunStage 'git' @('fetch', 'origin', 'claude/whatif-reels')
-  if ((Run 'git' @('reset', '--hard', 'origin/claude/whatif-reels')) -ne 0) { Done 'WARN' 'could not update: rendering the version already here'; $warn += 'not updated' }
-  else { Done 'OK' ((& git log -1 --format='%h %s') | Select-Object -First 1) }
+  $head = ((& git log -1 --format='%h %s') | Select-Object -First 1)
+  if ($env:DA_UPDATE -eq 'ok') { Done 'OK' $head }
+  else {
+    $null = RunStage 'git' @('fetch', 'origin', 'claude/whatif-reels')
+    if ((Run 'git' @('reset', '--hard', 'origin/claude/whatif-reels')) -ne 0) { Done 'WARN' 'could not update: rendering the version already here'; $warn += 'not updated' }
+    else { Done 'OK' (((& git log -1 --format='%h %s') | Select-Object -First 1) + '  (engine updates take effect next run)') }
+  }
   $job = Get-Content -Raw (Join-Path $pc 'job.json') | ConvertFrom-Json     # the job may have changed with the update
   $jobs = @($job); if ($job.queue) { $jobs = @($job.queue) }
 
@@ -233,7 +239,7 @@ try {
     $cancel = $false; $end = (Get-Date).AddSeconds(30)
     while ((Get-Date) -lt $end) {
       W ("`r  Shutting down in " + [int][Math]::Ceiling(($end - (Get-Date)).TotalSeconds) + ' s  (press any key to cancel)  ') 'Yellow'
-      if ([Console]::KeyAvailable) { $null = [Console]::ReadKey($true); $cancel = $true; break }
+      if (Key-Available) { $null = Read-Key; $cancel = $true; break }
       Start-Sleep -Milliseconds 100
     }
     WL

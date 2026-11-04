@@ -3,6 +3,7 @@
 # Makes <out>.mp4 (high quality) and <out>_phone.mp4 (under 29 MB, two-pass), then proves each file carries
 # a real, loud, stereo AAC track that matches the soundtrack (fails loudly otherwise).
 set -euo pipefail
+ffmpeg() { command ffmpeg -nostdin "$@"; }   # never read the console (the render window's mouse trail reads it)
 FR=$1; WAV=$2; OUT=$3
 PY=${PYTHON:-python3}   # Windows (pc/render.ps1): PYTHON="py -3"
 PASSLOG=$(mktemp -d)/pass

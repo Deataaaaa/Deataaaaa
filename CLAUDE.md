@@ -239,6 +239,12 @@ own series (pitch first, rule 10). Rules that clash with it (3, 5, 11, 16, 17, 2
   animated banner, a neofetch-style panel, smooth gradient bars with fps/GPU/CPU sparklines, a spinner and a timer on every stage
   (`Run-Live`), a READY/FAIL outro; the look is set in `pc/theme.json` (theme inferno|matrix|synth|ice|mono|custom, banner, bar, logo,
   speed, animate) and previewed with `pc/THEME.bat`. Syntax-check the .ps1 files with pwsh's parser (a pwsh tarball works here).
+  Owner, 4 Nov 2026 (« fais en sorte que l'update arrive avant quoi que ce soit », a rainbow mouse trail with gravity): RENDER.bat runs
+  `git fetch` + `reset --hard` before PowerShell starts (`DA_UPDATE=ok`), so a new engine runs the same time. `pc/trail.cs` (C# 5,
+  Add-Type) is a background thread that reads the console's input records (ENABLE_MOUSE_INPUT, QuickEdit and VT input off), throws
+  characters from the pointer with its speed, gravity + drag, bounces on the window's bottom, fades them, and draws them with the cell
+  API on blank cells only (never over text or coloured backgrounds, never moving the cursor); it takes every input record, so the
+  script's keys go through `Key-Available`/`Read-Key`; it re-asserts its input mode every second and every ffmpeg runs with -nostdin.
 - Wait for every texture before the first frame (`TEX_PENDING` in `engine/elevator.js`), or the first
   frame of each worker samples black textures.
 - Never `pkill -f`/`pgrep -f` with a pattern that also appears in your own shell command (it kills or

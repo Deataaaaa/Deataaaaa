@@ -43,7 +43,7 @@ def frames_from_dir(d, frm, to):
 
 def frames_from_video(p, frm, to):
     # input seeking is frame-accurate when decoding (it decodes from the keyframe before and drops what comes before frm)
-    cmd = ['ffmpeg', '-v', 'error', '-threads', '1', '-ss', f'{frm / a.fps:.6f}', '-i', p, '-frames:v', str(to - frm), '-vf', f'scale={W}:{H}:flags=area',
+    cmd = ['ffmpeg', '-nostdin', '-v', 'error', '-threads', '1', '-ss', f'{frm / a.fps:.6f}', '-i', p, '-frames:v', str(to - frm), '-vf', f'scale={W}:{H}:flags=area',
            '-f', 'rawvideo', '-pix_fmt', 'gray', '-']
     pr = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     while True:

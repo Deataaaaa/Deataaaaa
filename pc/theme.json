@@ -1,5 +1,5 @@
 {
-  "_help": "DeatAnimation Render Engine v3 look. Double-click THEME.bat to preview. theme: inferno | matrix | synth | ice | mono | custom. banner: block | shade | slant | double. bar: smooth | blocks | dots | ascii. logo: cat | clap | none. speed: animation speed (2 = twice as fast). animate: false for no animation.",
+  "_help": "DeatAnimation Render Engine v3 look. Double-click THEME.bat to preview. theme: inferno | matrix | synth | ice | mono | custom. banner: block | shade | slant | double. bar: smooth | blocks | dots | ascii. logo: cat | clap | none. speed: animation speed (2 = twice as fast). animate: false for no animation. trail: characters fall from the mouse pointer (trailGravity, trailDensity, trailLife in seconds, trailGlyphs: the characters thrown).",
   "theme": "inferno",
   "banner": "block",
   "bar": "smooth",
@@ -9,5 +9,46 @@
   "animate": true,
   "sysinfo": true,
   "outro": true,
-  "custom": { "a": [255, 46, 46], "b": [255, 196, 0], "dim": [110, 110, 120], "text": [235, 235, 240], "ok": [90, 230, 120], "warn": [255, 200, 60], "fail": [255, 70, 70] }
+  "custom": {
+    "a": [
+      255,
+      46,
+      46
+    ],
+    "b": [
+      255,
+      196,
+      0
+    ],
+    "dim": [
+      110,
+      110,
+      120
+    ],
+    "text": [
+      235,
+      235,
+      240
+    ],
+    "ok": [
+      90,
+      230,
+      120
+    ],
+    "warn": [
+      255,
+      200,
+      60
+    ],
+    "fail": [
+      255,
+      70,
+      70
+    ]
+  },
+  "trail": true,
+  "trailGravity": 38,
+  "trailDensity": 2.2,
+  "trailLife": 2.6,
+  "trailGlyphs": "01<>/\\|*+#%&$@?!~^=:;{}[]()ABCDEFXYZ"
 }

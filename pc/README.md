@@ -29,6 +29,8 @@ in a few minutes. The PC is only on for that: one double-click, and it can switc
 
 When I tell you a video is ready to render, double-click **`C:\DeatAnimation\Deataaaaa\pc\RENDER.bat`**.
 
+Render Engine v3: change the look in `pc\theme.json` (theme `inferno`, `matrix`, `synth`, `ice`, `mono` or `custom` with your own RGB colours; banner `block`, `shade`, `slant`, `double`; bar `smooth`, `blocks`, `dots`, `ascii`; logo `cat`, `clap`, `none`; `speed`; `animate`), then double-click `pc\THEME.bat` to preview it.
+
 - It asks whether to shut the PC down at the end (yes after 20 seconds), downloads my latest version, deletes the
   last run's videos and frames (so the folder never piles up), renders on the graphics card with a live progress bar
   (percent, frames per second, time left, GPU/CPU use), checks every frame, encodes, and opens the `videos` folder

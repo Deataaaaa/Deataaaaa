@@ -1,12 +1,12 @@
 @echo off
-rem DeatAnimation Render Engine (beta): renders the current video (pc\job.json) on the graphics card and leaves it in
+rem DeatAnimation Render Engine v3: renders the current video (pc\job.json) on the graphics card and leaves it in
 rem the videos folder. The whole script is one parenthesized block: cmd reads it once, so the self-update (git reset)
 rem cannot change it while it runs.
 setlocal EnableDelayedExpansion
 (
   cd /d "%~dp0"
   chcp 65001 >nul
-  title DeatAnimation Render Engine (beta)
+  title DeatAnimation Render Engine v3
   powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0render.ps1"
   echo.
   pause

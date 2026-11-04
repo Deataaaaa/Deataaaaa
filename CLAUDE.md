@@ -231,6 +231,14 @@ own series (pitch first, rule 10). Rules that clash with it (3, 5, 11, 16, 17, 2
   worker every ~25 s while the card's 3D load is under 90 %, RAM is free and the last one added still raised the fps (`--max`
   caps it); `encode.sh` encodes on the card (`h264_amf`: HQ at QP 16/18/20, phone at its bitrate with pre-analysis, redone by
   x264 if over 29 MB) and falls back to x264 when AMF is missing (`ENCODER=x264` forces it).
+  Owner, 4 Nov 2026 (« why is encode so slow… 15 % on both, my cpu and gpu… release the v3, keep it in a cmd, dope text animations,
+  customizable »): ffmpeg decodes JPEGs on one core and v2 decoded every frame twice in a row. Render Engine v3: `encode.sh` cuts the
+  frames into up to 12 segments encoded side by side (one decode per segment, `split` into the HQ and phone encoders, AMF retried with
+  3 segments before x264), then joins them with the concat demuxer (no re-encode; frame-exact at the joins, checked); `flickercheck.py
+  --jobs` and `checkframes.py` run on every core (identical results). The window (`pc/ui.ps1`): 24-bit colour through VT codes, an
+  animated banner, a neofetch-style panel, smooth gradient bars with fps/GPU/CPU sparklines, a spinner and a timer on every stage
+  (`Run-Live`), a READY/FAIL outro; the look is set in `pc/theme.json` (theme inferno|matrix|synth|ice|mono|custom, banner, bar, logo,
+  speed, animate) and previewed with `pc/THEME.bat`. Syntax-check the .ps1 files with pwsh's parser (a pwsh tarball works here).
 - Wait for every texture before the first frame (`TEX_PENDING` in `engine/elevator.js`), or the first
   frame of each worker samples black textures.
 - Never `pkill -f`/`pgrep -f` with a pattern that also appears in your own shell command (it kills or

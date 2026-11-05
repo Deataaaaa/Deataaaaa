@@ -48,3 +48,6 @@ Business_Female_02
 Female_Adult_13
 Male_Adult_15
 Business_Male_01
+Business_Male_05
+Police_Male_01
+Police_Male_02

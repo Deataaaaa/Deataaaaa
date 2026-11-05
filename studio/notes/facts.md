@@ -577,3 +577,24 @@ Sources checked 31 Oct 2026.
   (art. 222-31). Confirmed by the circular of 3 Sept 2018 and the Guerriau case (tribunal correctionnel de Paris, 27 Jan 2026).
 - Times: 2:58 / 3:05 at the commissariat (after Part 2's complaint at 2:56), 1:24 the flashback (Part 2's bar). Battery 6 % → 3 %.
 - The receipt « MINUIT » (the fictional bar), « 1 COCKTAIL MAISON 12,00 € », 01:26: fiction.
+
+## EP27 (« 12 % » saison 2 · Partie 4 · Le dernier bus, season 2 finale): a fake transport agent at a night bus stop. Fiction; the advice and the numbers are real
+Sources checked 5 Nov 2026.
+- « 3 374 victimes de violences sexuelles dans les transports en commun, en 2024 » / « 91 % sont des femmes » / « près de la moitié en
+  Île-de-France »: Observatoire national des violences faites aux femmes, Lettre n° 23 (March 2025, arretonslesviolences.gouv.fr), from the
+  SSMSI / Observatoire national de la délinquance dans les transports data: 3 374 victims recorded by police and gendarmerie in 2024 (+6 % in
+  a year, +86 % since 2016), 91 % women, 44 % of the victims in Île-de-France (44 % read as « près de la moitié »).
+- « le 3117, ou un SMS au 31177 : l'alerte des transports, jour et nuit »: SNCF / Transilien « En cas de danger, appelez le 3117 ou envoyez
+  un SMS au 31177 » (transilien.com, application 3117) and Île-de-France Mobilités (« mobilité plus sûre »): 24 h/24, 7 j/7, on the rail and
+  RATP networks including Paris and petite couronne buses; calls go to the SNCF national security command post. They do not replace the 17,
+  18, 15 or 112 (immediate danger: the 17).
+- « Après 22 h, demandez au chauffeur de descendre entre deux arrêts, au plus près de chez vous. Prévenez-le un arrêt avant. »:
+  Île-de-France Mobilités, « La descente à la demande à bord des bus après 22 h, c'est possible partout en Île-de-France »: every evening
+  from 22 h, tell the driver at least one stop before; the driver picks the safest place to let you off.
+- « Une déviation, ça s'affiche : à l'arrêt, ou dans l'appli »: line disruptions and temporary stops are posted at the stop and in the
+  Île-de-France Mobilités app's traffic info; check yourself instead of following someone away from a lit stop (common-sense advice
+  matching the operators' safety guides: stay in lit, busy places, sit near the driver).
+- « Elle s'assoit tout près du chauffeur »: transport safety guides (UTPF « bons réflexes », FNAUT 2026; IDFM) advise sitting near the
+  driver at night.
+- Times: 3:12 at the stop (after Part 3's 3:05 at the commissariat), 3:40 home. Battery 3 % → 0 %. The bus is generic (« BUS DE NUIT »,
+  no line number, no operator brand); the « agent » is fiction.

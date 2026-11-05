@@ -160,7 +160,7 @@ export function makeBus({ seed = 27, front = 'BUS DE NUIT' } = {}) {
   // ---- lights: interior (cool LED), head and tail ----
   const inLights = [];
   for (const z of [3.2, -0.2, -3.6]) { const l = new THREE.PointLight('#dfe8ff', 0, 6, 2); l.position.set(0, H - 0.35, z); g.add(l); inLights.push(l); }
-  const setLights = ({ inside = 1, head = 1, tail = 1 } = {}) => { inLights.forEach((l) => { l.intensity = 0.9 * inside; }); ledM.emissiveIntensity = 1.6 * inside; headM.emissiveIntensity = 3.5 * head; tailM.emissiveIntensity = 2.2 * tail; };
+  const setLights = ({ inside = 1, head = 1, tail = 1 } = {}) => { inLights.forEach((l) => { l.intensity = 2.0 * inside; }); ledM.emissiveIntensity = 1.6 * inside; headM.emissiveIntensity = 3.5 * head; tailM.emissiveIntensity = 2.2 * tail; };
   setLights();
   // driving: wheels turn with the distance travelled
   const spin = (dist) => { for (const w of wheels) w.rotation.x = dist / BUS.WR; };

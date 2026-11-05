@@ -583,7 +583,7 @@ Sources checked 5 Nov 2026.
 - « 3 374 victimes de violences sexuelles dans les transports en commun, en 2024 » / « 91 % sont des femmes » / « près de la moitié en
   Île-de-France »: Observatoire national des violences faites aux femmes, Lettre n° 23 (March 2025, arretonslesviolences.gouv.fr), from the
   SSMSI / Observatoire national de la délinquance dans les transports data: 3 374 victims recorded by police and gendarmerie in 2024 (+6 % in
-  a year, +86 % since 2016), 91 % women, 44 % of the victims in Île-de-France (44 % read as « près de la moitié »).
+  a year, +86 % since 2016), 91 % women, 44 % of the victims in Île-de-France (44 % read as « près de la moitié »). The voice says « neuf sur dix » for 91 % (the card shows 91 %).
 - « le 3117, ou un SMS au 31177 : l'alerte des transports, jour et nuit »: SNCF / Transilien « En cas de danger, appelez le 3117 ou envoyez
   un SMS au 31177 » (transilien.com, application 3117) and Île-de-France Mobilités (« mobilité plus sûre »): 24 h/24, 7 j/7, on the rail and
   RATP networks including Paris and petite couronne buses; calls go to the SNCF national security command post. They do not replace the 17,

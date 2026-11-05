@@ -113,6 +113,29 @@ export async function create() {
   const studio = () => { const s = new THREE.Scene(); const pm = new THREE.PMREMGenerator(R.renderer); s.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; s.environmentIntensity = 0.6;
     const k = new THREE.DirectionalLight('#fff4ea', 3); k.position.set(-2, 2.5, 3); const r = new THREE.DirectionalLight('#ffffff', 2.2); r.position.set(2.5, 2, -2.5); s.add(k, r); return s; };
   await Promise.all(TEX_PENDING);
+  // the stock officers are not French: Police_Male_02's vest says « S.W.A.T. » on the back and the chest (now POLICE patches),
+  // Police_Male_01's sleeves carry the Afghan flag (now the French tricolour) and the Afghan police emblem (painted out)
+  { const done = new Set(), edit = (av, re, fn) => av.root.traverse((o) => { for (const mt of [o.material].flat()) {
+      const tx = mt && mt.map, img = tx && tx.image; if (!img || done.has(tx) || !re.test(img.src || '')) continue; done.add(tx);
+      const cv = document.createElement('canvas'); cv.width = img.width; cv.height = img.height; const c = cv.getContext('2d'); c.drawImage(img, 0, 0);
+      fn(c, img, img.width / 2048); tx.image = cv; tx.needsUpdate = true; } });
+    edit(cop2, /m158_body_color/, (c, img, u) => {
+      for (const [x0, y0, x1, y1] of [[904, 542, 1135, 623], [822, 883, 969, 942]]) {
+        const x = (x0 - 4) * u, y = (y0 - 4) * u, w = (x1 - x0 + 9) * u, h = (y1 - y0 + 9) * u;
+        c.fillStyle = '#15161a'; c.fillRect(x, y, w, h);
+        c.strokeStyle = '#c9ced6'; c.lineWidth = Math.max(1, 3 * u); c.strokeRect(x + 7 * u, y + 7 * u, w - 14 * u, h - 14 * u);
+        let fs = Math.round(h * 0.56); c.font = `bold ${fs}px Arial, Helvetica, sans-serif`;
+        while (fs > 4 && c.measureText('POLICE').width > w * 0.8) { fs--; c.font = `bold ${fs}px Arial, Helvetica, sans-serif`; }
+        c.fillStyle = '#f1f3f6'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('POLICE', x + w / 2, y + h / 2 + h * 0.03);
+      } });
+    edit(cop1, /m220_body_color/, (c, img, u) => {
+      const q = (v) => Math.round(v * u);
+      c.drawImage(img, q(1662), q(1128), q(124), q(120), q(1662), q(1002), q(124), q(120));          // the emblem: plain sleeve from below
+      const x = q(236), y = q(1032), w = q(122), h = q(80);
+      c.fillStyle = '#20242c'; c.fillRect(x, y, w, h);
+      [['#0055a4', 0], ['#f4f4f4', 1], ['#ef4135', 2]].forEach(([col, i]) => { c.fillStyle = col; c.fillRect(x + q(3) + i * (w - q(6)) / 3, y + q(3), (w - q(6)) / 3 + 0.5, h - q(6)); });
+    });
+  }
   const vest = makeVest(man);
   let appleCv = null;
   { const s = studio(); const cat = makeCat(); s.add(cat.root); cat.update(1.0, { look: V(0, 0.18, 1) }); const pil = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.06, 0.6), new THREE.MeshStandardMaterial({ color: '#c9b9a2', roughness: 0.9 })); pil.position.y = -0.03; s.add(pil);
@@ -363,7 +386,9 @@ export async function create() {
             if (!vest.visible) { heap.visible = true; heap.position.set(PM.x + 0.25, STREET.KERB, PM.z + 0.35); heap.rotation.y = 0.7; }
             if (id === 'e3') { phone.visible = true; phoneFit(ines, 'Right', phone); const off = smooth(0.35, 0.55, k); if (off < 1) drawScreen('lock', { clock: '03:19', pct: 1, low: 1, fadeOut: off }); else drawScreen('off'); }
           }
-          if (id === 'stat1') { heap.visible = true; heap.position.set(PM.x + 0.25, STREET.KERB, PM.z + 0.35); heap.rotation.y = 0.7; phone.visible = true; phone.position.set(PI.x - 0.3, STREET.KERB + 0.004, PI.z + 0.2); phone.rotation.set(-Math.PI / 2, 0, 1.1); phone.updateMatrixWorld(true); drawScreen('off'); }
+          if (id === 'stat1') { heap.visible = true; heap.position.set(PM.x + 0.25, STREET.KERB, PM.z + 0.35); heap.rotation.y = 0.7; phone.visible = true; phone.position.set(PI.x - 0.3, STREET.KERB + 0.004, PI.z + 0.2); phone.rotation.set(-Math.PI / 2, 0, 1.1); phone.updateMatrixWorld(true); drawScreen('off');
+            // the only street lamp still on, above the vest he dropped: a cold pool on the pavement
+            COOL.home.position.copy(heap.position).add(V(0.35, 2.7, -0.25)); COOL.home.intensity = 9; }
         }
         if (id === 'tw3') {
           // the bus stopped at her door: she steps down and goes to it; his face at the rear window, the rear doors shut
@@ -426,11 +451,11 @@ export async function create() {
       if (id === 'tip5') phoneCam(phone, 0.3, 34);
       if (id === 'tip6') busCam(V(-0.35, 1.62, 2.9), V(-0.33, 1.61, 2.95), V(0.55, 1.35, 4.5), V(0.55, 1.35, 4.5), 48, 46);
       if (id === 'tw1' || id === 'tw2') { const M = bus.mirrorHolder.getWorldPosition(V(0, 0, 0)), e = IH.clone().add(V(0, 0.07, 0)), d = M.clone().sub(e); const e0 = e.clone().addScaledVector(d, 0.35), e1 = e.clone().addScaledVector(d, id === 'tw2' ? 0.62 : 0.45);
-        cam.position.copy(e0).lerp(e1, smooth(0, 1, k)); cam.up.set(0, 1, 0); cam.lookAt(M); cam.fov = id === 'tw2' ? lerp(36, 28, smooth(0, 1, k)) : 50; }
+        cam.position.copy(e0).lerp(e1, smooth(0, 1, k)); cam.up.set(0, 1, 0); cam.lookAt(M); cam.fov = id === 'tw2' ? lerp(36, 28, smooth(0, 1, k)) : lerp(40, 36, smooth(0, 1, k)); }
       if (id === 'e1') fixed(V(1.0, 0.6, 2.6), V(0.6, 0.6, 2.5), V(8, 1.3, 1.4), V(6.5, 1.3, 1.4), 46, 44);
       if (id === 'e2') { const PM = MH; fixed(PM.clone().add(V(-1.25, -0.25, 0.55)), PM.clone().add(V(-1.15, -0.25, 0.5)), PM.clone().add(V(0, -0.3, 0)), PM.clone().add(V(0, -0.15, 0)), 44, 40); }
       if (id === 'e3') phoneCam(phone, 0.3, 34);
-      if (id === 'stat1') { const c = heap.position.clone(); fixed(c.clone().add(V(-1.7, 1.3, 1.6)), c.clone().add(V(-1.55, 1.2, 1.45)), c.clone().add(V(-0.3, 0, 0)), c.clone().add(V(-0.3, 0, 0)), 40, 37); }
+      if (id === 'stat1') { const c = heap.position.clone(); fixed(c.clone().add(V(-1.05, 0.95, 1.05)), c.clone().add(V(-0.92, 0.86, 0.94)), c.clone().add(V(-0.12, 0.02, 0.05)), c.clone().add(V(-0.12, 0.02, 0.05)), 40, 37); }
       if (id === 'stat2') fixed(V(STOP_X + 0.2, 1.4, LANE + 2.0), V(STOP_X + 0.2, 1.42, LANE + 1.7), V(STOP_X, 1.0, SZ - 0.3), V(STOP_X, 1.0, SZ - 0.3), 50, 48);
       if (id === 'tw3') fixed(V(HOME_X - 2.8, 1.6, 0.9), V(HOME_X - 2.6, 1.6, 0.95), V(HOME_X + 2.6, 1.4, 2.6), V(HOME_X + 1.2, 1.3, 1.6), 52, 50);
       if (id === 'tw4a') fixed(V(BX_POL + 7.0, 1.65, 0.7), V(BX_POL + 6.7, 1.65, 0.75), V(BX_POL + 2.4, 1.3, 2.2), V(BX_POL + 2.6, 1.3, 2.2), 52, 50);
@@ -439,6 +464,7 @@ export async function create() {
       if (id === 'fin2') phoneCam(phone, 0.3, 34);
       if (id === 'end') fixed(V(STOP_X + 6, 1.7, LANE + 5), V(STOP_X + 5.6, 1.7, LANE + 4.8), V(STOP_X, 1.2, SZ), V(STOP_X, 1.2, SZ), 50);
       cam.updateProjectionMatrix(); cam.updateMatrixWorld();
+      const phoneShot0 = phone.visible && ['tip1', 'tip5', 'e3', 'fin2'].includes(id) || id === 'tw4b';
 
       // --- looks
       if (set === 'pg') { R.renderer.toneMappingExposure = 1.3; G.uSat.value = 0.85; COOL.pg.intensity = 0.0; FILL.pg.intensity = 0.25; FILL.pg.position.copy(cam.position).add(V(0, 0.3, 0)); }
@@ -446,7 +472,10 @@ export async function create() {
       if (set === 'home' && !['fin1', 'fin2'].includes(id)) { R.renderer.toneMappingExposure = ['tw3', 'tw4a'].includes(id) ? 1.7 : 1.4; FILL.home.intensity = 0.2; FILL.home.position.copy(cam.position).add(V(0, 0.3, 0)); }
       if (etsi) { G.uSat.value = 0.45; G.uTint.value.set(1.0, 0.95, 1.05); G.uVignette.value = 1.15; }
       if (['e1', 'e2', 'e3'].includes(id)) R.renderer.toneMappingExposure = 1.6;
-      if (['stat1', 'stat2'].includes(id)) { G.uSat.value = 0.25; R.renderer.toneMappingExposure = 1.2; }
+      if (['stat1', 'stat2'].includes(id)) { G.uSat.value = id === 'stat1' ? 0.6 : 0.25; R.renderer.toneMappingExposure = 1.2; }
+      if (id === 'tip4b' || id === 'tip6') { R.renderer.toneMappingExposure = 1.45; FILL.pg.intensity = 0.22; }
+      // phone close-ups: a fill just above the lens mirrors in the glossy screen as a white blob: move it well off to the side
+      if (phoneShot0) for (const L of [FILL.pg, FILL.home]) L.position.copy(cam.position).addScaledVector(V(0, 1, 0), 1.1).addScaledVector(V(1, 0, 0).applyQuaternion(cam.quaternion), 0.9);
       if (id === 'tw4a' || id === 'tw4b') { G.uTint.value.set(0.95, 0.97, 1.08); }
       if (id === 'end') G.uFade.value = 1;
       if (S.rewind.t0 <= t && t < S.rewind.t1) { G.uScan.value = 1.0; G.uSat.value = 0.4; G.uAberr.value = 0.012; }

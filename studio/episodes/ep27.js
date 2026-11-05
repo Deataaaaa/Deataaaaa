@@ -96,6 +96,9 @@ export async function create() {
 
   // ---------- props ----------
   const phone = makePhone(), phone2 = makePhone();
+  // the screens' clear coat mirrored the street lamps and the bus lights as a white blob over the text in every phone close-up:
+  // keep the glass's environment sheen, drop its point-light highlights
+  for (const ph of [phone, phone2]) ph.traverse((o) => { const m = o.material; if (m && m.isMeshPhysicalMaterial && m.emissiveMap) { m.clearcoat = 0; m.specularIntensity = 0.12; m.roughness = 0.18; m.needsUpdate = true; } });
   const pcv = phone.tex.image, pc = pcv.getContext('2d'), p2v = phone2.tex.image, p2 = p2v.getContext('2d');
   const apple = makeCat();
   // the vest he drops in the dark street: a crumpled orange heap with a silver band

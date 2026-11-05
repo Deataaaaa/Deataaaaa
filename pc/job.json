@@ -1,12 +1,13 @@
 {
   "queue": [
     {
-      "ep": "ep26",
-      "name": "12pct_s2p3_leverre",
-      "cover": "videos/12pct_s2p3_cover.jpg",
+      "ep": "ep27",
+      "name": "12pct_s2p4_ledernierbus",
+      "cover": "videos/12pct_s2p4_cover.jpg",
+      "coverT": 1.5,
       "workers": 3,
-      "note": "12 % Saison 2 · Partie 3 : Le verre (~92 s). S2 P2 (Le traceur) rendered before.",
-      "post": "pc/posts/s2p3.txt"
+      "note": "12 % Saison 2 · Partie 4 (finale) : Le dernier bus (87.6 s). La couverture est faite par le rendu.",
+      "post": "pc/posts/s2p4.txt"
     }
   ]
 }

@@ -1,0 +1,13 @@
+{
+  "queue": [
+    {
+      "ep": "ep27",
+      "name": "12pct_s2p4_ledernierbus",
+      "cover": "videos/12pct_s2p4_cover.jpg",
+      "coverT": 1.5,
+      "workers": 3,
+      "note": "12 % Saison 2 · Partie 4 (finale) : Le dernier bus (87.6 s). La couverture est faite par le rendu.",
+      "post": "pc/posts/s2p4.txt"
+    }
+  ]
+}

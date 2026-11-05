@@ -1,0 +1,124 @@
+{
+ "note": "« 12 % » Saison 2 · Partie 2 · Le traceur. [spoken|shown], *red*. Voice A (Kyutai developpeuse), read in blocks (tools/vo_text.py).",
+ "lines": [
+  {
+   "gap": 0.1,
+   "t": "Un *traceur* vous suit depuis [une heure|1 h]… vous *rentrez* chez vous ?"
+  },
+  {
+   "gap": 0.5,
+   "t": "[Deux heures trente et une|2 h 31]. La bonne voiture, enfin… mais sur son écran : *traceur inconnu*.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Le chauffeur sourit : « Ça arrive tout le temps. Un client l'aura oublié. »",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "« Je vous laisse en bas de chez vous ? »"
+  },
+  {
+   "gap": 0.5,
+   "t": "Et si elle rentrait chez elle ?",
+   "brk": 1
+  },
+  {
+   "gap": 0.6,
+   "t": "Il la dépose en bas. Six étages, le verrou.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Sur une carte, un point avance… et s'arrête sur son *immeuble*."
+  },
+  {
+   "gap": 0.3,
+   "t": "[Trois heures deux|3 h 02]. Un message : « Bien rentrée, *Inès* ? »",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "En bas, sous sa fenêtre, quelqu'un lève la tête."
+  },
+  {
+   "gap": 0.5,
+   "t": "Avril [deux mille vingt-quatre|2024], Bordeaux : [dix-huit mois|18 mois] ferme pour un homme qui pistait son ex avec un traceur.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Il en avait déjà caché un dans la doublure d'un manteau."
+  },
+  {
+   "gap": 0.5,
+   "t": "Retour en arrière.",
+   "brk": 1
+  },
+  {
+   "gap": 0.5,
+   "t": "Inès ne rentre pas chez elle.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Allez dans un lieu public, éclairé : pour elle, le commissariat du [dix-huitième|18e]."
+  },
+  {
+   "gap": 0.3,
+   "t": "Sur l'alerte, touchez « *Faire sonner* ».",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Un bip. Dans la *doublure* de son manteau."
+  },
+  {
+   "gap": 0.4,
+   "t": "Collez-le au dos du téléphone : son numéro de série, parfois la fin du numéro de son propriétaire.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Capture d'écran. Et gardez-le : c'est une *preuve*."
+  },
+  {
+   "gap": 0.3,
+   "t": "Suivre quelqu'un à son insu, c'est un délit : un an de prison, [quarante-cinq mille euros|45 000 €] d'amende.",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "La police doit prendre votre *plainte*. Inès la dépose, le traceur sur le bureau."
+  },
+  {
+   "gap": 0.5,
+   "t": "« Quelqu'un a touché votre manteau, ce soir ? »",
+   "brk": 1
+  },
+  {
+   "gap": 0.4,
+   "t": "[Une heure vingt-quatre|1 h 24]. Le bar. « Inès, ton manteau ! »",
+   "brk": 1
+  },
+  {
+   "gap": 0.3,
+   "t": "Un homme le ramasse. Il le lui rend en souriant…"
+  },
+  {
+   "gap": 0.3,
+   "t": "… et pose un *verre* à côté du sien."
+  },
+  {
+   "gap": 0.4,
+   "t": "[Six pour cent|6 %].",
+   "brk": 1
+  },
+  {
+   "gap": 0.6,
+   "t": "Et vous… vous *rentrez* chez vous ?",
+   "brk": 1
+  }
+ ]
+}

@@ -23,31 +23,38 @@ K=${SEGMENTS:-$(( NPROC < 12 ? NPROC : 12 ))}; [ "$K" -ge 1 ] || K=1
 SD="${OUT}_seg"                                         # next to the video: Windows ffmpeg cannot read Git Bash's /tmp in a list file
 set_k() { K=$1; SEG=$(( (NFR + K - 1) / K )); K=$(( (NFR + SEG - 1) / SEG )); TH=$(( NPROC / K )); [ "$TH" -ge 1 ] || TH=1; rm -rf "$SD"; mkdir -p "$SD"; }
 set_k "$K"
-run_segments() {   # $1 = amf | x264: encodes every segment in parallel, returns non-zero if any failed
-  local pids=() i s n
+# every segment in parallel. $1 = amf | x264, $2 = both (HQ + phone) | phone, $3 = the phone file's kbit/s
+run_segments() {
+  local pids=() i s n d=0 bad=0
   for ((i = 0; i < K; i++)); do
     s=$((i * SEG)); n=$(( NFR - s < SEG ? NFR - s : SEG ))
-    IN=(-y -v error -threads "$TH" -start_number "$s" -framerate 30 -i "$FR/f_%05d.jpg" -frames:v "$n" -filter_complex "[0:v]format=yuv420p,split=2[a][b]")
+    SRC=(-y -v error -threads "$TH" -start_number "$s" -framerate 30 -i "$FR/f_%05d.jpg" -frames:v "$n")
     if [ "$1" = amf ]; then
-      ffmpeg "${IN[@]}" -map "[a]" "${AMF[@]}" -rc cqp -qp_i 16 -qp_p 18 -qp_b 20 -profile:v high "$SD/hq_$i.mp4" \
-        -map "[b]" "${AMF[@]}" -rc vbr_peak -b:v ${VB}k -maxrate $((VB * 2))k -bufsize $((VB * 2))k "${PA[@]}" -profile:v high "$SD/ph_$i.mp4" &
+      PH=("${AMF[@]}" -rc vbr_peak -b:v ${3}k -maxrate $(( $3 * 3 / 2 ))k -bufsize $(( $3 * 2 ))k "${PA[@]}" -profile:v high "$SD/ph_$i.mp4")
+      if [ "$2" = both ]; then
+        ffmpeg "${SRC[@]}" -filter_complex "[0:v]format=yuv420p,split=2[a][b]" -map "[a]" "${AMF[@]}" -rc cqp -qp_i 16 -qp_p 18 -qp_b 20 -profile:v high "$SD/hq_$i.mp4" -map "[b]" "${PH[@]}" &
+      else
+        ffmpeg "${SRC[@]}" -vf format=yuv420p "${PH[@]}" &
+      fi
     else
-      IN1=(-y -v error -threads "$TH" -start_number "$s" -framerate 30 -i "$FR/f_%05d.jpg" -frames:v "$n" -pix_fmt yuv420p -c:v libx264 -threads "$TH")
-      { ffmpeg "${IN1[@]}" -preset slow -crf 17 "${X264[@]}" "$SD/hq_$i.mp4" \
-        && ffmpeg "${IN1[@]}" -preset veryslow -b:v ${VB}k "${X264[@]}" -pass 1 -passlogfile "$SD/pass_$i" -f mp4 "$SD/p1_$i.mp4" \
-        && ffmpeg "${IN1[@]}" -preset veryslow -b:v ${VB}k "${X264[@]}" -pass 2 -passlogfile "$SD/pass_$i" "$SD/ph_$i.mp4"; } &
+      X=("${SRC[@]}" -pix_fmt yuv420p -c:v libx264 -threads "$TH")
+      { if [ "$2" = both ]; then ffmpeg "${X[@]}" -preset slow -crf 17 "${X264[@]}" "$SD/hq_$i.mp4"; fi \
+        && ffmpeg "${X[@]}" -preset veryslow -b:v ${3}k "${X264[@]}" -pass 1 -passlogfile "$SD/pass_$i" -f mp4 "$SD/p1_$i.mp4" \
+        && ffmpeg "${X[@]}" -preset veryslow -b:v ${3}k "${X264[@]}" -pass 2 -passlogfile "$SD/pass_$i" "$SD/ph_$i.mp4"; } &
     fi
     pids+=($!)
   done
-  local bad=0; for p in "${pids[@]}"; do wait "$p" || bad=1; done
+  for p in "${pids[@]}"; do wait "$p" || bad=1; d=$((d + 1)); echo "$1 $2: $d/$K segments"; done
   return $bad
 }
-join_segments() {  # concatenates the segments (no re-encode) and adds the soundtrack
+join_segments() {  # concatenates the segments (no re-encode) and adds the soundtrack; $1 = both | phone
   local f
   for f in hq ph; do : > "$SD/$f.txt"; for ((i = 0; i < K; i++)); do echo "file '${f}_$i.mp4'" >> "$SD/$f.txt"; done; done
-  ffmpeg -y -v error -f concat -safe 0 -i "$SD/hq.txt" -i "$WAV" -map 0:v:0 -map 1:a:0 -c:v copy "${AUD[@]}" -movflags +faststart -shortest "$OUT.mp4" \
-  && ffmpeg -y -v error -f concat -safe 0 -i "$SD/ph.txt" -i "$WAV" -map 0:v:0 -map 1:a:0 -c:v copy "${AUD[@]}" -movflags +faststart -shortest "${OUT}_phone.mp4"
+  if [ "$1" = both ]; then ffmpeg -y -v error -f concat -safe 0 -i "$SD/hq.txt" -i "$WAV" -map 0:v:0 -map 1:a:0 -c:v copy "${AUD[@]}" -movflags +faststart -shortest "$OUT.mp4" || return 1; fi
+  ffmpeg -y -v error -f concat -safe 0 -i "$SD/ph.txt" -i "$WAV" -map 0:v:0 -map 1:a:0 -c:v copy "${AUD[@]}" -movflags +faststart -shortest "${OUT}_phone.mp4"
 }
+fsize() { stat -c %s "$1" 2>/dev/null || wc -c < "$1"; }
+LIMIT=${PHONE_LIMIT:-30408704}                                          # 29 MB: the chat's send limit
 X264=(-tune film -x264-params "aq-mode=3:aq-strength=0.85:deblock=-1,-1")
 # On the owner's PC (AMD RX 6700 XT) the graphics card's video engine encodes (owner, 30 Oct 2026: the encoding on the GPU too):
 # h264_amf, the HQ file at constant quality, the phone file at its size budget with pre-analysis and variance AQ. A ffmpeg
@@ -55,22 +62,34 @@ X264=(-tune film -x264-params "aq-mode=3:aq-strength=0.85:deblock=-1,-1")
 ENC=x264
 if [ "${ENCODER:-auto}" != x264 ] && ffmpeg -hide_banner -encoders 2>/dev/null | grep -q h264_amf \
    && ffmpeg -v error -f lavfi -i color=c=gray:s=256x256:d=0.2 -c:v h264_amf -f null - 2>/dev/null; then ENC=amf; fi
-T0=$(date +%s)
+T0=$(date +%s); NOTE=""
 if [ $ENC = amf ]; then
   AMF=(-c:v h264_amf -usage transcoding -quality quality)
   PA=(-preanalysis true -vbaq true)                     # older drivers or ffmpeg builds lack pre-analysis
   ffmpeg -v error -f lavfi -i color=c=gray:s=256x256:d=0.2 "${AMF[@]}" "${PA[@]}" -f null - 2>/dev/null || PA=()
+  VBA=$(( VB * 93 / 100 ))                              # the card's rate control runs a little over: aim 7 % under
   # a driver that refuses that many encoder sessions at once gets a second try with 3
-  { run_segments amf || { echo "AMF with $K segments failed: 3 segments"; set_k 3; run_segments amf; }; } && join_segments || { echo "AMF encoding failed: falling back to x264"; ENC=x264; set_k "${SEGMENTS:-$(( NPROC < 12 ? NPROC : 12 ))}"; }
-  # the phone file must stay under the chat's 29 MB: if the GPU's rate control overshot, the processor redoes it
-  if [ $ENC = amf ] && [ "$(stat -c %s "${OUT}_phone.mp4" 2>/dev/null || wc -c < "${OUT}_phone.mp4")" -gt 30408704 ]; then echo "AMF phone file over 29 MB: x264 instead"; ENC=x264; fi
+  { run_segments amf both $VBA || { echo "AMF with $K segments failed: 3 segments"; set_k 3; run_segments amf both $VBA; }; } && join_segments both \
+    || { echo "AMF encoding failed: falling back to x264"; ENC=x264; set_k "${SEGMENTS:-$(( NPROC < 12 ? NPROC : 12 ))}"; }
+  # the phone file must stay under 29 MB. v3 redid both files on the processor when the card overshot (minutes of x264):
+  # now only the phone file is redone, on the card at a bitrate scaled by the overshoot, and on the processor only if that fails too
+  if [ $ENC = amf ]; then
+    SZ=$(fsize "${OUT}_phone.mp4" | tr -d '\r')
+    if [ "$SZ" -gt $LIMIT ]; then
+      VB2=$(( VBA * 27500000 / SZ ))
+      echo "AMF phone file $(( SZ / 1048576 )) MB: phone file again on the card at ${VB2}k"
+      run_segments amf phone $VB2 && join_segments phone; NOTE=" (phone re-encoded on the card)"
+      SZ=$(fsize "${OUT}_phone.mp4" | tr -d '\r')
+      if [ "$SZ" -gt $LIMIT ]; then echo "still over 29 MB: phone file on the processor"; run_segments x264 phone $VB && join_segments phone || { echo "x264 encoding failed"; exit 1; }; NOTE=" (phone file x264)"; fi
+    fi
+  fi
 fi
 if [ $ENC = x264 ]; then
   # x264 tuned for clean CG frames (no grain): film tune, variance AQ biased to dark areas (no banding or blocks
   # in the night shots), lighter deblocking to keep fine detail; the phone file two-pass to its size budget
-  run_segments x264 && join_segments || { echo "x264 encoding failed"; exit 1; }
+  run_segments x264 both $VB && join_segments both || { echo "x264 encoding failed"; exit 1; }
 fi
-echo "ENCODER $ENC  $K segments x $TH threads  $(( $(date +%s) - T0 )) s"
+echo "ENCODER $ENC  $K segments x $TH threads  $(( $(date +%s) - T0 )) s$NOTE"
 rm -rf "$SD"
 
 

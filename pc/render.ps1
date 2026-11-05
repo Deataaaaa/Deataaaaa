@@ -99,6 +99,19 @@ function Read-Jobs {
 function Cover-Rel($j) { if ($j.cover) { return ([string]$j.cover) }; return ('videos/' + $j.name + '_cover.jpg') }
 function Frames-Of([string]$ep) { $d = Join-Path $out ('frames_' + $ep); $n = 0; if (Test-Path -LiteralPath $d) { $n = [IO.Directory]::GetFiles($d, 'f_*.jpg').Length }; return $n }
 
+# ---------- renderer packages and 3D people (the render, the cover and the GPU test all need them) ----------
+function Ensure-Assets([string]$num) {
+  Stage $num 'Assets'
+  $lockA = Join-Path $studio 'package-lock.json'; $lockB = Join-Path $studio 'node_modules\.package-lock.json'
+  if (-not (Test-Path -LiteralPath $lockB) -or (Get-Item -LiteralPath $lockA).LastWriteTime -gt (Get-Item -LiteralPath $lockB).LastWriteTime) {
+    Set-Location $studio; $null = Run 'npm' @('install', '--no-audit', '--no-fund'); Set-Location $repo
+  }
+  if ((Ensure-Models $studio $pc) -ne 0) { Set-Location $repo; Done 'FAIL' 'the 3D people download failed'; Tail 12; return $false }
+  Set-Location $repo
+  Done 'OK' ('3D people ready (' + @(Get-ChildItem -Directory (Join-Path $studio 'engine\models\rocketbox') -ErrorAction SilentlyContinue).Count + ')')
+  return $true
+}
+
 # ---------- the pipeline: render (everything), resume (keeps the frames on disk), cover (only the covers) ----------
 function Invoke-Job([string]$mode) {
   Start-Log $log ('DeatAnimation Render Engine ' + $VERSION + ' (' + $mode + ')')
@@ -141,14 +154,7 @@ function Invoke-Job([string]$mode) {
 
     # 3. renderer packages and 3D people
     $an = '3/' + $NS; if ($mode -eq 'cover') { $an = '2/3' }
-    Stage $an 'Assets'
-    $lockA = Join-Path $studio 'package-lock.json'; $lockB = Join-Path $studio 'node_modules\.package-lock.json'
-    if (-not (Test-Path -LiteralPath $lockB) -or (Get-Item -LiteralPath $lockA).LastWriteTime -gt (Get-Item -LiteralPath $lockB).LastWriteTime) {
-      Set-Location $studio; $null = Run 'npm' @('install', '--no-audit', '--no-fund'); Set-Location $repo
-    }
-    if ((Ensure-Models $studio $pc) -ne 0) { Done 'FAIL' 'the 3D people download failed'; Tail 12; throw 'assets' }
-    Set-Location $repo
-    Done 'OK' ('3D people ready (' + @(Get-ChildItem -Directory (Join-Path $studio 'engine\models\rocketbox') -ErrorAction SilentlyContinue).Count + ')')
+    if (-not (Ensure-Assets $an)) { throw 'assets' }
 
     $k = 0
     foreach ($j in $jobs) {
@@ -325,19 +331,27 @@ function Invoke-GpuTest {
   Start-Log $log ('DeatAnimation Render Engine ' + $VERSION + ' (GPU test)')
   try {
     $j = @(Read-Jobs)[0]; $t = 5.0; if ($null -ne $j.coverT) { $t = [double]$j.coverT }
-    Stage '1/1' 'GPU test'
-    $argv = @('studio/render.mjs', '--ep', $j.ep, '--stills', [string]$t, '--gpu', '--out', 'studio/out/gputest')
+    # v3.1: the test used to start without the new 3D people of the job (their avatar.json was not there yet): assets first
+    if (-not (Ensure-Assets '1/3')) { return }
+    Stage '2/3' '3D render (GPU)'
+    $argv = @('studio/render.mjs', '--ep', $j.ep, '--stills', $t.ToString([Globalization.CultureInfo]::InvariantCulture), '--gpu', '--out', 'studio/out/gputest')
     $c = RunStage 'node' $argv; $hd = ''
     if ($c -eq 3) { $c = RunStage 'node' ($argv + @('--headed')); $hd = '  (browser window: headless had no graphics card)' }
     $rn = ''; $ms = -1.0
     foreach ($l in $script:LastOut) { if ($l -match 'renderer: (.*)$') { $rn = $Matches[1] }; if ($l -match '^still \S+ (.*) (\d+) ms$') { $ms = [double]$Matches[2] } }
     if ($c -eq 0 -and $ms -ge 0) {
-      Done 'OK' ('1 frame in ' + $ms + ' ms, page ' + ('{0:0} s' -f ($script:LastSecs - $ms / 1000)) + $hd)
-      WL ('        ' + $rn) 'DarkGray'
       $soft = $rn -match 'swiftshader|llvmpipe|software|basic render'
+      $st = 'OK'; if ($soft) { $st = 'WARN' }
+      Done $st ('1 frame in ' + $ms + ' ms, page ' + ('{0:0} s' -f ($script:LastSecs - $ms / 1000)) + $hd)
+      WL ('        ' + $rn) 'DarkGray'
       if ($soft) { WL '        that is a software renderer, not the graphics card: send me the log' 'Yellow' } else { WL ('        about ' + ('{0:0.0}' -f (1000.0 / [Math]::Max(1, $ms))) + ' frames per second per worker on this shot') 'DarkGray' }
-      WL ('        studio\out\gputest\still_' + ('{0:0.00}' -f $t) + '.jpg') 'DarkGray'
-    } else { Done 'FAIL' 'no frame'; Tail 10 }
+    } else { Done 'FAIL' 'no frame: send me the log'; Tail 10 }
+    Stage '3/3' 'Video encoder'
+    $c = RunStage $bash @('studio/tools/enctest.sh')
+    $v = @($script:LastOut | Where-Object { $_ -match '^ENCTEST ' }) | Select-Object -First 1
+    if ($v -match '^ENCTEST amf (.*)$') { Done 'OK' ('graphics card (h264_amf): ' + $Matches[1]) }
+    elseif ($v -match '^ENCTEST x264 (.*)$') { Done 'WARN' ('processor only (x264): ' + $Matches[1]) }
+    else { Done 'FAIL' 'no result: send me the log'; Tail 8 }
   } catch { WL ('  stopped: ' + $_) 'Red' }
 }
 
@@ -424,7 +438,7 @@ function Main-Items($jobs) {
     @{ sep = $true },
     @{ key = '4'; label = 'Look'; act = 'look'; info = $lk },
     @{ key = '5'; label = 'Settings'; act = 'settings'; info = $st },
-    @{ key = '6'; label = 'GPU test'; act = 'gpu'; info = 'one frame on the graphics card, timed' },
+    @{ key = '6'; label = 'GPU test'; act = 'gpu'; info = 'a frame and the video encoder on the card' },
     @{ sep = $true },
     @{ key = '7'; label = 'Videos folder'; act = 'folder'; info = 'open it in Explorer' },
     @{ key = '8'; label = 'Last log'; act = 'log'; info = 'the end of studio\out\pc_render_log.txt' },

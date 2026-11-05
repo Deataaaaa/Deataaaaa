@@ -256,6 +256,12 @@ own series (pitch first, rule 10). Rules that clash with it (3, 5, 11, 16, 17, 2
   while the GPU is under 55 %; Chromium (--gpu) gets --disable-gpu-vsync, --disable-frame-rate-limit and no background throttling
   (headed windows hidden behind others); frames are written while the next one renders. The menu was driven in a pty with pwsh here
   (`DA_FORCE_VT=1`, arrow escape codes): Linux-only "Path is null" errors come from `$env:ProgramFiles`.
+  Owner, 5 Nov 2026 (after the first v3.1 run: the GPU test « failed on the json loading », the encode « runs on my CPU »): the GPU test
+  started before the job's new 3D people were downloaded (avatar.json 404); it now runs the Assets stage first, then a frame on the card,
+  then `tools/enctest.sh` (h264_amf there? 300 frames at 1080x1920, and as many sessions at once as encode.sh opens). And encode.sh v3
+  redid BOTH files with x264 veryslow whenever the AMF phone file came out over 29 MB: now AMF aims 7 % under, redoes only the phone
+  file on the card at a bitrate scaled by the overshoot, and goes to x264 (phone only) last; it prints `amf both: i/K segments`
+  progress and the ENCODER line says which file went where. The AMF path is tested here with a mock ffmpeg (h264_amf → libx264).
 - Wait for every texture before the first frame (`TEX_PENDING` in `engine/elevator.js`), or the first
   frame of each worker samples black textures.
 - Never `pkill -f`/`pgrep -f` with a pattern that also appears in your own shell command (it kills or

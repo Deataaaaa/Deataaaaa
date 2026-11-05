@@ -39,7 +39,7 @@ Render Engine v3.1 opens on a **menu** (arrows or numbers, Enter, Esc). If you t
 | 3 Cover only | just the cover, on the graphics card |
 | 4 Look | theme (`inferno`, `matrix`, `synth`, `ice`, `mono`, `custom`), banner, bar, logo, speed, animations, mouse trail, preview |
 | 5 Settings | workers at start, max workers, encoder, shut down after (ask / yes / no), auto-start, cover, keep frames |
-| 6 GPU test | one frame on the graphics card, with its time |
+| 6 GPU test | downloads the job's 3D people, renders one frame on the graphics card, tests the card's video encoder |
 | 7 / 8 | the videos folder, the end of the last log |
 
 What you change in Look and Settings is saved in `pc\user.json`, which updates never touch (delete it to go back to the

@@ -19,7 +19,7 @@ Load-Theme (Join-Path $pc 'theme.json'); Load-Theme $userFile
 $script:Quiet = $true
 Remove-Item Env:\NODE_TLS_REJECT_UNAUTHORIZED -ErrorAction SilentlyContinue   # set on this PC by another program: node warned about it
 $VERSION = '3.1'
-try { $Host.UI.RawUI.WindowTitle = 'DeatAnimation Render Engine v' + $VERSION } catch {}
+$script:Title = 'DeatAnimation Render Engine v' + $VERSION; try { $Host.UI.RawUI.WindowTitle = $script:Title } catch {}
 # a click in the window (QuickEdit) froze the whole render until a key was pressed (owner, 31 Oct 2026): switch QuickEdit off
 try {
   Add-Type -Namespace DA -Name Con -MemberDefinition '[DllImport("kernel32.dll")] public static extern System.IntPtr GetStdHandle(int h); [DllImport("kernel32.dll")] public static extern bool GetConsoleMode(System.IntPtr h, out uint m); [DllImport("kernel32.dll")] public static extern bool SetConsoleMode(System.IntPtr h, uint m);'
@@ -58,7 +58,7 @@ function Ask-YesNo([string]$q, [bool]$default, [int]$secs) {
   return $ans
 }
 function Wait-Back([string]$what) {
-  WL; Out-Raw ('  ' + (C ([string][char]0x25B6 + ' press a key for ' + $what) $script:T.dim))
+  WL; Out-Raw ('  ' + (C ($script:GL.ptr + ' press a key for ' + $what) $script:T.dim))
   while (-not (Key-Available)) { Start-Sleep -Milliseconds 80 }
   $null = Read-Key; [Console]::WriteLine()
 }
@@ -92,7 +92,7 @@ function Header([bool]$anim) {
   $script:CFG.animate = $a
 }
 function Read-Jobs {
-  $job = Get-Content -Raw (Join-Path $pc 'job.json') | ConvertFrom-Json
+  $job = Get-Content -Raw -Encoding UTF8 (Join-Path $pc 'job.json') | ConvertFrom-Json      # UTF-8: the notes have accents
   if ($job.queue) { return @($job.queue) }; return @($job)
 }
 # the cover goes where the job says (videos/<series>_cover.jpg), else next to the video
@@ -106,7 +106,8 @@ function Ensure-Assets([string]$num) {
   if (-not (Test-Path -LiteralPath $lockB) -or (Get-Item -LiteralPath $lockA).LastWriteTime -gt (Get-Item -LiteralPath $lockB).LastWriteTime) {
     Set-Location $studio; $null = Run 'npm' @('install', '--no-audit', '--no-fund'); Set-Location $repo
   }
-  if ((Ensure-Models $studio $pc) -ne 0) { Set-Location $repo; Done 'FAIL' 'the 3D people download failed'; Tail 12; return $false }
+  $em = Ensure-Models $studio $pc; Fix-Console
+  if ($em -ne 0) { Set-Location $repo; Done 'FAIL' 'the 3D people download failed'; Tail 12; return $false }
   Set-Location $repo
   Done 'OK' ('3D people ready (' + @(Get-ChildItem -Directory (Join-Path $studio 'engine\models\rocketbox') -ErrorAction SilentlyContinue).Count + ')')
   return $true
@@ -119,7 +120,8 @@ function Invoke-Job([string]$mode) {
   $ok = $false; $shut = $false; $warn = @(); $ready = New-Object System.Collections.ArrayList; $jobs = @()
   try {
     $jobs = Read-Jobs
-    foreach ($j in $jobs) { W '   job      ' 'DarkGray'; WL ($j.name + ' (' + $j.ep + ')  ' + $j.note) 'Gray' }
+    $W = 119; try { $W = [Math]::Max(60, [Console]::WindowWidth - 1) } catch {}
+    foreach ($j in $jobs) { $jl = $j.name + ' (' + $j.ep + ')  ' + $j.note; if ($jl.Length -gt $W - 12) { $jl = $jl.Substring(0, $W - 13) + '.' }; W '   job      ' 'DarkGray'; WL $jl 'Gray' }
     WL
     if ($mode -ne 'cover') {
       $sd = [string]$script:CFG.shutdown
@@ -195,38 +197,46 @@ function Invoke-Job([string]$mode) {
         $row = [Console]::CursorTop; $live = $true
         try { [Console]::SetCursorPosition(0, $row) } catch { $live = $false }
         $hist = New-Object System.Collections.ArrayList; $fpsH = New-Object System.Collections.ArrayList; $gpuH = New-Object System.Collections.ArrayList; $cpuH = New-Object System.Collections.ArrayList
-        $u = Get-Usage; $lastU = Get-Date; $tick = 0; $lastPct = -10; $renderer = ''; $nf = 0; $nw = 0
+        $u = Get-Usage; $lastU = Get-Date; $tick = 0; $lastPct = -10; $renderer = ''; $nf = 0; $nw = 0; $ctl = ''
         while (-not $p.HasExited) {
           $n = Frames-Of $ep
           $now = Get-Date; [void]$hist.Add(@($now, $n)); while ($hist.Count -gt 2 -and ($now - $hist[0][0]).TotalSeconds -gt 15) { $hist.RemoveAt(0) }
           $span = ($now - $hist[0][0]).TotalSeconds; $fps = 0.0; if ($span -gt 0.5) { $fps = ($n - $hist[0][1]) / $span }
           if (($now - $lastU).TotalSeconds -ge 3) {
-            $u = Get-Usage; $lastU = Get-Date
+            $u = Get-Usage; $lastU = Get-Date; Fix-Console
             if (Test-Path -LiteralPath $wlog) {
               $tl = @(Get-Content -LiteralPath $wlog -Tail 60 -ErrorAction SilentlyContinue)
               if ($nf -le 0) { $r = Select-String -LiteralPath $wlog -Pattern '\[ctl\] (\d+) frames' -List -ErrorAction SilentlyContinue; if ($r) { $nf = [int]$r.Matches[0].Groups[1].Value } }
               if (-not $renderer) { $r = Select-String -LiteralPath $wlog -Pattern 'renderer: (.*)$' -List -ErrorAction SilentlyContinue; if ($r) { $renderer = $r.Matches[0].Groups[1].Value } }
               for ($q = $tl.Count - 1; $q -ge 0; $q--) { if ($tl[$q] -match '\[ctl\] workers (\d+)') { $nw = [int]$Matches[1]; break } }
+              for ($q = $tl.Count - 1; $q -ge 0; $q--) { if ($tl[$q] -match '^\[ctl\] (.*)$' -and $tl[$q] -notmatch '^\[ctl\] workers \d+ \(') { $ctl = $Matches[1]; break } }
             }
           }
           $eta = -1.0; if ($fps -gt 0.05 -and $nf -gt 0) { $eta = ($nf - $n) / $fps }
           $f = 0.0; if ($nf -gt 0) { $f = $n / $nf }
           if ($live) {
+            # three lines, each cut to the window's width and cleared to its end (a wrapped line pushed the next one down)
+            $W = 119; try { $W = [Math]::Max(60, [Console]::WindowWidth - 1) } catch {}
+            $el = ''; if ($script:VT) { $el = $script:ESC + '[K' }
             [Console]::SetCursorPosition(0, $row)
-            if ($n -eq $n0 -or $nf -le 0) { Out-Raw ('        ' + (C $script:SPIN[$tick % $script:SPIN.Count] $script:T.b) + (C ('  starting the workers (loading the scene, people and shaders)...  ' + (Mmss ($now - $tr).TotalSeconds)).PadRight(80) $script:T.dim)); [Console]::WriteLine() }
+            if ($n -eq $n0 -or $nf -le 0) { Out-Raw ('        ' + (C $script:SPIN[$tick % $script:SPIN.Count] $script:T.b) + (C ('  starting the workers (loading the scene, people and shaders)...  ' + (Mmss ($now - $tr).TotalSeconds)) $script:T.dim) + $el); [Console]::WriteLine() }
             else {
               [void]$fpsH.Add($fps); [void]$gpuH.Add([Math]::Max(0, $u.gpu)); [void]$cpuH.Add([Math]::Max(0, $u.cpu))
-              Out-Raw ('        ' + (UiBar $f ([int]$script:CFG.width)) + (C ('  {0,5:0.0}%' -f ($f * 100)) $script:T.text) + (C ('   {0,4}/{1}   ETA {2}' -f $n, $nf, (Mmss $eta)).PadRight(30) $script:T.dim)); [Console]::WriteLine()
+              Out-Raw ('        ' + (UiBar $f ([int]$script:CFG.width)) + (C ('  {0,5:0.0}%' -f ($f * 100)) $script:T.text) + (C ('   {0,4}/{1}   ETA {2}' -f $n, $nf, (Mmss $eta)) $script:T.dim) + $el); [Console]::WriteLine()
             }
-            $vr = 'n/a'; if ($u.vram -ge 0) { $vr = ('{0:0.0} GB' -f $u.vram) }
-            $rm = 'n/a'; if ($u.ram -ge 0) { $rm = ('{0:0.0}/{1:0} GB' -f $u.ram, $u.ramT) }
+            $vr = ''; if ($u.vram -ge 0) { $vr = ('   vram {0:0.0} GB' -f $u.vram) }
+            $rm = ''; if ($u.ram -ge 0) { $rm = ('   ram {0:0}/{1:0} GB' -f $u.ram, $u.ramT) }
             $wk = ''; if ($nw -gt 0) { $wk = '   workers ' + $nw }
-            Out-Raw ('        ' + (C 'fps ' $script:T.dim) + (Sparkline $fpsH 16 0) + (C (' {0,5:0.0}' -f $fps) $script:T.text) + (C '   gpu ' $script:T.dim) + (Sparkline $gpuH 12 100) + (C (Pct $u.gpu) $script:T.text) + (C '   cpu ' $script:T.dim) + (Sparkline $cpuH 12 100) + (C (Pct $u.cpu) $script:T.text) + (C ('   vram ' + $vr + '  ram ' + $rm + $wk).PadRight(46) $script:T.dim)); [Console]::WriteLine()
+            $tail = $vr + $rm + $wk; $sp = 12; if ($W -lt 110) { $sp = 8; $tail = $vr + $wk }
+            Out-Raw ('        ' + (C 'fps ' $script:T.dim) + (Sparkline $fpsH $sp 0) + (C (' {0,5:0.0}' -f $fps) $script:T.text) + (C '   gpu ' $script:T.dim) + (Sparkline $gpuH ($sp - 4) 100) + (C (Pct $u.gpu) $script:T.text) + (C '   cpu ' $script:T.dim) + (Sparkline $cpuH ($sp - 4) 100) + (C (Pct $u.cpu) $script:T.text) + (C $tail $script:T.dim) + $el); [Console]::WriteLine()
+            # what the pool is doing (a stalled worker restarted, the cover, the last pass), from the controller's log
+            $msg = ''; if ($ctl) { $msg = $ctl }; if ($msg.Length -gt $W - 10) { $msg = $msg.Substring(0, $W - 11) + '.' }
+            Out-Raw ('        ' + (C $msg $script:T.dim) + $el); [Console]::WriteLine()
           } elseif ([int]($f * 10) -gt $lastPct) { $lastPct = [int]($f * 10); WL ('        ' + (Bar $f 30) + ('  {0,3:0}%  ETA {1}' -f ($f * 100), (Mmss $eta))) 'Gray' }
           $tick++; Start-Sleep -Milliseconds 500
         }
         $p.WaitForExit(); $code = $p.ExitCode
-        if ($live) { [Console]::SetCursorPosition(0, $row + 2) }
+        if ($live) { [Console]::SetCursorPosition(0, $row + 3) }
         $wl = @(Get-Content -LiteralPath $wlog -ErrorAction SilentlyContinue)
         foreach ($l in $wl + @(Get-Content -LiteralPath $werr -ErrorAction SilentlyContinue)) { Log $l }
         if ($nf -le 0) { foreach ($l in $wl) { if ($l -match '\[ctl\] (\d+) frames') { $nf = [int]$Matches[1]; break } } }
@@ -369,6 +379,7 @@ function Look-Items {
     @{ key = '7'; label = 'Mouse trail'; cfg = 'trail'; opts = @($true, $false); info = ('< ' + (OnOff $script:CFG.trail) + ' >  characters fall from the pointer') },
     @{ key = '8'; label = 'System panel'; cfg = 'sysinfo'; opts = @($true, $false); info = ('< ' + (OnOff $script:CFG.sysinfo) + ' >') },
     @{ key = '9'; label = 'Outro'; cfg = 'outro'; opts = @($true, $false); info = ('< ' + (OnOff $script:CFG.outro) + ' >  the big READY at the end') },
+    @{ key = 'g'; label = 'Symbols'; cfg = 'glyphs'; opts = @('auto', 'safe', 'full'); info = ('< ' + $script:CFG.glyphs + ' >  now ' + $script:GLYPHS + ' (full: Windows Terminal)') },
     @{ sep = $true },
     @{ key = 'p'; label = 'Preview'; act = 'preview'; info = 'banner, bars and the end, with this look' },
     @{ key = '0'; label = 'Back'; act = 'back'; info = 'saved in pc\user.json (updates keep it)' }
@@ -457,7 +468,9 @@ while (-not $quit) {
   $items = Main-Items $jobs
   if ($jerr) { $items[0].dis = $true; $items[0].info = $jerr }
   $auto = 0; if ($first -and -not $jerr -and [int]$script:CFG.autostart -gt 0) { $auto = [int]$script:CFG.autostart }
-  $r = Select-Menu ('MENU  ' + [char]0x00B7 + '  ' + @($jobs).Count + ' video(s) in pc\job.json') $items $sel $auto 'Render' ''
+  # frames left by a stopped render: the countdown resumes it instead of starting over (Render would delete them)
+  $what = 'Render'; if ($first -and -not $items[1].dis) { $sel = 1; $what = 'Resume' }
+  $r = Select-Menu ('MENU  ' + [char]0x00B7 + '  ' + @($jobs).Count + ' video(s) in pc\job.json') $items $sel $auto $what ''
   $first = $false; $sel = $r.i; $act = $items[$sel].act
   if ($r.how -eq 'esc') { $act = 'quit' }
   if ($r.how -eq 'left' -or $r.how -eq 'right') { continue }

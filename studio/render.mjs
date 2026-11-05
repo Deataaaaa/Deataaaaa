@@ -38,6 +38,12 @@ const browser = await chromium.launch(gpu
 const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
 page.on('console', (m) => { const t = m.text(); if (!/GPU stall|GroupMarkerNotSet|Automatic fallback/.test(t)) console.log('[page]', t); });
 page.on('pageerror', (e) => console.log('[pageerror]', e.message, (e.stack || '').split('\n').slice(1, 4).join(' | ')));
+// a dead page or browser (the graphics driver reset, the GPU process crashed) must end this worker at once with code 4, so
+// tools/renderall.mjs gives its chunk to a fresh one: a hung worker held the owner's render at 2624/2628 frames (5 Nov 2026)
+let closing = false;
+page.on('crash', () => { console.log('PAGE CRASHED (renderer or GPU process died): this worker stops'); process.exit(4); });
+browser.on('disconnected', () => { if (!closing) { console.log('BROWSER DISCONNECTED: this worker stops'); process.exit(4); } });
+const withTimeout = (p, ms, what) => { let h; return Promise.race([p, new Promise((_, rej) => { h = setTimeout(() => rej(new Error(`${what} timed out after ${ms / 1000} s`)), ms); })]).finally(() => clearTimeout(h)); };
 await page.goto(`http://localhost:${port}/engine/player.html?ep=${ep}${args.q ? '&' + args.q : ''}`, { timeout: 120000 });
 console.log('page loaded');
 const glName = await page.evaluate(() => {
@@ -51,6 +57,8 @@ if (gpu && /swiftshader|llvmpipe|software|basic render/i.test(glName)) {
 }
 await page.waitForFunction(() => window.ready === true, null, { timeout: 300000 });
 console.log('scene ready');
+// a lost WebGL context renders black frames without an error: watch for it and stop instead of writing them
+await page.evaluate(() => { for (const c of document.querySelectorAll('canvas')) c.addEventListener('webglcontextlost', () => { window.__ctxLost = true; console.log('WEBGL CONTEXT LOST'); }); });
 
 const meta = await page.evaluate(() => window.META);
 const fps = Number(args.fps || meta.fps || 30);
@@ -85,14 +93,16 @@ async function shot(t, file, opts) {
   // generous timeout + retries: under heavy CPU load a motion-blurred frame can take a while to composite
   for (let attempt = 1; ; attempt++) {
     try {
-      await page.evaluate(([tt, o]) => window.renderFrame(tt, o), [t, opts || {}]);
+      const lost = await withTimeout(page.evaluate(([tt, o]) => { window.renderFrame(tt, o); return !!window.__ctxLost; }, [t, opts || {}]), gpu ? 120000 : 600000, 'renderFrame');
+      if (lost) { console.log(`WebGL context lost at t=${t}: this worker stops`); process.exit(4); }
       // written under a temporary name, then renamed: a worker killed mid-write never leaves a broken frame for --resume
-      const buf = await page.screenshot({ type: 'jpeg', quality: 93, timeout: 180000 });
+      const buf = await page.screenshot({ type: 'jpeg', quality: 93, timeout: gpu ? 90000 : 180000 });
       const w = fs.promises.writeFile(file + '.part', buf).then(() => fs.promises.rename(file + '.part', file));
       pending.add(w); w.then(() => pending.delete(w), (e) => { pending.delete(w); writeErr = e; });
       return;
     } catch (e) {
-      if (attempt >= 3) throw e;
+      // a page that timed out once is hung: a fresh worker is faster than more tries
+      if (attempt >= 2 || /timed out|Timeout/.test(e.message)) { console.log(`frame t=${t} failed (${e.message.split('\n')[0]}): this worker stops`); process.exit(4); }
       console.log(`retry ${attempt} at t=${t}: ${e.message.split('\n')[0]}`);
     }
   }
@@ -121,6 +131,7 @@ if (args.cover) {
       const f = path.join(out, `f_${String(i).padStart(5, '0')}.jpg`);
       if (fs.existsSync(f)) continue;
       await shot(i / fps, f); n++;
+      process.send({ frame: i });                                   // the controller's watchdog sees the worker is alive
     }
     await writes();
     process.send({ done: [a, b], n, sec: (Date.now() - t0) / 1000 });
@@ -141,4 +152,4 @@ if (args.cover) {
   console.log('done', from, to, ((Date.now() - t0) / 1000).toFixed(1), 's', `${n} frames`);
 }
 await writes();
-await browser.close(); srv.close();
+closing = true; await browser.close(); srv.close();

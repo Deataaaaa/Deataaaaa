@@ -46,12 +46,13 @@ const workers = new Map(); let nextId = 0, headedSwitch = false, finished = fals
 function spawnWorker() {
   const id = nextId++, name = `w${id}`;
   const p = spawn(process.execPath, ['render.mjs', ...base, '--queue', ...flags], { cwd: studio, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
-  const w = { id, p, chunk: null, ready: false, born: Date.now(), readyAt: 0, frames: 0 };
+  const w = { id, p, chunk: null, ready: false, born: Date.now(), readyAt: 0, last: Date.now(), frames: 0 };
   workers.set(id, w);
   const line = (d) => String(d).split(/\r?\n/).filter((l) => l && !/FBXLoader: TGA loader/.test(l)).forEach((l) => console.log(`[${name}] ${l}`));
   p.stdout.on('data', line); p.stderr.on('data', line);
   p.on('message', (m) => {
-    if (m.ready) { w.ready = true; w.readyAt = Date.now(); if (total === null) setTotal(m.total); return; }   // the episode's frame count comes with the first 'ready'
+    if (m.ready) { w.ready = true; w.readyAt = w.last = Date.now(); if (total === null) setTotal(m.total); return; }
+    if (m.frame !== undefined) { w.last = Date.now(); return; }   // the episode's frame count comes with the first 'ready'
     if (m.done) { w.chunk = null; w.frames = m.n; return; }
     if (m.want) feed(w);
   });
@@ -62,7 +63,7 @@ function spawnWorker() {
       headedSwitch = true; flags = ['--gpu', '--headed'];
       log('headless Chromium had no graphics card: the pool switches to browser windows (--headed)');
     }
-    if (code !== 0 && code !== 3) log(`${name} exited with code ${code}`);
+    if (code !== 0 && code !== 3) log(`${name} exited with code ${code}${w.chunk ? `: frames ${w.chunk[0]}-${w.chunk[1] - 1} go to another worker` : ''}`);
     if (!finished && (code === 3 || (code !== 0 && queue && queue.length))) spawnWorker();
     if (workers.size === 0) wrapUp();
   });
@@ -77,15 +78,32 @@ function feed(w) {
   if (!queue) { w.waiting = true; return; }
   w.waiting = false;
   const c = queue.shift();
-  if (c) { w.chunk = c; w.p.send({ chunk: c }); }
+  if (c) { w.chunk = c; w.last = Date.now(); w.p.send({ chunk: c }); }
   else if (coverT !== null && !coverAsked) { coverAsked = true; log(`cover at ${coverT} s by w${w.id}`); w.p.send({ stop: true, cover: coverT, coverFile }); }
   else { w.p.send({ stop: true }); }
+}
+
+// the watchdog: a worker that has a chunk and makes no frame for STALL (a hung page, a reset graphics driver), or that is
+// still loading after 5 min, is killed with its browser; its chunk goes back in the queue and a fresh worker takes it
+const STALL = Number(args.stall || (args.gpu ? 150000 : 900000));
+function killTree(p) {
+  if (process.platform === 'win32') execFile('taskkill', ['/PID', String(p.pid), '/T', '/F'], { windowsHide: true }, () => {});
+  else { try { p.kill('SIGKILL'); } catch {} }
+}
+function watchdog() {
+  const now = Date.now();
+  for (const w of workers.values()) {
+    if (w.killed) continue;
+    if (w.ready && w.chunk && now - w.last > STALL) { w.killed = true; log(`w${w.id} made no frame for ${Math.round((now - w.last) / 1000)} s (frames ${w.chunk[0]}-${w.chunk[1] - 1}): restarting it`); killTree(w.p); }
+    else if (!w.ready && now - w.born > 300000) { w.killed = true; log(`w${w.id} still loading after 5 min: restarting it`); killTree(w.p); }
+  }
 }
 
 // the adaptive pool
 let lastN = 0, lastT = Date.now(), lastAddFps = null, plateau = false, history = [];
 async function tick() {
   if (finished) return;
+  watchdog();
   const now = Date.now(), n = count(), fps = (n - lastN) / ((now - lastT) / 1000);
   lastN = n; lastT = now;
   const g = await gpuLoad(), free = os.freemem() / 2 ** 30, live = [...workers.values()].filter((w) => w.ready).length;

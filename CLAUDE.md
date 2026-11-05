@@ -262,6 +262,14 @@ own series (pitch first, rule 10). Rules that clash with it (3, 5, 11, 16, 17, 2
   redid BOTH files with x264 veryslow whenever the AMF phone file came out over 29 MB: now AMF aims 7 % under, redoes only the phone
   file on the card at a bitrate scaled by the overshoot, and goes to x264 (phone only) last; it prints `amf both: i/K segments`
   progress and the ENCODER line says which file went where. The AMF path is tested here with a mock ffmpeg (h264_amf → libx264).
+  Owner's first v3.1 P4 run (5 Nov 2026): stuck at 2624/2628 frames (one worker hung mid-chunk, fps 0, nothing restarted it), '?' in
+  place of the marks, spinner, sparklines and rounded corners, the stats line wrapped. Now: render.mjs exits with code 4 on a page crash,
+  a lost browser, a lost WebGL context (checked after every frame) or a renderFrame/screenshot timeout, and sends a heartbeat per frame;
+  renderall's watchdog kills (taskkill /T) a worker with no frame for 150 s or still loading after 5 min, and its chunk goes to a fresh
+  one (`--stall` ms for tests). conhost's Consolas only draws WGL4: ui.ps1's `Set-Glyphs` (Look › Symbols: auto|safe|full; auto = full
+  only in Windows Terminal, `WT_SESSION`) uses shades, square corners, √ × ►. Live lines are cut to the window width and end with ESC[K;
+  a third line shows the pool's last controller message. `Fix-Console` puts back code page 65001, VT mode and the title after each
+  program (npm left « npm install » as the title). Frames left on disk make the countdown start Resume, not Render (which deletes them).
 - Wait for every texture before the first frame (`TEX_PENDING` in `engine/elevator.js`), or the first
   frame of each worker samples black textures.
 - Never `pkill -f`/`pgrep -f` with a pattern that also appears in your own shell command (it kills or

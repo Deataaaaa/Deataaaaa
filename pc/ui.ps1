@@ -11,6 +11,16 @@ try {
   if ([DA.Vt]::GetConsoleMode($hOut, [ref]$om)) { $script:VT = [DA.Vt]::SetConsoleMode($hOut, ($om -bor [uint32]0x0004)) }
 } catch {}
 if ($env:DA_FORCE_VT -eq '1') { $script:VT = $true }
+try { Add-Type -Namespace DA -Name Cp -MemberDefinition '[DllImport("kernel32.dll")] public static extern bool SetConsoleOutputCP(uint cp); [DllImport("kernel32.dll")] public static extern bool SetConsoleCP(uint cp);' -ErrorAction Stop } catch {}
+# programs run from the engine (npm above all) can leave the console in another code page, without VT colours and with
+# their own window title: put all three back after each one (owner's v3.1 run: the title stayed "npm install")
+$script:Title = ''
+function Fix-Console {
+  try { $null = [DA.Cp]::SetConsoleOutputCP(65001); $null = [DA.Cp]::SetConsoleCP(65001) } catch {}
+  try { if ([Console]::OutputEncoding.CodePage -ne 65001) { [Console]::OutputEncoding = [Text.Encoding]::UTF8 } } catch {}
+  try { $h = [DA.Vt]::GetStdHandle(-11); $m = [uint32]0; if ([DA.Vt]::GetConsoleMode($h, [ref]$m) -and -not ($m -band 4)) { $null = [DA.Vt]::SetConsoleMode($h, ($m -bor [uint32]0x0004)) } } catch {}
+  if ($script:Title) { try { if ($Host.UI.RawUI.WindowTitle -ne $script:Title) { $Host.UI.RawUI.WindowTitle = $script:Title } } catch {} }
+}
 
 # ---------- the theme ----------
 $script:THEMES = @{
@@ -21,7 +31,7 @@ $script:THEMES = @{
   mono    = @{ a = @(240, 240, 240); b = @(120, 120, 120); dim = @(100, 100, 100); text = @(230, 230, 230); ok = @(230, 230, 230); warn = @(200, 200, 200); fail = @(255, 255, 255) }
 }
 $script:CFG = @{ theme = 'inferno'; banner = 'block'; animate = $true; speed = 1.0; bar = 'smooth'; sysinfo = $true; logo = 'cat'; width = 34; outro = $true; trail = $true; trailGravity = 38.0; trailDensity = 2.2; trailLife = 2.6; trailGlyphs = ''
-  workers = 0; maxWorkers = 0; encoder = 'auto'; shutdown = 'ask'; autostart = 10; keepFrames = $false; cover = $true }
+  workers = 0; maxWorkers = 0; encoder = 'auto'; shutdown = 'ask'; autostart = 10; keepFrames = $false; cover = $true; glyphs = 'auto' }
 function Load-Theme([string]$path) {
   if (Test-Path -LiteralPath $path) {
     try {
@@ -37,6 +47,7 @@ function Apply-Cfg {
   $script:T = $script:THEMES[[string]$script:CFG.theme]
   $script:SPD = [Math]::Max(0.05, [double]$script:CFG.speed)
   if (-not $script:VT) { $script:CFG.animate = $false }
+  Set-Glyphs ([string]$script:CFG.glyphs)
 }
 
 # ---------- colour and characters ----------
@@ -44,10 +55,29 @@ function Rgb($c) { if (-not $script:VT) { return '' }; return ($script:ESC + '[3
 function Reset { if ($script:VT) { return ($script:ESC + '[0m') }; return '' }
 function Mix($a, $b, [double]$k) { $k = [Math]::Max(0.0, [Math]::Min(1.0, $k)); return @([int]($a[0] + ($b[0] - $a[0]) * $k), [int]($a[1] + ($b[1] - $a[1]) * $k), [int]($a[2] + ($b[2] - $a[2]) * $k)) }
 $script:FULL = [string][char]0x2588; $script:LIGHT = [string][char]0x2591; $script:MED = [string][char]0x2592
-$script:EIGHTHS = @('', [string][char]0x258F, [string][char]0x258E, [string][char]0x258D, [string][char]0x258C, [string][char]0x258B, [string][char]0x258A, [string][char]0x2589)
-$script:SPARK = @([string][char]0x2581, [string][char]0x2582, [string][char]0x2583, [string][char]0x2584, [string][char]0x2585, [string][char]0x2586, [string][char]0x2587, [string][char]0x2588)
-$script:SPIN = @([string][char]0x280B, [string][char]0x2819, [string][char]0x2839, [string][char]0x2838, [string][char]0x283C, [string][char]0x2834, [string][char]0x2826, [string][char]0x2827, [string][char]0x2807, [string][char]0x280F)
-$script:BOX = @{ h = [string][char]0x2500; v = [string][char]0x2502; tl = [string][char]0x256D; tr = [string][char]0x256E; bl = [string][char]0x2570; br = [string][char]0x256F }
+# v3.1: two glyph sets. The Windows 10 console (conhost, Consolas) only draws the WGL4 characters: the braille spinner, the
+# eighth blocks, the check mark, the play triangle and the rounded corners came out as '?' there (owner, 5 Nov 2026). 'safe' keeps
+# to WGL4 (shades, square corners, the cp437 pointer); 'full' is for Windows Terminal; 'auto' picks full only inside it.
+function Set-Glyphs([string]$mode) {
+  $ch = { param([int[]]$c) return @($c | ForEach-Object { [string][char]$_ }) }
+  if ($mode -ne 'full' -and $mode -ne 'safe') { if ($env:WT_SESSION -or $env:TERM_PROGRAM) { $mode = 'full' } else { $mode = 'safe' } }
+  $script:GLYPHS = $mode
+  if ($mode -eq 'full') {
+    $script:EIGHTHS = @('') + (& $ch @(0x258F, 0x258E, 0x258D, 0x258C, 0x258B, 0x258A, 0x2589))
+    $script:SPARK = & $ch @(0x2581, 0x2582, 0x2583, 0x2584, 0x2585, 0x2586, 0x2587, 0x2588)
+    $script:SPIN = & $ch @(0x280B, 0x2819, 0x2839, 0x2838, 0x283C, 0x2834, 0x2826, 0x2827, 0x2807, 0x280F)
+    $script:BOX = @{ h = [string][char]0x2500; v = [string][char]0x2502; tl = [string][char]0x256D; tr = [string][char]0x256E; bl = [string][char]0x2570; br = [string][char]0x256F }
+    $script:GL = @{ ok = [string][char]0x2714; fail = [string][char]0x2716; run = [string][char]0x25B6; ptr = [string][char]0x25B6; dot = [string][char]0x25CF }
+  } else {
+    # 8 levels from WGL4 shades (the bar's partial cell and the sparklines), a shade spinner, square corners
+    $script:EIGHTHS = @('') + (& $ch @(0x2591, 0x2591, 0x2592, 0x2592, 0x2593, 0x2593, 0x2593))
+    $script:SPARK = & $ch @(0x005F, 0x2591, 0x2591, 0x2592, 0x2592, 0x2593, 0x2593, 0x2588)
+    $script:SPIN = & $ch @(0x2591, 0x2592, 0x2593, 0x2588, 0x2593, 0x2592)
+    $script:BOX = @{ h = [string][char]0x2500; v = [string][char]0x2502; tl = [string][char]0x250C; tr = [string][char]0x2510; bl = [string][char]0x2514; br = [string][char]0x2518 }
+    $script:GL = @{ ok = [string][char]0x221A; fail = [string][char]0x00D7; run = [string][char]0x25BA; ptr = [string][char]0x25BA; dot = [string][char]0x2022 }
+  }
+}
+Set-Glyphs 'auto'
 function Out-Raw([string]$s) { [Console]::Write($s) }
 function Sleep-Ms([int]$ms) { if ($script:CFG.animate) { Start-Sleep -Milliseconds ([int]([Math]::Max(1, $ms / $script:SPD))) } }
 # a line in a gradient from the theme's a to b colour (16-colour consoles: plain theme colour)
@@ -67,7 +97,7 @@ function UiBar([double]$f, [int]$w) {
   $o = New-Object System.Text.StringBuilder
   for ($i = 0; $i -lt $w; $i++) {
     $col = Mix $script:T.a $script:T.b ($i / [Math]::Max(1, $w - 1))
-    if ($i -lt $full) { $ch = $script:FULL; if ($style -eq 'dots') { $ch = [string][char]0x25CF } }
+    if ($i -lt $full) { $ch = $script:FULL; if ($style -eq 'dots') { $ch = $script:GL.dot } }
     elseif ($i -eq $full -and $part -gt 0 -and $style -eq 'smooth') { $ch = $script:EIGHTHS[$part] }
     else { $ch = $script:LIGHT; if ($style -eq 'dots') { $ch = [string][char]0x00B7 }; $col = $script:T.dim }
     [void]$o.Append((C $ch $col))
@@ -175,7 +205,7 @@ function Stage-Head([string]$num, [string]$name) {
 function Stage-Line([string]$num, [string]$name, [string]$state, [string]$detail, [double]$secs) {
   $c = $script:T.ok; if ($state -eq 'WARN') { $c = $script:T.warn } elseif ($state -eq 'FAIL') { $c = $script:T.fail } elseif ($state -eq 'SKIP') { $c = $script:T.dim } elseif ($state -eq 'RUN') { $c = $script:T.b }
   $t = ''; if ($secs -ge 0) { $t = (' {0,6}' -f (Mmss $secs)) }
-  $mark = [string][char]0x2714; if ($state -eq 'FAIL') { $mark = [string][char]0x2716 } elseif ($state -eq 'WARN') { $mark = '!' } elseif ($state -eq 'SKIP') { $mark = '-' } elseif ($state -eq 'RUN') { $mark = [string][char]0x25B6 }
+  $mark = $script:GL.ok; if ($state -eq 'FAIL') { $mark = $script:GL.fail } elseif ($state -eq 'WARN') { $mark = '!' } elseif ($state -eq 'SKIP') { $mark = '-' } elseif ($state -eq 'RUN') { $mark = $script:GL.run }
   if (-not $script:VT) { $mark = '' }
   Out-Raw ("`r  " + (C ('[' + $num + ']') $script:T.a) + ' ' + (C ($name + ' ').PadRight(26, '.') $script:T.text) + ' ' + (C ($mark + ' ' + $state).PadRight(7) $c) + (C $t $script:T.dim) + '  ' + (C $detail $script:T.dim))
   [Console]::WriteLine()
@@ -200,6 +230,7 @@ function Run-Live([string]$exe, [string[]]$argv, [string]$num, [string]$name, [s
   foreach ($l in @(Get-Content -LiteralPath $o -ErrorAction SilentlyContinue) + @(Get-Content -LiteralPath $e -ErrorAction SilentlyContinue)) { [void]$script:LastOut.Add([string]$l); Log ([string]$l) }
   Remove-Item -LiteralPath $o, $e -ErrorAction SilentlyContinue
   $script:LastSecs = ((Get-Date) - $t0).TotalSeconds
+  Fix-Console
   Out-Raw ("`r" + (' ' * 110) + "`r")
   return $p.ExitCode
 }
@@ -254,11 +285,12 @@ function Wait-Bg($bg) {
   foreach ($l in @(Get-Content -LiteralPath $bg.o -ErrorAction SilentlyContinue) + @(Get-Content -LiteralPath $bg.e -ErrorAction SilentlyContinue)) { [void]$lines.Add([string]$l); Log ([string]$l) }
   Remove-Item -LiteralPath $bg.o, $bg.e -ErrorAction SilentlyContinue
   $bg.out = $lines; $bg.code = $bg.p.ExitCode; $bg.secs = ((Get-Date) - $bg.t0).TotalSeconds
+  Fix-Console
   return $bg.code
 }
 
 # ---------- v3.1: the settings people change in the menu live in pc\user.json (not in git: updates never reset it) ----------
-$script:USERKEYS = @('theme', 'banner', 'bar', 'logo', 'speed', 'animate', 'sysinfo', 'outro', 'trail', 'width', 'workers', 'maxWorkers', 'encoder', 'shutdown', 'autostart', 'keepFrames', 'cover')
+$script:USERKEYS = @('theme', 'banner', 'bar', 'logo', 'speed', 'animate', 'sysinfo', 'outro', 'trail', 'width', 'glyphs', 'workers', 'maxWorkers', 'encoder', 'shutdown', 'autostart', 'keepFrames', 'cover')
 function Save-User([string]$path) {
   $o = [ordered]@{ _help = 'Saved by the RENDER.bat menu (Look, Settings). Not in git, so updates keep it. Delete this file to go back to pc\theme.json.' }
   foreach ($k in $script:USERKEYS) { if ($script:CFG.ContainsKey($k)) { $o[$k] = $script:CFG[$k] } }
@@ -283,7 +315,7 @@ function Menu-Row($it, [bool]$hi, [double]$ph) {
   $key = ([string]$it.key).PadRight(2); $lab = Pad-Vis ([string]$it.label) 16
   $iw = $w - 23; $inf = Pad-Vis ([string]$it.info) $iw
   if ($hi -and $script:VT) {
-    $row = ' ' + [char]0x25B6 + ' ' + $key + ' ' + $lab + ' ' + $inf + ' '
+    $row = ' ' + $script:GL.ptr + ' ' + $key + ' ' + $lab + ' ' + $inf + ' '
     $o = New-Object System.Text.StringBuilder
     for ($i = 0; $i -lt $row.Length; $i++) {
       # the gradient drifts along the row (phase ph): a slow shimmer while the menu waits
@@ -341,7 +373,7 @@ function Select-Menu([string]$title, $items, [int]$sel, [int]$auto, [string]$aut
     if ($live) {
       $left = $auto - ((Get-Date) - $t0).TotalSeconds
       if ($left -le 0) { try { [Console]::CursorVisible = $true } catch {}; return @{ i = $sel; how = 'auto' } }
-      $nt = ([string][char]0x25B6 + ' ' + $autoWhat + ' starts in ' + [int][Math]::Ceiling($left) + ' s   (any key stops it)')
+      $nt = ($script:GL.ptr + ' ' + $autoWhat + ' starts in ' + [int][Math]::Ceiling($left) + ' s   (any key stops it)')
     }
     if ($script:CFG.animate) { $ph = $tick * 0.16 }
     $sig = [string]$sel + '|' + $nt

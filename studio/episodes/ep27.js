@@ -1,5 +1,5 @@
 // « 12 % » Saison 2 · Partie 4 · Le dernier bus (~90 s), the season 2 finale. 3:12 am, boulevard de Clichy: Inès, 3 %, waits alone at
-// a lit night-bus shelter. A man in an orange high-vis vest walks up: « Ligne déviée. L'arrêt provisoire est derrière, venez. » He knows
+// a lit night-bus shelter. A man in an orange high-vis vest walks up: « Ligne déviée. L'arrêt provisoire est derrière. Suivez-moi. » He knows
 // the line, he has the vest, he smiles. « ET SI… » she follows him: a street without light, steps right behind hers, he takes the vest
 // off: it is him (the season's man); her screen dies. 2024: 3 374 victims of sexual violence in public transport, 91 % women, nearly
 // half in Île-de-France (notes/facts.md). Rewind: she does not move; a diversion is posted at the stop and in the app, check it

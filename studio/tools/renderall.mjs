@@ -6,7 +6,10 @@
 // frame rate (past that point the processor is the limit and more workers only queue up). Every frame is a pure function
 // of t, so the order does not matter. A worker that lands on a software renderer exits with code 3: the pool switches to
 // --headed (a real browser window, which always gets the graphics card). A last pass re-renders anything missing.
+// --cover T --coverOut F: the first worker to run out of chunks also renders the cover (the title over the frame at T): its
+// page is already loaded, so the cover costs one frame.
 // usage: node tools/renderall.mjs --ep ep10 --out DIR [--workers 3] [--max 10] [--gpu] [--from 0 --to 2250] [--q "ssaa=2"]
+//        [--cover 31.5 --coverOut videos/x_cover.jpg]
 import { spawn, execFile } from 'child_process'; import fs from 'fs'; import os from 'os'; import path from 'path'; import { fileURLToPath } from 'url';
 
 const args = Object.fromEntries(process.argv.slice(2).reduce((a, v, i, arr) => (v.startsWith('--') ? [...a, [v.slice(2), arr[i + 1] && !arr[i + 1].startsWith('--') ? arr[i + 1] : true]] : a), []));
@@ -36,16 +39,19 @@ function gpuLoad() {
 }
 
 let flags = args.gpu ? ['--gpu'] : [];
+const coverT = args.cover !== undefined && args.cover !== true ? Number(args.cover) : null;
+const coverFile = coverT === null ? null : path.resolve(args.coverOut || path.join(out, 'cover.jpg'));
+let coverAsked = false;
 const workers = new Map(); let nextId = 0, headedSwitch = false, finished = false;
 function spawnWorker() {
   const id = nextId++, name = `w${id}`;
   const p = spawn(process.execPath, ['render.mjs', ...base, '--queue', ...flags], { cwd: studio, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
-  const w = { id, p, chunk: null, ready: false, born: Date.now(), frames: 0 };
+  const w = { id, p, chunk: null, ready: false, born: Date.now(), readyAt: 0, frames: 0 };
   workers.set(id, w);
   const line = (d) => String(d).split(/\r?\n/).filter((l) => l && !/FBXLoader: TGA loader/.test(l)).forEach((l) => console.log(`[${name}] ${l}`));
   p.stdout.on('data', line); p.stderr.on('data', line);
   p.on('message', (m) => {
-    if (m.ready) { w.ready = true; if (total === null) setTotal(m.total); return; }   // the episode's frame count comes with the first 'ready'
+    if (m.ready) { w.ready = true; w.readyAt = Date.now(); if (total === null) setTotal(m.total); return; }   // the episode's frame count comes with the first 'ready'
     if (m.done) { w.chunk = null; w.frames = m.n; return; }
     if (m.want) feed(w);
   });
@@ -71,7 +77,9 @@ function feed(w) {
   if (!queue) { w.waiting = true; return; }
   w.waiting = false;
   const c = queue.shift();
-  if (c) { w.chunk = c; w.p.send({ chunk: c }); } else { w.p.send({ stop: true }); }
+  if (c) { w.chunk = c; w.p.send({ chunk: c }); }
+  else if (coverT !== null && !coverAsked) { coverAsked = true; log(`cover at ${coverT} s by w${w.id}`); w.p.send({ stop: true, cover: coverT, coverFile }); }
+  else { w.p.send({ stop: true }); }
 }
 
 // the adaptive pool
@@ -84,15 +92,18 @@ async function tick() {
   log(`workers ${workers.size} (${live} rendering), ${fps.toFixed(2)} fps, GPU ${g < 0 ? 'n/a' : g.toFixed(0) + ' %'}, free RAM ${free.toFixed(1)} GB`);
   history.push({ workers: workers.size, live, fps });
   if (!adaptive || plateau || !queue || queue.length < 4) return;
-  const starting = [...workers.values()].some((w) => !w.ready || Date.now() - w.born < 45000);
-  if (starting) return;                                                      // let the newest worker settle before judging it
+  // let the newest worker render for 20 s before judging it (the fps above is measured over the last tick)
+  const starting = [...workers.values()].some((w) => !w.ready || Date.now() - w.readyAt < 20000);
+  if (starting) return;
   if (lastAddFps !== null && fps < lastAddFps * 1.05) { plateau = true; log(`the last worker added nothing (${lastAddFps.toFixed(2)} -> ${fps.toFixed(2)} fps): the processor is the limit, the pool stays at ${workers.size}`); return; }
   if (workers.size >= WMAX) return;
   if (g >= 0 && g >= 90) { log('the graphics card is saturated'); return; }
   if (free < 2.5) { log('not enough free memory for one more worker'); return; }
-  lastAddFps = fps; log(`one more worker (${workers.size + 1})`); spawnWorker();
+  // far from the limits: two at a time (each takes a while to load its scene)
+  const two = (g >= 0 && g < 55) && free > 6 && workers.size + 2 <= WMAX && queue.length > 12;
+  lastAddFps = fps; log(`${two ? 'two more workers' : 'one more worker'} (${workers.size + (two ? 2 : 1)})`); spawnWorker(); if (two) spawnWorker();
 }
-const timer = setInterval(() => { tick().catch(() => {}); }, 25000);
+const timer = setInterval(() => { tick().catch(() => {}); }, 15000);
 
 let wrapped = false;
 async function wrapUp() {
@@ -104,6 +115,11 @@ async function wrapUp() {
     log(`${left} chunk(s) left: a last pass`);
     fillCode = await new Promise((res) => { const p = spawn(process.execPath, ['render.mjs', ...base, '--resume', ...flags, ...(args.from ? ['--from', String(args.from)] : []), ...(args.to ? ['--to', String(args.to)] : [])], { cwd: studio, stdio: ['ignore', 'inherit', 'inherit'] }); p.on('close', res); });
   }
+  if (coverFile && !fs.existsSync(coverFile)) {                                // nobody made the cover (a worker died on it): one pass
+    log('the cover: a last pass');
+    await new Promise((res) => { const p = spawn(process.execPath, ['render.mjs', '--ep', args.ep, '--out', out, '--cover', String(coverT), '--coverOut', coverFile, ...flags, ...(args.q ? ['--q', String(args.q)] : [])], { cwd: studio, stdio: ['ignore', 'inherit', 'inherit'] }); p.on('close', res); });
+  }
+  if (coverFile) console.log(fs.existsSync(coverFile) ? `COVER OK: ${coverFile}` : 'COVER FAILED');
   const n = count(), min = (Date.now() - t0) / 60000, peak = Math.max(0, ...history.map((h) => h.workers));
   const exp = total === null ? null : Math.min(total, Number(args.to || total)) - Number(args.from || 0);
   const ok = fillCode === 0 && (exp === null || n >= exp);

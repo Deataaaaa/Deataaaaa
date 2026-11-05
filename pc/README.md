@@ -29,9 +29,23 @@ in a few minutes. The PC is only on for that: one double-click, and it can switc
 
 When I tell you a video is ready to render, double-click **`C:\DeatAnimation\Deataaaaa\pc\RENDER.bat`**.
 
-Render Engine v3: change the look in `pc\theme.json` (theme `inferno`, `matrix`, `synth`, `ice`, `mono` or `custom` with your own RGB colours; banner `block`, `shade`, `slant`, `double`; bar `smooth`, `blocks`, `dots`, `ascii`; logo `cat`, `clap`, `none`; `speed`; `animate`), then double-click `pc\THEME.bat` to preview it.
+Render Engine v3.1 opens on a **menu** (arrows or numbers, Enter, Esc). If you touch nothing, **Render** starts by itself after
+10 seconds, so you can double-click and walk away.
 
-- It asks whether to shut the PC down at the end (yes after 20 seconds), downloads my latest version, deletes the
+| | |
+|---|---|
+| 1 Render | the video(s) in `pc\job.json`, with the cover (`videos\<...>_cover.jpg`, made by the render) |
+| 2 Resume | after a stopped render: keeps the frames already on disk and renders only the missing ones |
+| 3 Cover only | just the cover, on the graphics card |
+| 4 Look | theme (`inferno`, `matrix`, `synth`, `ice`, `mono`, `custom`), banner, bar, logo, speed, animations, mouse trail, preview |
+| 5 Settings | workers at start, max workers, encoder, shut down after (ask / yes / no), auto-start, cover, keep frames |
+| 6 GPU test | one frame on the graphics card, with its time |
+| 7 / 8 | the videos folder, the end of the last log |
+
+What you change in Look and Settings is saved in `pc\user.json`, which updates never touch (delete it to go back to the
+defaults in `pc\theme.json`; `custom` colours are set there or in `user.json` as `"custom": { "a": [r, g, b], ... }`).
+
+- It downloads my latest version first, asks whether to shut the PC down at the end (yes after 20 seconds), deletes the
   last run's videos and frames (so the folder never piles up), renders on the graphics card with a live progress bar
   (percent, frames per second, time left, GPU/CPU use), checks every frame, encodes, and opens the `videos` folder
   with the new `<name>_phone.mp4` selected.

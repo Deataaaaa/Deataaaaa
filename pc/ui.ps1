@@ -20,7 +20,8 @@ $script:THEMES = @{
   ice     = @{ a = @(120, 220, 255); b = @(255, 255, 255); dim = @(100, 130, 150); text = @(225, 240, 250); ok = @(120, 255, 200); warn = @(255, 220, 120); fail = @(255, 100, 110) }
   mono    = @{ a = @(240, 240, 240); b = @(120, 120, 120); dim = @(100, 100, 100); text = @(230, 230, 230); ok = @(230, 230, 230); warn = @(200, 200, 200); fail = @(255, 255, 255) }
 }
-$script:CFG = @{ theme = 'inferno'; banner = 'block'; animate = $true; speed = 1.0; bar = 'smooth'; sysinfo = $true; logo = 'cat'; width = 34; outro = $true; trail = $true; trailGravity = 38.0; trailDensity = 2.2; trailLife = 2.6; trailGlyphs = '' }
+$script:CFG = @{ theme = 'inferno'; banner = 'block'; animate = $true; speed = 1.0; bar = 'smooth'; sysinfo = $true; logo = 'cat'; width = 34; outro = $true; trail = $true; trailGravity = 38.0; trailDensity = 2.2; trailLife = 2.6; trailGlyphs = ''
+  workers = 0; maxWorkers = 0; encoder = 'auto'; shutdown = 'ask'; autostart = 10; keepFrames = $false; cover = $true }
 function Load-Theme([string]$path) {
   if (Test-Path -LiteralPath $path) {
     try {
@@ -29,6 +30,9 @@ function Load-Theme([string]$path) {
       if ($j.custom) { $c = @{}; foreach ($p in $j.custom.PSObject.Properties) { $c[$p.Name] = @($p.Value) }; $script:THEMES['custom'] = $c }
     } catch { }
   }
+  Apply-Cfg
+}
+function Apply-Cfg {
   if (-not $script:THEMES.ContainsKey([string]$script:CFG.theme)) { $script:CFG.theme = 'inferno' }
   $script:T = $script:THEMES[[string]$script:CFG.theme]
   $script:SPD = [Math]::Max(0.05, [double]$script:CFG.speed)
@@ -169,9 +173,9 @@ function Stage-Head([string]$num, [string]$name) {
   Out-Raw ('  ' + (C ('[' + $num + ']') $script:T.a) + ' ' + (C ($name + ' ').PadRight(26, '.') $script:T.text))
 }
 function Stage-Line([string]$num, [string]$name, [string]$state, [string]$detail, [double]$secs) {
-  $c = $script:T.ok; if ($state -eq 'WARN') { $c = $script:T.warn } elseif ($state -eq 'FAIL') { $c = $script:T.fail } elseif ($state -eq 'SKIP') { $c = $script:T.dim }
+  $c = $script:T.ok; if ($state -eq 'WARN') { $c = $script:T.warn } elseif ($state -eq 'FAIL') { $c = $script:T.fail } elseif ($state -eq 'SKIP') { $c = $script:T.dim } elseif ($state -eq 'RUN') { $c = $script:T.b }
   $t = ''; if ($secs -ge 0) { $t = (' {0,6}' -f (Mmss $secs)) }
-  $mark = [string][char]0x2714; if ($state -eq 'FAIL') { $mark = [string][char]0x2716 } elseif ($state -eq 'WARN') { $mark = '!' } elseif ($state -eq 'SKIP') { $mark = '-' }
+  $mark = [string][char]0x2714; if ($state -eq 'FAIL') { $mark = [string][char]0x2716 } elseif ($state -eq 'WARN') { $mark = '!' } elseif ($state -eq 'SKIP') { $mark = '-' } elseif ($state -eq 'RUN') { $mark = [string][char]0x25B6 }
   if (-not $script:VT) { $mark = '' }
   Out-Raw ("`r  " + (C ('[' + $num + ']') $script:T.a) + ' ' + (C ($name + ' ').PadRight(26, '.') $script:T.text) + ' ' + (C ($mark + ' ' + $state).PadRight(7) $c) + (C $t $script:T.dim) + '  ' + (C $detail $script:T.dim))
   [Console]::WriteLine()
@@ -233,3 +237,136 @@ function Stop-Trail { if ($script:TRAIL) { try { [DA.Trail]::Stop() } catch {}; 
 # keys go through the trail's queue while it reads the console's input (it takes every input record)
 function Key-Available { if ($script:TRAIL) { return [DA.Trail]::KeyAvailable() }; return [Console]::KeyAvailable }
 function Read-Key { if ($script:TRAIL) { return [DA.Trail]::ReadKey() }; return [Console]::ReadKey($true) }
+
+# a program in the background while something else runs (the soundtrack during the render, the frame check and the
+# contact sheet during the encode): Start-Bg, then Wait-Bg gives its exit code; its output goes to .out and the log
+function Start-Bg([string]$exe, [string[]]$argv, [string]$cwd) {
+  $o = [IO.Path]::GetTempFileName(); $e = [IO.Path]::GetTempFileName()
+  $al = ($argv | ForEach-Object { Quote-Arg $_ }) -join ' '
+  if (-not $cwd) { $cwd = (Get-Location).Path }
+  $p = Start-Process -FilePath $exe -ArgumentList $al -WorkingDirectory $cwd -NoNewWindow -PassThru -RedirectStandardOutput $o -RedirectStandardError $e
+  $null = $p.Handle
+  return @{ p = $p; o = $o; e = $e; t0 = (Get-Date); out = @(); code = -1; secs = 0.0 }
+}
+function Wait-Bg($bg) {
+  $bg.p.WaitForExit()
+  $lines = New-Object System.Collections.ArrayList
+  foreach ($l in @(Get-Content -LiteralPath $bg.o -ErrorAction SilentlyContinue) + @(Get-Content -LiteralPath $bg.e -ErrorAction SilentlyContinue)) { [void]$lines.Add([string]$l); Log ([string]$l) }
+  Remove-Item -LiteralPath $bg.o, $bg.e -ErrorAction SilentlyContinue
+  $bg.out = $lines; $bg.code = $bg.p.ExitCode; $bg.secs = ((Get-Date) - $bg.t0).TotalSeconds
+  return $bg.code
+}
+
+# ---------- v3.1: the settings people change in the menu live in pc\user.json (not in git: updates never reset it) ----------
+$script:USERKEYS = @('theme', 'banner', 'bar', 'logo', 'speed', 'animate', 'sysinfo', 'outro', 'trail', 'width', 'workers', 'maxWorkers', 'encoder', 'shutdown', 'autostart', 'keepFrames', 'cover')
+function Save-User([string]$path) {
+  $o = [ordered]@{ _help = 'Saved by the RENDER.bat menu (Look, Settings). Not in git, so updates keep it. Delete this file to go back to pc\theme.json.' }
+  foreach ($k in $script:USERKEYS) { if ($script:CFG.ContainsKey($k)) { $o[$k] = $script:CFG[$k] } }
+  try { Set-Content -LiteralPath $path -Value ($o | ConvertTo-Json -Depth 4) -Encoding UTF8; return $true } catch { return $false }
+}
+function Same($a, $b) {
+  if ($a -is [bool] -or $b -is [bool]) { return ([bool]$a -eq [bool]$b) }
+  try { return ([double]$a -eq [double]$b) } catch { return ([string]$a -eq [string]$b) }
+}
+function Cycle($cur, $opts, [int]$dir) {
+  $i = -1; for ($q = 0; $q -lt $opts.Count; $q++) { if (Same $opts[$q] $cur) { $i = $q; break } }
+  if ($i -lt 0) { return $opts[0] }
+  return $opts[(($i + $dir) % $opts.Count + $opts.Count) % $opts.Count]
+}
+
+# ---------- the menu: a rounded box, the chosen row lit with the theme's gradient (it shimmers), arrows or numbers ----------
+$script:MW = 66; $script:MenuTop = -1
+function Pad-Vis([string]$s, [int]$w) { if ($s.Length -gt $w) { return ($s.Substring(0, [Math]::Max(0, $w - 1)) + [char]0x2026) }; return $s.PadRight($w) }
+function Menu-Row($it, [bool]$hi, [double]$ph) {
+  $w = $script:MW; $v = $script:BOX.v
+  if ($it.sep) { return ('   ' + (C $v $script:T.dim) + (' ' * $w) + (C $v $script:T.dim)) }
+  $key = ([string]$it.key).PadRight(2); $lab = Pad-Vis ([string]$it.label) 16
+  $iw = $w - 23; $inf = Pad-Vis ([string]$it.info) $iw
+  if ($hi -and $script:VT) {
+    $row = ' ' + [char]0x25B6 + ' ' + $key + ' ' + $lab + ' ' + $inf + ' '
+    $o = New-Object System.Text.StringBuilder
+    for ($i = 0; $i -lt $row.Length; $i++) {
+      # the gradient drifts along the row (phase ph): a slow shimmer while the menu waits
+      $k = ($i / [double]($w - 1)) + 0.35 * [Math]::Sin($ph + $i / 9.0)
+      $bg = Mix $script:T.a $script:T.b $k
+      $fg = @(18, 18, 22); if ($i -ge 23) { $fg = @(45, 40, 40) }
+      [void]$o.Append($script:ESC + '[48;2;' + $bg[0] + ';' + $bg[1] + ';' + $bg[2] + 'm' + (Rgb $fg) + $row[$i])
+    }
+    return ('   ' + (C $v $script:T.dim) + $o.ToString() + (Reset) + (C $v $script:T.dim))
+  }
+  $mk = ' '; if ($hi) { $mk = '>' }
+  $kc = $script:T.a; $lc = $script:T.text; if ($it.dis) { $kc = $script:T.dim; $lc = $script:T.dim }
+  $infS = C $inf $script:T.dim
+  if ($it.raw) { $infS = $it.raw + (' ' * [Math]::Max(0, $iw - [int]$it.rawLen)) }
+  return ('   ' + (C $v $script:T.dim) + ' ' + $mk + ' ' + (C $key $kc) + ' ' + (C $lab $lc) + ' ' + $infS + ' ' + (C $v $script:T.dim))
+}
+function Menu-Lines([string]$title, $items, [int]$sel, [string]$hint, [string]$note, [double]$ph) {
+  $w = $script:MW; $B = $script:BOX
+  $L = New-Object System.Collections.ArrayList
+  $t = $B.h + ' ' + $title + ' '
+  [void]$L.Add('   ' + (C ($B.tl + $t) $script:T.a) + (C ($B.h * ($w - $t.Length) + $B.tr) $script:T.dim))
+  for ($i = 0; $i -lt $items.Count; $i++) { [void]$L.Add((Menu-Row $items[$i] ($i -eq $sel) $ph)) }
+  [void]$L.Add('   ' + (C ($B.bl + ($B.h * $w) + $B.br) $script:T.dim))
+  [void]$L.Add('   ' + (C $hint $script:T.dim))
+  if ($note) { [void]$L.Add('   ' + (C $note $script:T.b)) } else { [void]$L.Add('') }
+  return $L
+}
+function Menu-Paint($lines, [bool]$reveal) {
+  if ($script:MenuTop -lt 0) { $script:MenuTop = [Console]::CursorTop }
+  $ok = $true; try { [Console]::SetCursorPosition(0, $script:MenuTop) } catch { $ok = $false }
+  $el = ''; if ($script:VT) { $el = $script:ESC + '[K' }
+  foreach ($l in $lines) { Out-Raw ($l + $el); [Console]::WriteLine(); if ($reveal) { Sleep-Ms 14 } }
+  if ($script:VT -and $ok) { Out-Raw ($script:ESC + '[J') }
+  return $ok
+}
+function Menu-Clear {
+  try { [Console]::SetCursorPosition(0, [Math]::Max(0, $script:MenuTop)); if ($script:VT) { Out-Raw ($script:ESC + '[J') } } catch { [Console]::WriteLine() }
+  try { [Console]::CursorVisible = $true } catch {}
+}
+function Next-Sel($items, [int]$sel, [int]$dir) {
+  for ($q = 1; $q -le $items.Count; $q++) { $i = (($sel + $dir * $q) % $items.Count + $items.Count) % $items.Count; if (-not $items[$i].sep -and -not $items[$i].dis) { return $i } }
+  return $sel
+}
+# waits for a choice: returns @{ i = row; how = enter | left | right | esc | auto }. With auto > 0 a countdown runs on the
+# first row that is not disabled, and any key stops it (the owner double-clicks RENDER.bat and walks away)
+function Select-Menu([string]$title, $items, [int]$sel, [int]$auto, [string]$autoWhat, [string]$note) {
+  $a = [char]0x2191; $z = [char]0x2193; $l = [char]0x2190; $r = [char]0x2192
+  $hint = ([string]$a + [string]$z + ' move   Enter choose   number jump   Esc back')
+  if (@($items | Where-Object { $_.opts }).Count) { $hint = ([string]$a + [string]$z + ' move   ' + [string]$l + [string]$r + ' / Enter change   Esc back') }
+  if ($items[$sel].sep -or $items[$sel].dis) { $sel = Next-Sel $items $sel 1 }
+  try { [Console]::CursorVisible = $false } catch {}
+  $t0 = Get-Date; $live = $auto -gt 0; $last = ''; $first = $true; $ph = 0.0; $lastPh = 0.0; $tick = 0
+  while ($true) {
+    $nt = $note
+    if ($live) {
+      $left = $auto - ((Get-Date) - $t0).TotalSeconds
+      if ($left -le 0) { try { [Console]::CursorVisible = $true } catch {}; return @{ i = $sel; how = 'auto' } }
+      $nt = ([string][char]0x25B6 + ' ' + $autoWhat + ' starts in ' + [int][Math]::Ceiling($left) + ' s   (any key stops it)')
+    }
+    if ($script:CFG.animate) { $ph = $tick * 0.16 }
+    $sig = [string]$sel + '|' + $nt
+    if ($sig -ne $last) { $null = Menu-Paint (Menu-Lines $title $items $sel $hint $nt $ph) $first; $first = $false; $last = $sig; $lastPh = $ph }
+    elseif ($script:CFG.animate -and $script:VT -and ($ph - $lastPh) -ge 0.15) {
+      # the shimmer: only the lit row is redrawn
+      try { [Console]::SetCursorPosition(0, $script:MenuTop + 1 + $sel); Out-Raw (Menu-Row $items[$sel] $true $ph) } catch {}
+      $lastPh = $ph
+    }
+    if (Key-Available) {
+      $k = Read-Key; $live = $false
+      $kn = [string]$k.Key; $ch = [string]$k.KeyChar
+      if ($kn -eq 'UpArrow') { $sel = Next-Sel $items $sel -1 }
+      elseif ($kn -eq 'DownArrow' -or $kn -eq 'Tab') { $sel = Next-Sel $items $sel 1 }
+      elseif ($kn -eq 'Home') { $sel = Next-Sel $items -1 1 }
+      elseif ($kn -eq 'End') { $sel = Next-Sel $items $items.Count -1 }
+      elseif ($kn -eq 'Enter' -or $kn -eq 'Spacebar') { try { [Console]::CursorVisible = $true } catch {}; return @{ i = $sel; how = 'enter' } }
+      elseif ($kn -eq 'RightArrow') { return @{ i = $sel; how = 'right' } }
+      elseif ($kn -eq 'LeftArrow') { return @{ i = $sel; how = 'left' } }
+      elseif ($kn -eq 'Escape' -or $kn -eq 'Backspace' -or $ch -eq 'q' -or $ch -eq 'Q') { try { [Console]::CursorVisible = $true } catch {}; return @{ i = $sel; how = 'esc' } }
+      else {
+        for ($i = 0; $i -lt $items.Count; $i++) { if (-not $items[$i].sep -and -not $items[$i].dis -and [string]$items[$i].key -eq $ch) { $sel = $i; $null = Menu-Paint (Menu-Lines $title $items $sel $hint $note $ph) $false; try { [Console]::CursorVisible = $true } catch {}; return @{ i = $sel; how = 'enter' } } }
+      }
+      continue
+    }
+    $tick++; Start-Sleep -Milliseconds 70
+  }
+}

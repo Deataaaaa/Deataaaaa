@@ -1,5 +1,5 @@
 {
-  "_help": "DeatAnimation Render Engine v3 look. Double-click THEME.bat to preview. theme: inferno | matrix | synth | ice | mono | custom. banner: block | shade | slant | double. bar: smooth | blocks | dots | ascii. logo: cat | clap | none. speed: animation speed (2 = twice as fast). animate: false for no animation. trail: characters fall from the mouse pointer (trailGravity, trailDensity, trailLife in seconds, trailGlyphs: the characters thrown).",
+  "_help": "DeatAnimation Render Engine v3.1 defaults. Easier: RENDER.bat > 4 Look / 5 Settings (saved in pc\\user.json, which updates keep; this file is reset by every update). Double-click THEME.bat to preview. theme: inferno | matrix | synth | ice | mono | custom. banner: block | shade | slant | double. bar: smooth | blocks | dots | ascii. logo: cat | clap | none. speed: animation speed (2 = twice as fast). animate: false for no animation. trail: characters fall from the mouse pointer (trailGravity, trailDensity, trailLife in seconds, trailGlyphs: the characters thrown).",
   "theme": "inferno",
   "banner": "block",
   "bar": "smooth",

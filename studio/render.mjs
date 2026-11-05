@@ -5,6 +5,7 @@
 //        [--step N --offset k]   this worker takes frames from+k, from+k+N, ... (tools/renderall.mjs runs N of them)
 //        [--gpu [--headed]]      render on the graphics card (the owner's PC) instead of SwiftShader (this cloud box)
 //        [--queue]               take chunks of frames from tools/renderall.mjs over IPC (its adaptive worker pool)
+//        --cover T [--coverOut F]  one frame at T with the cover title (opts.cover)
 import { chromium } from 'playwright';
 import http from 'http'; import fs from 'fs'; import path from 'path'; import { fileURLToPath } from 'url';
 
@@ -29,7 +30,10 @@ const port = await new Promise((res) => { srv.once('listening', () => res(srv.ad
 // the fallback when headless still lands on a software renderer
 const gpu = !!args.gpu;
 const browser = await chromium.launch(gpu
-  ? { headless: !args.headed, channel: args.headed ? undefined : 'chromium', args: ['--ignore-gpu-blocklist', '--enable-gpu-rasterization'] }
+  ? { headless: !args.headed, channel: args.headed ? undefined : 'chromium', args: ['--ignore-gpu-blocklist', '--enable-gpu-rasterization',
+      // frames as fast as the card makes them (no 60 Hz pacing), and no throttling of a window that is hidden behind the others
+      '--disable-gpu-vsync', '--disable-frame-rate-limit', '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
+      '--disable-backgrounding-occluded-windows'] }
   : { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--disable-gpu-driver-bug-workarounds'] });
 const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
 page.on('console', (m) => { const t = m.text(); if (!/GPU stall|GroupMarkerNotSet|Automatic fallback/.test(t)) console.log('[page]', t); });
@@ -74,6 +78,9 @@ if (args.check || problems.length) {
   }
 }
 
+// frames are written in the background while the next one renders (await writes() before reporting a chunk as done)
+const pending = new Set(); let writeErr = null;
+const writes = async () => { await Promise.allSettled([...pending]); if (writeErr) throw writeErr; };
 async function shot(t, file, opts) {
   // generous timeout + retries: under heavy CPU load a motion-blurred frame can take a while to composite
   for (let attempt = 1; ; attempt++) {
@@ -81,7 +88,8 @@ async function shot(t, file, opts) {
       await page.evaluate(([tt, o]) => window.renderFrame(tt, o), [t, opts || {}]);
       // written under a temporary name, then renamed: a worker killed mid-write never leaves a broken frame for --resume
       const buf = await page.screenshot({ type: 'jpeg', quality: 93, timeout: 180000 });
-      fs.writeFileSync(file + '.part', buf); fs.renameSync(file + '.part', file);
+      const w = fs.promises.writeFile(file + '.part', buf).then(() => fs.promises.rename(file + '.part', file));
+      pending.add(w); w.then(() => pending.delete(w), (e) => { pending.delete(w); writeErr = e; });
       return;
     } catch (e) {
       if (attempt >= 3) throw e;
@@ -91,10 +99,10 @@ async function shot(t, file, opts) {
 }
 
 if (args.cover) {
-  const t = Number(args.cover); const f = path.join(out, `cover.jpg`); await shot(t, f, { cover: true }); console.log('cover', f);
+  const t = Number(args.cover); const f = args.coverOut ? path.resolve(args.coverOut) : path.join(out, `cover.jpg`); await shot(t, f, { cover: true }); await writes(); console.log('cover', f);
 } else if (args.stills) {
   const list = String(args.stills).split(',').map(Number);
-  for (const t of list) { const f = path.join(out, `still_${t.toFixed(2)}.jpg`); const t0 = Date.now(); await shot(t, f); console.log('still', t, f, Date.now() - t0, 'ms'); }
+  for (const t of list) { const f = path.join(out, `still_${t.toFixed(2)}.jpg`); const t0 = Date.now(); await shot(t, f); await writes(); console.log('still', t, f, Date.now() - t0, 'ms'); }
 } else if (args.queue && process.send) {
   process.send({ ready: true, total: Math.round(meta.duration * fps) });
   // --queue (tools/renderall.mjs): ask the controller for chunks of frames until it says stop, so workers can be added
@@ -103,13 +111,18 @@ if (args.cover) {
   const t0 = Date.now(); let n = 0;
   for (;;) {
     const m = await ask();
-    if (!m || m.stop) break;
+    if (!m || m.stop) {
+      // the controller can ask the last worker for the cover (the title over one frame): the page is already loaded
+      if (m && m.cover !== undefined) { const c0 = Date.now(); await shot(Number(m.cover), m.coverFile, { cover: true }); await writes(); console.log('cover', m.coverFile, Date.now() - c0, 'ms'); }
+      break;
+    }
     const [a, b] = m.chunk;
     for (let i = a; i < b; i++) {
       const f = path.join(out, `f_${String(i).padStart(5, '0')}.jpg`);
       if (fs.existsSync(f)) continue;
       await shot(i / fps, f); n++;
     }
+    await writes();
     process.send({ done: [a, b], n, sec: (Date.now() - t0) / 1000 });
   }
   console.log('done (queue)', ((Date.now() - t0) / 1000).toFixed(1), 's', `${n} frames`);
@@ -122,8 +135,10 @@ if (args.cover) {
     const f = path.join(out, `f_${String(i).padStart(5, '0')}.jpg`);
     if (args.resume && fs.existsSync(f)) continue;
     await shot(i / fps, f); n++;
+    if (pending.size > 4) await writes();
     if (n % 30 === 1) { const per = (Date.now() - t0) / 1000 / n; console.log(`frame ${i}/${to} ${per.toFixed(2)}s/f eta ${(Math.ceil((to - i) / step) * per / 60).toFixed(1)} min`); }
   }
   console.log('done', from, to, ((Date.now() - t0) / 1000).toFixed(1), 's', `${n} frames`);
 }
+await writes();
 await browser.close(); srv.close();
